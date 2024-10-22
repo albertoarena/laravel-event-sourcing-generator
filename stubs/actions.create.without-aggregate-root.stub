@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Actions;
+
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Created;
+use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
+{% if uuid %}
+use Ramsey\Uuid\Uuid;
+{% endif %}
+
+class Create{{ class }}
+{
+    public function __invoke({{ class }}Data ${{ id }}Data): void
+    {
+        event(new {{ class }}Created(
+            {% if uuid %}
+            {{ id }}{{ primary_key:uppercase }}: Uuid::uuid4()->toString(),
+            {% endif %}
+            {{ id }}Data: ${{ id }}Data,
+            createdAt: now(),
+        ));
+    }
+}

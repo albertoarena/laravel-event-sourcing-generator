@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Events;
+
+use Carbon\Carbon;
+use Spatie\EventSourcing\StoredEvents\ShouldBeStored;
+
+class {{ class }}Deleted extends ShouldBeStored
+{
+    public function __construct(
+        public {{ primary_key:type }} ${{ id }}{{ primary_key:uppercase }},
+        public Carbon $createdAt,
+    ) {}
+}

@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Actions;
+
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Updated;
+use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
+
+class Update{{ class }}
+{
+    public function __invoke({{ primary_key:type }} ${{ id }}{{ primary_key:uppercase }}, {{ class }}Data ${{ id }}Data): void
+    {
+        event(new {{ class }}Updated(
+            {{ id }}{{ primary_key:uppercase }}: ${{ id }}{{ primary_key:uppercase }},
+            {{ id }}Data: ${{ id }}Data,
+            createdAt: now(),
+        ));
+    }
+}

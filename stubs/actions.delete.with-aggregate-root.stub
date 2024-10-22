@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Actions;
+
+use App\{{ domain }}\{{ class }}\{{ class }}AggregateRoot;
+
+class Delete{{ class }}
+{
+    public function __invoke({{ primary_key:type }} ${{ id }}{{ primary_key:uppercase }}): void
+    {
+        {{ class }}AggregateRoot::retrieve(${{ id }}{{ primary_key:uppercase }})
+            ->delete()
+            ->persist();
+    }
+}

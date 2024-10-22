@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Actions;
+
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Deleted;
+use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
+
+class Delete{{ class }}
+{
+    public function __invoke({{ primary_key:type }} ${{ id }}{{ primary_key:uppercase }}): void
+    {
+        event(new {{ class }}Deleted(
+            {{ id }}{{ primary_key:uppercase }}: ${{ id }}{{ primary_key:uppercase }},
+            createdAt: now(),
+        ));
+    }
+}

@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Actions;
+
+use App\{{ domain }}\{{ class }}\{{ class }}AggregateRoot;
+use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
+
+class Update{{ class }}
+{
+    public function __invoke({{ primary_key:type }} ${{ id }}{{ primary_key:uppercase }}, {{ class }}Data ${{ id }}Data): void
+    {
+        {{ class }}AggregateRoot::retrieve(${{ id }}{{ primary_key:uppercase }})
+            ->update(${{ id }}Data)
+            ->persist();
+    }
+}

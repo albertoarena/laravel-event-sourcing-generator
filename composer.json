@@ -1,0 +1,83 @@
+{
+    "name": "albertoarena/laravel-domain-generator",
+    "description": "Laravel domain generator",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Albertoarena\\LaravelDomainGenerator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/",
+            "Workbench\\App\\": "_workbench/app/",
+            "Workbench\\Database\\Factories\\": "_workbench/database/factories/",
+            "Workbench\\Database\\Seeders\\": "_workbench/database/seeders/"
+        }
+    },
+    "authors": [
+        {
+            "role": "Developer",
+            "name": "Alberto Arena",
+            "email": "arena.alberto@gmail.com",
+            "homepage": "https://albertoarena.it/"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "*",
+        "illuminate/support": "*",
+        "nikic/php-parser": "^5.3"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "preferred-install": "dist",
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "require-dev": {
+        "larastan/larastan": "^2.9",
+        "laravel/pint": "^1.1",
+        "orchestra/testbench": "^9.0",
+        "phpstan/phpstan": "^1.8",
+        "phpunit/phpunit": "^11.4"
+    },
+    "scripts": {
+        "test": "@php ./vendor/bin/phpunit --testdox tests",
+        "fix": "@php ./vendor/bin/pint",
+        "check": "@php ./vendor/bin/pint --test -v",
+        "static": "@php ./vendor/bin/phpstan analyse",
+        "all": [
+            "@test",
+            "@fix",
+            "@check",
+            "@static"
+        ],
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ],
+        "lint": [
+            "@php vendor/bin/pint --ansi",
+            "@php vendor/bin/phpstan analyse --verbose --ansi"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": []
+        }
+    }
+}

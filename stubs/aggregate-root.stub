@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }};
+
+use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Created;
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Deleted;
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Updated;
+use Spatie\EventSourcing\AggregateRoots\AggregateRoot;
+
+class {{ class }}AggregateRoot extends AggregateRoot
+{
+    public function create({{ class }}Data ${{ id }}Data): self
+    {
+        $this->recordThat(new {{ class }}Created(
+            {{ id }}{{ primary_key:uppercase }}: $this->uuid(),
+            {{ id }}Data: ${{ id }}Data,
+            createdAt: now(),
+        ));
+
+        return $this;
+    }
+
+    public function update({{ class }}Data ${{ id }}Data): self
+    {
+        $this->recordThat(new {{ class }}Updated(
+            {{ id }}{{ primary_key:uppercase }}: $this->uuid(),
+            {{ id }}Data: ${{ id }}Data,
+            createdAt: now(),
+        ));
+
+        return $this;
+    }
+
+    public function remove(): self
+    {
+        $this->recordThat(new {{ class }}Deleted(
+            {{ id }}{{ primary_key:uppercase }}: $this->uuid(),
+            createdAt: now(),
+        ));
+
+        return $this;
+    }
+}

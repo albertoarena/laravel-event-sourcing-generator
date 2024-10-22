@@ -1,0 +1,63 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Projectors;
+
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Created;
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Deleted;
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Updated;
+use App\{{ domain }}\{{ class }}\Projections\{{ class }};
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Spatie\EventSourcing\EventHandlers\Projectors\Projector;
+
+class {{ class }}Projector extends Projector
+{
+    public function on{{ class }}Created({{ class }}Created $event): void
+    {
+        try {
+            (new {{ class }})->writeable()->create([
+                {% if uuid %}
+                '{{ primary_key }}' => $event->{{ id }}{{ primary_key:uppercase }},
+                {% endif %}
+                {{ arguments:projector }}
+            ]);
+        } catch (Exception $e) {
+            Log::error('Unable to create {{ id }}', [
+                'error' => $e->getMessage(),
+                'event' => $event,
+            ]);
+        }
+    }
+
+    public function on{{ class }}Updated({{ class }}Updated $event): void
+    {
+        try {
+            ${{ id }} = {{ class }}::{{ primary_key }}($event->{{ id }}{{ primary_key:uppercase }});
+
+            ${{ id }}->writeable()->update([
+                {{ arguments:projector }}
+            ]);
+        } catch (Exception $e) {
+            Log::error('Unable to update {{ id }}', [
+                'error' => $e->getMessage(),
+                'event' => $event,
+            ]);
+        }
+    }
+
+    public function on{{ class }}Deleted({{ class }}Deleted $event): void
+    {
+        try {
+            ${{ id }} = {{ class }}::{{ primary_key }}($event->{{ id }}{{ primary_key:uppercase }});
+
+            ${{ id }}->writeable()->delete();
+        } catch (Exception $e) {
+            Log::error('Unable to delete {{ id }}', [
+                'error' => $e->getMessage(),
+                'event' => $event,
+            ]);
+        }
+    }
+}

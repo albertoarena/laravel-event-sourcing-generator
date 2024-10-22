@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Actions;
+
+use App\{{ domain }}\{{ class }}\{{ class }}AggregateRoot;
+use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
+{% if uuid %}
+use Ramsey\Uuid\Uuid;
+{% endif %}
+
+class Create{{ class }}
+{
+    public function __invoke({{ class }}Data ${{ id }}Data): void
+    {
+        {% if uuid %}
+        $uuid = Uuid::uuid4()->toString();
+
+        {{ class }}AggregateRoot::retrieve($uuid)
+            ->create(${{ id }}Data)
+            ->persist();
+        {% endif %}
+    }
+}

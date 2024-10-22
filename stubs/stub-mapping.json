@@ -1,0 +1,87 @@
+{
+  "actions.create.with-aggregate-root": {
+    "stub": "stubs/actions.create.with-aggregate-root",
+    "output": "{{ path }}/Actions/Create{{ name }}.php",
+    "context": {
+      "aggregate_root": true
+    }
+  },
+  "actions.create.without-aggregate-root": {
+    "stub": "stubs/actions.create.without-aggregate-root",
+    "output": "{{ path }}/Actions/Create{{ name }}.php",
+    "context": {
+      "aggregate_root": false,
+      "properties": true
+    }
+  },
+  "actions.delete.with-aggregate-root": {
+    "stub": "stubs/actions.delete.with-aggregate-root",
+    "output": "{{ path }}/Actions/Delete{{ name }}.php",
+    "context": {
+      "aggregate_root": true
+    }
+  },
+  "actions.delete.without-aggregate-root": {
+    "stub": "stubs/actions.delete.without-aggregate-root",
+    "output": "{{ path }}/Actions/Delete{{ name }}.php",
+    "context": {
+      "aggregate_root": false,
+      "properties": true
+    }
+  },
+  "actions.update.with-aggregate-root": {
+    "stub": "stubs/actions.update.with-aggregate-root",
+    "output": "{{ path }}/Actions/Update{{ name }}.php",
+    "context": {
+      "aggregate_root": true
+    }
+  },
+  "actions.update.without-aggregate-root": {
+    "stub": "stubs/actions.update.without-aggregate-root",
+    "output": "{{ path }}/Actions/Update{{ name }}.php",
+    "context": {
+      "aggregate_root": false,
+      "properties": true
+    }
+  },
+  "aggregate-root": {
+    "stub": "stubs/aggregate-root",
+    "output": "{{ path }}/{{ name }}AggregateRoot.php",
+    "context": {
+      "aggregate_root": true
+    }
+  },
+  "data-transfer-object": {
+    "stub": "stubs/data-transfer-object",
+    "output": "{{ path }}/DataTransferObjects/{{ name }}Data.php",
+    "context": {
+      "properties": true
+    }
+  },
+  "events.created": {
+    "stub": "stubs/events.created",
+    "output": "{{ path }}/Events/{{ name }}Created.php"
+  },
+  "events.deleted": {
+    "stub": "stubs/events.deleted",
+    "output": "{{ path }}/Events/{{ name }}Deleted.php"
+  },
+  "events.updated": {
+    "stub": "stubs/events.updated",
+    "output": "{{ path }}/Events/{{ name }}Updated.php"
+  },
+  "projection": {
+    "stub": "stubs/projection",
+    "output": "{{ path }}/Projections/{{ name }}.php",
+    "context": {
+      "properties": true
+    }
+  },
+  "projector": {
+    "stub": "stubs/projector",
+    "output": "{{ path }}/Projectors/{{ name }}Projector.php",
+    "context": {
+      "properties": true
+    }
+  }
+}

@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\DataTransferObjects;
+
+class {{ class }}Data
+{
+    public function __construct(
+        {{ arguments:constructor }}
+    ) {}
+
+    public function toArray(): array
+    {
+        return json_decode(json_encode($this), true);
+    }
+}
