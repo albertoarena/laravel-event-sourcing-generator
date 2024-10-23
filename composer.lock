@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1ac6689224580bc490006275ad537e31",
+    "content-hash": "cd00183852a5eca3f5f2cf0d868cc2e5",
     "packages": [
         {
             "name": "brick/math",
@@ -1056,16 +1056,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v11.28.1",
+            "version": "v11.29.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "3ef5c8a85b4c598d5ffaf98afd72f6a5d6a0be2c"
+                "reference": "425054512c362835ba9c0307561973c8eeac7385"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/3ef5c8a85b4c598d5ffaf98afd72f6a5d6a0be2c",
-                "reference": "3ef5c8a85b4c598d5ffaf98afd72f6a5d6a0be2c",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/425054512c362835ba9c0307561973c8eeac7385",
+                "reference": "425054512c362835ba9c0307561973c8eeac7385",
                 "shasum": ""
             },
             "require": {
@@ -1261,7 +1261,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2024-10-16T16:32:21+00:00"
+            "time": "2024-10-22T14:13:31+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -5733,6 +5733,47 @@
                 "source": "https://github.com/hamcrest/hamcrest-php/tree/v2.0.1"
             },
             "time": "2020-07-09T08:09:16+00:00"
+        },
+        {
+            "name": "jaschilz/php-coverage-badger",
+            "version": "2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/JASchilz/PHPCoverageBadge.git",
+                "reference": "9def6f0c2649dc020849420e633a4819878bac03"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/JASchilz/PHPCoverageBadge/zipball/9def6f0c2649dc020849420e633a4819878bac03",
+                "reference": "9def6f0c2649dc020849420e633a4819878bac03",
+                "shasum": ""
+            },
+            "bin": [
+                "bin/php-coverage-badger"
+            ],
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Marco Pivetta",
+                    "email": "ocramius@gmail.com",
+                    "homepage": "http://ocramius.github.com"
+                },
+                {
+                    "name": "Joseph Schilz",
+                    "email": "joseph@schilz.org",
+                    "homepage": "https://www.schilz.org"
+                }
+            ],
+            "description": "Create a code coverage badge from a PHPUnit Clover XML file.",
+            "homepage": "https://github.com/jaschilz/PhpCoverageBadge",
+            "support": {
+                "source": "https://github.com/JASchilz/PHPCoverageBadge/tree/master"
+            },
+            "time": "2017-07-21T20:03:56+00:00"
         },
         {
             "name": "larastan/larastan",

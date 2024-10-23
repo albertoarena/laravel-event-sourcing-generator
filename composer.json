@@ -10,10 +10,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/",
-            "Workbench\\App\\": "_workbench/app/",
-            "Workbench\\Database\\Factories\\": "_workbench/database/factories/",
-            "Workbench\\Database\\Seeders\\": "_workbench/database/seeders/"
+            "Tests\\": "tests/"
         }
     },
     "authors": [
@@ -41,6 +38,7 @@
         }
     },
     "require-dev": {
+        "jaschilz/php-coverage-badger": "^2.0",
         "larastan/larastan": "^2.9",
         "laravel/pint": "^1.1",
         "orchestra/testbench": "^9.0",
@@ -62,17 +60,14 @@
             "@clear",
             "@prepare"
         ],
-        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
-        "prepare": "@php vendor/bin/testbench package:discover --ansi",
-        "build": "@php vendor/bin/testbench workbench:build --ansi",
-        "serve": [
-            "Composer\\Config::disableProcessTimeout",
-            "@build",
-            "@php vendor/bin/testbench serve --ansi"
-        ],
         "lint": [
             "@php vendor/bin/pint --ansi",
             "@php vendor/bin/phpstan analyse --verbose --ansi"
+        ],
+        "test-coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "@php ./vendor/bin/phpunit --coverage-html reports/ --coverage-clover clover.xml --process-isolation tests",
+            "@php ./vendor/bin/php-coverage-badger clover.xml coverage.svg"
         ]
     },
     "extra": {

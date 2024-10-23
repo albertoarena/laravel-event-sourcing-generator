@@ -25,4 +25,9 @@ Homestead.json
 .docs
 .idea
 
+# Unit tests
 .phpunit.cache/
+
+# Coverage
+reports
+clover.xml
