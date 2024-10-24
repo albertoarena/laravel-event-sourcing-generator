@@ -1,10 +1,10 @@
-# Laravel domain generator
+# Laravel event sourcing generator
 
 ![build-test](coverage.svg)
 
 ## About
 
-Laravel domain generator adds a new command that can generate a full domain directory structure
+Laravel event sourcing generator adds a new command that can generate a full domain directory structure
 for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
 
 ```shell
