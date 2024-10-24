@@ -84,7 +84,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -129,7 +129,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -212,7 +212,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -258,7 +258,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -304,7 +304,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -350,7 +350,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -396,7 +396,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -442,7 +442,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'no'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -489,7 +489,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -539,7 +539,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -585,7 +585,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
-                    ['Model properties', implode(',', Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -665,7 +665,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
-                    ['Model properties', implode(',', $expectedPrintedProperties)],
+                    ['Model properties', implode("\n", $expectedPrintedProperties)],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
@@ -716,7 +716,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
-                    ['Model properties', implode(',', $expectedPrintedProperties)],
+                    ['Model properties', implode("\n", $expectedPrintedProperties)],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')

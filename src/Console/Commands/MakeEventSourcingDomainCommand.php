@@ -246,7 +246,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 [
                     'Model properties',
                     $modelProperties ?
-                        implode(',', Arr::map(
+                        implode("\n", Arr::map(
                             $modelProperties,
                             function (MigrationCreateProperty $property) {
                                 $type = $this->columnTypeToBuiltInType($property->type);

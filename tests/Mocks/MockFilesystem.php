@@ -6,8 +6,6 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 
 class MockFilesystem implements Filesystem
 {
-    protected static array $mockDisk = [];
-
     public function delete($paths): bool
     {
         return false;
