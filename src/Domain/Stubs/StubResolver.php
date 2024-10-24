@@ -1,6 +1,6 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\Stubs;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;

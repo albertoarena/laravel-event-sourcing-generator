@@ -1,9 +1,9 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Helpers;
+namespace Albertoarena\LaravelEventSourcingGenerator\Helpers;
 
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\MigrationParser;
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\MigrationParser;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;

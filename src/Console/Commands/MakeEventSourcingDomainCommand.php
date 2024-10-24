@@ -1,14 +1,14 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Console\Commands;
+namespace Albertoarena\LaravelEventSourcingGenerator\Console\Commands;
 
-use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
-use Albertoarena\LaravelDomainGenerator\Domain\Stubs\Models\StubCallback;
-use Albertoarena\LaravelDomainGenerator\Domain\Stubs\StubReplacer;
-use Albertoarena\LaravelDomainGenerator\Domain\Stubs\Stubs;
-use Albertoarena\LaravelDomainGenerator\Helpers\ParseMigration;
-use Albertoarena\LaravelDomainGenerator\Models\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Models\StubCallback;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Stubs;
+use Albertoarena\LaravelEventSourcingGenerator\Helpers\ParseMigration;
 use Exception;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;

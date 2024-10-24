@@ -2,7 +2,7 @@
 
 namespace Tests\Concerns;
 
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\MigrationParser;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\MigrationParser;
 use Exception;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;

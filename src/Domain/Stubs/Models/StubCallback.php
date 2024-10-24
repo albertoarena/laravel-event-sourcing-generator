@@ -1,6 +1,6 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\Stubs\Models;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Models;
 
 use Closure;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;

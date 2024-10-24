@@ -2,10 +2,10 @@
 
 namespace Tests\Concerns;
 
-use Albertoarena\LaravelDomainGenerator\Domain\Stubs\StubReplacer;
-use Albertoarena\LaravelDomainGenerator\Domain\Stubs\StubResolver;
-use Albertoarena\LaravelDomainGenerator\Helpers\ParseMigration;
-use Albertoarena\LaravelDomainGenerator\Models\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubResolver;
+use Albertoarena\LaravelEventSourcingGenerator\Helpers\ParseMigration;
 use Exception;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;

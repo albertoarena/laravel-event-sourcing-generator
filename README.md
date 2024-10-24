@@ -34,7 +34,7 @@ composer config prefer-stable false
 ### Install
 
 ```shell
-composer require albertoarena/laravel-domain-generator
+composer require albertoarena/laravel-event-sourcing-generator
 ```
 
 ## Usage

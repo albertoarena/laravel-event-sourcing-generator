@@ -1,10 +1,10 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\Stubs;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs;
 
-use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
-use Albertoarena\LaravelDomainGenerator\Models\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;

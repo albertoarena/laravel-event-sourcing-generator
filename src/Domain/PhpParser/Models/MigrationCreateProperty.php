@@ -1,8 +1,8 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
-use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
 use Illuminate\Support\Arr;
 use PhpParser\Node;
 
@@ -19,15 +19,6 @@ class MigrationCreateProperty
             $this->name = $this->type;
             $this->type = $this->columnTypeToBuiltInType($this->type);
         }
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'name' => $this->name,
-            'type' => $this->type,
-            'nullable' => $this->nullable,
-        ];
     }
 
     protected static function exprMethodCallToTypeArgs(Node\Expr\MethodCall $expr, bool $nullable = false): array

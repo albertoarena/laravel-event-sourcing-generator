@@ -1,8 +1,8 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Providers;
+namespace Albertoarena\LaravelEventSourcingGenerator\Providers;
 
-use Albertoarena\LaravelDomainGenerator\Console\Commands\MakeEventSourcingDomainCommand;
+use Albertoarena\LaravelEventSourcingGenerator\Console\Commands\MakeEventSourcingDomainCommand;
 use Illuminate\Support\ServiceProvider;
 
 final class PackageServiceProvider extends ServiceProvider

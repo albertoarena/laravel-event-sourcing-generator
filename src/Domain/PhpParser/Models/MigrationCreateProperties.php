@@ -1,6 +1,6 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;

@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use Albertoarena\LaravelDomainGenerator\Providers\PackageServiceProvider;
+use Albertoarena\LaravelEventSourcingGenerator\Providers\PackageServiceProvider;
 use Illuminate\Support\Facades\File;
 use Mockery;
 use Orchestra\Testbench\Concerns\WithWorkbench;

@@ -1,9 +1,9 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Traversers;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers;
 
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 

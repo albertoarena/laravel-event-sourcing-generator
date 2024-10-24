@@ -1,11 +1,11 @@
 {
-    "name": "albertoarena/laravel-domain-generator",
-    "description": "Laravel domain generator",
+    "name": "albertoarena/laravel-event-sourcing-generator",
+    "description": "Laravel event sourcing domain generator",
     "type": "library",
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Albertoarena\\LaravelDomainGenerator\\": "src/"
+            "Albertoarena\\LaravelEventSourcingGenerator\\": "src/"
         }
     },
     "autoload-dev": {

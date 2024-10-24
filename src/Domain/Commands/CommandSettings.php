@@ -1,8 +1,8 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Models;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Commands;
 
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperties;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperties;
 use Illuminate\Support\Str;
 
 class CommandSettings

@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Console\Commands;
 
-use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
@@ -26,7 +26,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
 
     protected function hideSpatiePackage(): void
     {
-        PHPMockery::mock('Albertoarena\LaravelDomainGenerator\Console\Commands', 'class_exists')
+        PHPMockery::mock('Albertoarena\LaravelEventSourcingGenerator\Console\Commands', 'class_exists')
             ->andReturnUsing(function ($class) {
                 return ! ($class === EventSourcingServiceProvider::class) && class_exists($class);
             });

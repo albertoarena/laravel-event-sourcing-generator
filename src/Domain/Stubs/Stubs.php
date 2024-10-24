@@ -1,8 +1,8 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\Stubs;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs;
 
-use Albertoarena\LaravelDomainGenerator\Domain\Stubs\Models\StubCallback;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Models\StubCallback;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\File;

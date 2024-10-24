@@ -1,6 +1,6 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Contracts;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Contracts;
 
 interface BlueprintUnsupportedInterface
 {

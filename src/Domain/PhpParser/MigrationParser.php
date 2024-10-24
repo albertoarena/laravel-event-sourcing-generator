@@ -1,10 +1,10 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\PhpParser;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser;
 
-use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Traversers\BlueprintClassCreateSchemaNodeVisitor;
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Traversers\BlueprintClassNodeVisitor;
+use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers\BlueprintClassCreateSchemaNodeVisitor;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers\BlueprintClassNodeVisitor;
 use Exception;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;

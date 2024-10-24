@@ -1,9 +1,9 @@
 <?php
 
-namespace Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Traversers;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers;
 
-use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
-use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
+use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use PhpParser\Node;
