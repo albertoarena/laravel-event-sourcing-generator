@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\{{ domain }}\{{ class }}\DataTransferObjects;
 
+{% if useCarbon %}
+use Illuminate\Support\Carbon;
+{% endif %}
+
 class {{ class }}Data
 {
     public function __construct(
-        {{ arguments:constructor }}
+        {{ properties:data-transfer-object:constructor }}
     ) {}
 
     public function toArray(): array

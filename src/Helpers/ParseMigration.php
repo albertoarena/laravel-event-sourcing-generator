@@ -5,6 +5,7 @@ namespace Albertoarena\LaravelDomainGenerator\Helpers;
 use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\MigrationParser;
 use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 
 class ParseMigration
@@ -52,7 +53,11 @@ class ParseMigration
     {
         $this->properties = (new MigrationParser($this->getMigration()))->parse()->getProperties();
 
-        $this->primary = $this->properties[0]->name;
+        $primary = Arr::where($this->properties, function (MigrationCreateProperty $property) {
+            return $property->name === 'id' || $property->name === 'uuid';
+        })[0] ?? Arr::first($this->properties);
+
+        $this->primary = $primary->name;
     }
 
     public function primary(): ?string

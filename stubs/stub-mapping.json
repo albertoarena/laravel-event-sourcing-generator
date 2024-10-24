@@ -83,5 +83,13 @@
     "context": {
       "properties": true
     }
+  },
+  "reactor": {
+    "stub": "stubs/reactor",
+    "output": "{{ path }}/Reactors/{{ name }}Reactor.php",
+    "context": {
+      "properties": true,
+      "reactor": true
+    }
   }
 }

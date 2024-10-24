@@ -15,16 +15,18 @@ trait AssertsDomainGenerated
     protected function getExpectedFiles(
         string $domain,
         string $domainBaseRoot,
-        bool $aggregateRootClass
+        bool $createAggregateRoot,
+        bool $createReactor,
     ): array {
+        $unexpectedFiles = [];
         $expectedFiles = [
-            "$domainBaseRoot/$domain/Actions/Create$domain.php" => $aggregateRootClass ?
+            "$domainBaseRoot/$domain/Actions/Create$domain.php" => $createAggregateRoot ?
                 'actions.create.with-aggregate-root.stub' :
                 'actions.create.without-aggregate-root.stub',
-            "$domainBaseRoot/$domain/Actions/Delete$domain.php" => $aggregateRootClass ?
+            "$domainBaseRoot/$domain/Actions/Delete$domain.php" => $createAggregateRoot ?
                 'actions.delete.with-aggregate-root.stub' :
                 'actions.delete.without-aggregate-root.stub',
-            "$domainBaseRoot/$domain/Actions/Update$domain.php" => $aggregateRootClass ?
+            "$domainBaseRoot/$domain/Actions/Update$domain.php" => $createAggregateRoot ?
                 'actions.update.with-aggregate-root.stub' :
                 'actions.update.without-aggregate-root.stub',
             "$domainBaseRoot/$domain/DataTransferObjects/{$domain}Data.php" => 'data-transfer-object.stub',
@@ -34,11 +36,21 @@ trait AssertsDomainGenerated
             "$domainBaseRoot/$domain/Projections/{$domain}.php" => 'projection.stub',
             "$domainBaseRoot/$domain/Projectors/{$domain}Projector.php" => 'projector.stub',
         ];
-        if ($aggregateRootClass) {
+        if ($createAggregateRoot) {
             $expectedFiles["$domainBaseRoot/$domain/{$domain}AggregateRoot.php"] = 'aggregate-root.stub';
+        } else {
+            $unexpectedFiles["$domainBaseRoot/$domain/{$domain}AggregateRoot.php"] = 'aggregate-root.stub';
+        }
+        if ($createReactor) {
+            $expectedFiles["$domainBaseRoot/$domain/Reactors/{$domain}Reactor.php"] = 'reactor.stub';
+        } else {
+            $unexpectedFiles["$domainBaseRoot/$domain/Reactors/{$domain}Reactor.php"] = 'reactor.stub';
         }
 
-        return $expectedFiles;
+        return [
+            $expectedFiles,
+            $unexpectedFiles,
+        ];
     }
 
     protected function assertDomainGenerated(
@@ -46,6 +58,7 @@ trait AssertsDomainGenerated
         string $domainBaseRoot = 'Domain',
         ?string $migration = null,
         bool $createAggregateRoot = true,
+        bool $createReactor = true,
         bool $useUuid = true,
         array $modelProperties = [],
         int $indentation = 4,
@@ -54,7 +67,7 @@ trait AssertsDomainGenerated
             $createAggregateRoot = false;
         }
 
-        $expectedFiles = $this->getExpectedFiles($domain, $domainBaseRoot, $createAggregateRoot);
+        [$expectedFiles, $unexpectedFiles] = $this->getExpectedFiles($domain, $domainBaseRoot, $createAggregateRoot, $createReactor);
 
         // Assert that the files were created
         foreach (array_keys($expectedFiles) as $generatedFile) {
@@ -69,21 +82,25 @@ trait AssertsDomainGenerated
             }
         }
 
-        // Create stub replacer
-        $stubReplacer = new StubReplacer(new CommandSettings(
+        // Create settings
+        $settings = new CommandSettings(
             nameInput: $domain,
             domainBaseRoot: $domainBaseRoot,
             migration: '',
             createAggregateRoot: $createAggregateRoot,
+            createReactor: $createReactor,
             indentation: $indentation,
             useUuid: $useUuid,
             domainName: $domain,
             domainId: Str::lcfirst(Str::camel($domain)),
             domainPath: '',
-            modelProperties: $modelProperties,
-        ));
+        );
+        $settings->modelProperties->import($modelProperties);
 
-        // Assert file content
+        // Create stub replacer
+        $stubReplacer = new StubReplacer($settings);
+
+        // Assert content of files that must have been generated
         foreach ($expectedFiles as $generatedFile => $stubFile) {
             // Resolve stub
             [$stubFileResolved] = (new StubResolver('stubs/'.$stubFile, ''))
@@ -121,6 +138,11 @@ trait AssertsDomainGenerated
                     $this->assertDoesNotMatchRegularExpression("/'id' => \\\$event->{$stubReplacer->settings->domainId}Id/", $generated);
                 }
             }
+        }
+
+        // Assert files that must not exist
+        foreach (array_keys($unexpectedFiles) as $generatedFile) {
+            $this->assertFalse(File::exists(app_path($generatedFile)));
         }
     }
 }

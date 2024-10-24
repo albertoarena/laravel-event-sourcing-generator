@@ -3,6 +3,7 @@
 namespace Albertoarena\LaravelDomainGenerator\Domain\Stubs;
 
 use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelDomainGenerator\Models\CommandSettings;
 use Closure;
 use Illuminate\Support\Arr;
@@ -12,9 +13,27 @@ class StubReplacer
 {
     use HasBlueprintColumnType;
 
+    /** @var MigrationCreateProperty[] */
+    protected array $modelProperties;
+
     public function __construct(
-        public CommandSettings $settings,
-    ) {}
+        public CommandSettings &$settings,
+    ) {
+        $this->modelProperties = [];
+    }
+
+    protected function getModelProperties(): array
+    {
+        if (! $this->modelProperties) {
+            /** @var MigrationCreateProperty $property */
+            foreach ($this->settings->modelProperties->withoutReservedFields()->toArray() as $property) {
+                $this->modelProperties[$property->name] = $property;
+            }
+        }
+        //        dd($this->settings->modelProperties->withoutReservedFields());
+
+        return $this->modelProperties;
+    }
 
     protected function getSearch(...$patterns): array
     {
@@ -34,7 +53,8 @@ class StubReplacer
 
     protected function getIndentSpace(int $tabs): string
     {
-        return Str::repeat($this->settings->indentSpace, $tabs);
+        // Use always default indentation.
+        return Str::repeat('    ', $tabs);
     }
 
     protected function replaceDomain(&$stub): self
@@ -45,29 +65,25 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceConstructorArguments(&$stub): self
+    protected function replaceConstructorProperties(&$stub): self
     {
         $indentSpace2 = $this->getIndentSpace(2);
 
-        $preparedArguments = Arr::map(
-            Arr::except($this->settings->modelProperties, ['timestamps']),
-            function ($type, $name) {
-                $type = $this->columnTypeToType($type);
+        $preparedProperties = Arr::map(
+            $this->getModelProperties(),
+            function (MigrationCreateProperty $property) {
+                $type = $this->columnTypeToBuiltInType($property->type);
+                $type = $this->normaliseCarbon($type);
+                $nullable = $property->nullable ? '?' : '';
 
-                return "public $type \$$name";
+                return "public $nullable$type \$$property->name";
             }
         );
+        $preparedProperties = implode(",\n$indentSpace2", $preparedProperties);
+        $this->replaceWithClosure($stub, 'properties:data-transfer-object:constructor', fn () => $preparedProperties);
 
-        foreach ($this->getSearch('arguments:constructor') as $search) {
-            $stub = str_replace(
-                $search,
-                [implode(",\n$indentSpace2", $preparedArguments)],
-                $stub
-            );
-        }
-
-        // Normalise empty constructor if no arguments
-        if (! $preparedArguments) {
+        // Normalise empty constructor if no properties
+        if (! $preparedProperties) {
             $stub = preg_replace(
                 '/public function __construct\(\n\s*\) {}/',
                 "public function __construct(\n$indentSpace2// Add here public properties, e.g.:\n$indentSpace2// public string \$name\n{$this->settings->indentSpace}) {}",
@@ -77,91 +93,78 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceModelFillableArguments(&$stub): self
+    protected function replaceProjectionFillableProperties(&$stub): self
     {
         $indentSpace2 = $this->getIndentSpace(2);
 
-        $preparedArguments = Arr::map(
-            array_merge(
-                [
-                    $this->settings->primaryKey(),
-                ],
-                array_keys(Arr::except($this->settings->modelProperties, ['timestamps']))
-            ),
-            fn ($property) => "'$property',"
-        );
+        // Inject primary key
+        $properties = $this->getModelProperties();
+        array_unshift($properties, new MigrationCreateProperty($this->settings->primaryKey(), 'string'));
 
-        foreach ($this->getSearch('arguments:model:fillable') as $search) {
-            $stub = str_replace(
-                $search,
-                [implode("\n$indentSpace2", $preparedArguments)],
-                $stub
-            );
-        }
+        $preparedProperties = Arr::map($properties, fn (MigrationCreateProperty $property) => "'$property->name',");
+        $preparedProperties = implode("\n$indentSpace2", $preparedProperties);
+
+        $this->replaceWithClosure($stub, 'properties:projection:fillable', fn () => $preparedProperties);
 
         return $this;
     }
 
-    protected function replaceModelCastArguments(&$stub): self
+    protected function replaceProjectionCastProperties(&$stub): self
     {
         $indentSpace2 = $this->getIndentSpace(2);
 
-        $preparedArguments = array_merge(
+        $preparedProperties = array_merge(
             [$this->settings->useUuid ? "'uuid' => 'string'," : "'id' => 'int',"],
             Arr::map(
-                Arr::except($this->settings->modelProperties, ['timestamps', 'uuid']),
-                function ($type, $name) {
-                    if ($type === 'Carbon') {
-                        $type = 'date:Y-m-d H:i:s';
-                    }
+                $this->getModelProperties(),
+                function (MigrationCreateProperty $property) {
+                    $type = $this->columnTypeToBuiltInType($property->type);
+                    $type = $this->carbonToBuiltInType($type);
 
-                    return "'$name' => '$type',";
+                    return "'$property->name' => '$type',";
                 })
         );
+        $preparedProperties = implode("\n$indentSpace2", $preparedProperties);
 
-        foreach ($this->getSearch('arguments:model:cast') as $search) {
-            $stub = str_replace(
-                $search,
-                [implode("\n$indentSpace2", $preparedArguments)],
-                $stub
-            );
-        }
+        $this->replaceWithClosure($stub, 'properties:projection:cast', fn () => $preparedProperties);
 
         return $this;
     }
 
-    protected function replaceProjectionArguments(&$stub): self
+    protected function replaceProjectionPhpDocProperties(&$stub): self
     {
-        $preparedArguments = Arr::map(
-            Arr::except($this->settings->modelProperties, ['timestamps', 'uuid']),
-            function ($type, $name) {
-                $type = $this->columnTypeToType($type);
+        $preparedProperties = Arr::map(
+            $this->getModelProperties(),
+            function (MigrationCreateProperty $property) {
+                $type = $this->columnTypeToBuiltInType($property->type);
+                $type = $this->normaliseCarbon($type);
+                $nullable = $property->nullable ? '|null' : '';
 
-                return " * @property $type \$$name";
+                return " * @property $type$nullable \$$property->name";
             }
         );
-        $preparedArguments = implode("\n", $preparedArguments);
+        $preparedProperties = implode("\n", $preparedProperties);
 
-        $this->replaceWithClosure($stub, 'arguments:projection', fn () => $preparedArguments);
+        $this->replaceWithClosure($stub, 'properties:projection:phpdoc', fn () => $preparedProperties);
 
         return $this;
     }
 
-    protected function replaceProjectorArguments(&$stub): self
+    protected function replaceProjectorProperties(&$stub): self
     {
         $indentSpace4 = $this->getIndentSpace(4);
 
         $domainId = $this->settings->domainId;
 
-        $preparedArguments = Arr::map(
-            Arr::except($this->settings->modelProperties, ['timestamps', 'uuid']),
-            fn ($type, $name) => "'$name' => \$event->{$domainId}Data->$name,"
+        $preparedProperties = Arr::map(
+            $this->getModelProperties(),
+            fn (MigrationCreateProperty $property) => "'$property->name' => \$event->{$domainId}Data->$property->name,"
         );
 
-        foreach ($this->getSearch('arguments:projector') as $search) {
+        foreach ($this->getSearch('properties:projector') as $search) {
             $stub = str_replace(
                 $search,
-                [implode("\n$indentSpace4", $preparedArguments)],
+                [implode("\n$indentSpace4", $preparedProperties)],
                 $stub
             );
         }
@@ -185,33 +188,33 @@ class StubReplacer
 
     protected function replaceIfBlocks(&$stub): self
     {
+        $ifBlockConditions = [
+            '{% if uuid %}' => ! $this->settings->useUuid,
+            '{% if !uuid %}' => $this->settings->useUuid,
+            '{% if useCarbon %}' => ! $this->settings->useCarbon,
+            '{% endif %}' => false,
+        ];
+
         $stub2 = explode("\n", $stub);
-        $removing = false;
+        $isRemoving = false;
         foreach ($stub2 as $index => $line) {
             $removeThis = false;
             $line = trim($line);
-            if ($line === '{% if uuid %}') {
-                $removing = ! $this->settings->useUuid;
-                $removeThis = true;
-            } elseif ($line === '{% if !uuid %}') {
-                $removing = $this->settings->useUuid;
-                $removeThis = true;
-            } elseif ($line === '{% if useCarbon %}') {
-                $removing = ! $this->settings->useCarbon;
-                $removeThis = true;
-            } elseif ($line === '{% endif %}') {
-                $removing = false;
+
+            if (isset($ifBlockConditions[$line])) {
+                $isRemoving = $ifBlockConditions[$line];
                 $removeThis = true;
             }
-            if ($removing || $removeThis) {
+            if ($isRemoving || $removeThis) {
                 unset($stub2[$index]);
             }
         }
 
         $stub = implode("\n", $stub2);
 
+        // Fix any remaining block
         $stub = Str::replaceMatches(
-            ['/\s*\{% if uuid %}/', '/\s*\{% if !uuid %}/', '/\s*\{% if useCarbon %}/', '/\s*\{% endif %}/'],
+            Arr::map(array_keys($ifBlockConditions), fn ($condition) => "/\s*\$condition/"),
             ["\n", "\n", "\n", ''],
             $stub
         );
@@ -219,16 +222,28 @@ class StubReplacer
         return $this;
     }
 
+    protected function replaceIndentation(&$stub): self
+    {
+        $defaultIndentation = Str::repeat(' ', 4);
+        $currentIndentation = $this->settings->indentSpace;
+        if ($defaultIndentation !== $currentIndentation) {
+            $stub = Str::replace($defaultIndentation, $currentIndentation, $stub);
+        }
+
+        return $this;
+    }
+
     public function replace(&$stub): self
     {
         return $this->replaceDomain($stub)
-            ->replaceConstructorArguments($stub)
-            ->replaceModelFillableArguments($stub)
-            ->replaceModelCastArguments($stub)
-            ->replaceProjectionArguments($stub)
-            ->replaceProjectorArguments($stub)
+            ->replaceConstructorProperties($stub)
+            ->replaceProjectionFillableProperties($stub)
+            ->replaceProjectionCastProperties($stub)
+            ->replaceProjectionPhpDocProperties($stub)
+            ->replaceProjectorProperties($stub)
             ->replacePrimaryKey($stub)
-            ->replaceIfBlocks($stub);
+            ->replaceIfBlocks($stub)
+            ->replaceIndentation($stub);
     }
 
     public function replaceWithClosure(&$stub, string $searchPattern, Closure $closure): self

@@ -2,6 +2,7 @@
 
 namespace Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Traversers;
 
+use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
@@ -19,7 +20,11 @@ class BlueprintClassCreateSchemaNodeVisitor extends NodeVisitorAbstract
         }
 
         if ($node->expr instanceof Node\Expr\MethodCall) {
-            $this->properties[] = MigrationCreateProperty::createFromExprMethodCall($node->expr);
+            $property = MigrationCreateProperty::createFromExprMethodCall($node->expr);
+            if (! in_array($property->type, BlueprintUnsupportedInterface::SKIPPED_METHODS) &&
+                ! in_array($property->type, BlueprintUnsupportedInterface::UNSUPPORTED_COLUMN_TYPES)) {
+                $this->properties[$property->name] = $property;
+            }
         }
 
         return $node;

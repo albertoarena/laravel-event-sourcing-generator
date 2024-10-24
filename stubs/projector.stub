@@ -21,7 +21,7 @@ class {{ class }}Projector extends Projector
                 {% if uuid %}
                 '{{ primary_key }}' => $event->{{ id }}{{ primary_key:uppercase }},
                 {% endif %}
-                {{ arguments:projector }}
+                {{ properties:projector }}
             ]);
         } catch (Exception $e) {
             Log::error('Unable to create {{ id }}', [
@@ -37,7 +37,7 @@ class {{ class }}Projector extends Projector
             ${{ id }} = {{ class }}::{{ primary_key }}($event->{{ id }}{{ primary_key:uppercase }});
 
             ${{ id }}->writeable()->update([
-                {{ arguments:projector }}
+                {{ properties:projector }}
             ]);
         } catch (Exception $e) {
             Log::error('Unable to update {{ id }}', [

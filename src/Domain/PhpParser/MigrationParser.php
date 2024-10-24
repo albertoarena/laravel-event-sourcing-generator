@@ -19,14 +19,14 @@ class MigrationParser
 
     protected array $injectProperties;
 
-    protected string $injectPrimaryKey;
+    protected array $options;
 
     public function __construct(
         protected ?string $migrationContent,
     ) {
         $this->properties = [];
-        $this->injectPrimaryKey = '';
         $this->injectProperties = [];
+        $this->options = [];
     }
 
     protected function getBlueprintCreateSchemaTraverser(): NodeTraverser
@@ -45,8 +45,8 @@ class MigrationParser
         $mainTraverser->addVisitor(
             new BlueprintClassNodeVisitor(
                 $this->getBlueprintCreateSchemaTraverser(),
-                $this->injectPrimaryKey,
-                $this->injectProperties
+                $this->injectProperties,
+                $this->options
             )
         );
 
@@ -79,12 +79,17 @@ class MigrationParser
     }
 
     /**
+     * WARNING!!
+     * This is not intended to be used in production but only for test purposes.
+     * It will modify the original migration.
+     *
      * @throws Exception
      */
-    public function injectProperties(array $properties, string $primaryKey): string
+    public function modify(array $injectProperties, array $options): string
     {
-        $this->injectPrimaryKey = $primaryKey;
-        $this->injectProperties = $properties;
+        $this->injectProperties = $injectProperties;
+        $this->options = $options;
+
         $statements = $this->getStatements();
 
         $this->getBlueprintClassTraverser()->traverse($statements);
@@ -96,6 +101,6 @@ class MigrationParser
 
     public function getProperties(): array
     {
-        return $this->properties;
+        return array_values($this->properties);
     }
 }

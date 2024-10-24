@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\{{ domain }}\{{ class }}\Reactors;
+
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Created;
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Deleted;
+use App\{{ domain }}\{{ class }}\Events\{{ class }}Updated;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Spatie\EventSourcing\EventHandlers\Reactors\Reactor;
+
+class {{ class }}Reactor extends Reactor implements ShouldQueue
+{
+    public function on{{ class }}Created({{ class }}Created $event)
+    {
+        // @todo Do something
+    }
+
+    public function on{{ class }}Updated({{ class }}Updated $event)
+    {
+        // @todo Do something
+    }
+
+    public function on{{ class }}Deleted({{ class }}Deleted $event)
+    {
+        // @todo Do something
+    }
+}

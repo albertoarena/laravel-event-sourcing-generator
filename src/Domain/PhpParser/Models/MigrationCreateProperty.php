@@ -13,10 +13,11 @@ class MigrationCreateProperty
     public function __construct(
         public string $name,
         public string $type,
+        public bool $nullable = false,
     ) {
         if (! $this->name) {
             $this->name = $this->type;
-            $this->type = $this->columnNameToType($this->type);
+            $this->type = $this->columnTypeToBuiltInType($this->type);
         }
     }
 
@@ -25,13 +26,25 @@ class MigrationCreateProperty
         return [
             'name' => $this->name,
             'type' => $this->type,
+            'nullable' => $this->nullable,
         ];
+    }
+
+    protected static function exprMethodCallToTypeArgs(Node\Expr\MethodCall $expr, bool $nullable = false): array
+    {
+        if ($expr->var instanceof Node\Expr\MethodCall) {
+            return self::exprMethodCallToTypeArgs($expr->var, $expr->name->name === 'nullable');
+        }
+
+        $type = $expr->name->name;
+        $args = Arr::map($expr->args ?? [], fn (Node\Arg $arg) => $arg->value instanceof Node\Scalar\String_ ? $arg->value->value : null);
+
+        return [$type, $args, $nullable];
     }
 
     public static function createFromExprMethodCall(Node\Expr\MethodCall $expr): self
     {
-        $type = $expr->name->name;
-        $args = Arr::map($expr->args ?? [], fn (Node\Arg $arg) => $arg->value instanceof Node\Scalar\String_ ? $arg->value->value : null);
+        [$type, $args, $nullable] = self::exprMethodCallToTypeArgs($expr);
 
         if (! $args) {
             $name = '';
@@ -39,6 +52,6 @@ class MigrationCreateProperty
             $name = $args[0];
         }
 
-        return new self($name, $type);
+        return new self($name, $type, $nullable);
     }
 }

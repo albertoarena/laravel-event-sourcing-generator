@@ -3,6 +3,7 @@
 namespace Albertoarena\LaravelDomainGenerator\Console\Commands;
 
 use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelDomainGenerator\Domain\Stubs\Models\StubCallback;
 use Albertoarena\LaravelDomainGenerator\Domain\Stubs\StubReplacer;
 use Albertoarena\LaravelDomainGenerator\Domain\Stubs\Stubs;
@@ -14,8 +15,9 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Symfony\Component\Finder\SplFileInfo;
 
-class DomainMakeCommand extends GeneratorCommand
+class MakeEventSourcingDomainCommand extends GeneratorCommand
 {
     use HasBlueprintColumnType;
 
@@ -26,11 +28,12 @@ class DomainMakeCommand extends GeneratorCommand
     /**
      * @var string
      */
-    protected $signature = 'make:event-domain 
+    protected $signature = 'make:event-sourcing-domain 
                             {name : Name of domain}
                             {--d|domain=Domain : Domain base root}
                             {--m|migration= : Existing migration for the model, with or without timestamp prefix}
                             {--aggregate_root= : Create aggregate root}
+                            {--r|reactor= : Create reactor}
                             {--indentation=4 : Indentation spaces}';
 
     /**
@@ -43,6 +46,13 @@ class DomainMakeCommand extends GeneratorCommand
      */
     protected $type = 'Domain';
 
+    protected function promptForMissingArgumentsUsing(): array
+    {
+        return [
+            'name' => 'Which domain you want to create?',
+        ];
+    }
+
     protected function resolveStubPath($stub): string
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
@@ -52,7 +62,10 @@ class DomainMakeCommand extends GeneratorCommand
 
     protected function getDatabaseMigrations(): array
     {
-        return File::files($this->laravel->basePath('database/migrations'));
+        return Arr::map(
+            File::files($this->laravel->basePath('database/migrations')),
+            fn (SplFileInfo $path) => $path->getRelativePathname()
+        );
     }
 
     protected function getStub(): string
@@ -112,7 +125,7 @@ class DomainMakeCommand extends GeneratorCommand
                 // Load migration
                 $migration = (new ParseMigration($this->settings->migration));
                 foreach ($migration->properties() as $property) {
-                    $this->settings->modelProperties[$property->name] = $property->type;
+                    $this->settings->modelProperties->add($property);
                     if ($property->type === 'Carbon') {
                         $this->settings->useCarbon = true;
                     }
@@ -123,24 +136,27 @@ class DomainMakeCommand extends GeneratorCommand
                 throw new Exception('Migration file does not exist');
             }
         } else {
-            $this->askProperties();
+            if ($this->confirm('Do you want to specify model properties?')) {
+                while (true) {
+                    $name = $this->ask('Property name? (exit to quit)');
+                    if ($name === 'exit') {
+                        break;
+                    }
+                    $type = $this->ask('Property type (e.g. string, int, boolean)?');
+                    $this->settings->modelProperties->add(new MigrationCreateProperty(
+                        name: $name,
+                        type: $type,
+                    ));
+                }
+            }
 
             $this->settings->useUuid = $this->confirm('Do you want to use uuid as model primary key?', true);
         }
     }
 
-    protected function askProperties(): void
+    protected function checkSpatieEventSourcing(): bool
     {
-        if ($this->confirm('Do you want to specify model properties?')) {
-            while (true) {
-                $name = $this->ask('Property name (exit to quit)?');
-                if ($name === 'exit') {
-                    break;
-                }
-                $type = $this->ask('Property type (e.g. string, int, boolean)?');
-                $this->settings->modelProperties[$name] = $type;
-            }
-        }
+        return class_exists('Spatie\EventSourcing\EventSourcingServiceProvider');
     }
 
     /**
@@ -153,6 +169,7 @@ class DomainMakeCommand extends GeneratorCommand
             domainBaseRoot: Str::ucfirst($this->option('domain')),
             migration: $this->option('migration'),
             createAggregateRoot: ! is_null($this->option('aggregate_root')) ? (bool) $this->option('aggregate_root') : null,
+            createReactor: ! is_null($this->option('reactor')) ? (bool) $this->option('reactor') : null,
             indentation: (int) $this->option('indentation'),
             useUuid: false
         );
@@ -160,7 +177,7 @@ class DomainMakeCommand extends GeneratorCommand
         $this->stubReplacer = new StubReplacer($this->settings);
 
         // Check if Spatie event-sourcing package has been installed
-        if (! class_exists('Spatie\EventSourcing\EventSourcingServiceProvider')) {
+        if (! $this->checkSpatieEventSourcing()) {
             $this->components->error('Spatie Event Sourcing package has not been installed. Run what follows:');
             $this->components->error('composer require spatie/laravel-event-sourcing');
 
@@ -201,6 +218,10 @@ class DomainMakeCommand extends GeneratorCommand
             $this->settings->createAggregateRoot = $this->confirm('Do you want to create an AggregateRoot class?', true);
         }
 
+        if (is_null($this->settings->createReactor)) {
+            $this->settings->createReactor = $this->confirm('Do you want to create a Reactor class?', true);
+        }
+
         $this->settings->domainName = $this->qualifyDomain($this->settings->nameInput);
         $this->settings->domainId = Str::lcfirst(Str::camel($this->settings->nameInput));
         $this->settings->domainPath = $this->getDomainPath($this->settings->domainName);
@@ -210,23 +231,35 @@ class DomainMakeCommand extends GeneratorCommand
 
     protected function confirmChoices(): bool
     {
+        $modelProperties = $this->settings->modelProperties->withoutReservedFields()->toArray();
+
         $this->line('Your choices:');
         $this->table(
             ['Option', 'Choice'],
             [
                 ['Domain', $this->settings->nameInput],
                 ['Root domain folder', $this->settings->domainBaseRoot],
-                ['Use migration', $this->settings->migration ?: 'no'],
+                ['Use migration', basename($this->settings->migration) ?: 'no'],
                 ['Primary key', $this->settings->primaryKey()],
                 ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
+                ['Create Reactor class', $this->settings->createReactor ? 'yes' : 'no'],
                 [
                     'Model properties',
-                    $this->settings->modelProperties ?
-                        implode(',', Arr::except(Arr::map($this->settings->modelProperties, function ($type, $name) {
-                            $type = $this->columnTypeToType($type);
+                    $modelProperties ?
+                        implode(',', Arr::map(
+                            $modelProperties,
+                            function (MigrationCreateProperty $property) {
+                                $type = $this->columnTypeToBuiltInType($property->type);
+                                if (Str::startsWith($type, '?')) {
+                                    $nullable = '?';
+                                    $type = Str::substr($type, 1);
+                                } else {
+                                    $nullable = $property->nullable ? '?' : '';
+                                }
 
-                            return "$type $name";
-                        }), ['id', 'uuid', 'timestamps'])) :
+                                return "$nullable$type $property->name";
+                            })
+                        ) :
                         'none',
                 ],
             ]
@@ -243,6 +276,7 @@ class DomainMakeCommand extends GeneratorCommand
         $this->makeDirectory($this->settings->domainPath.'/Events/*');
         $this->makeDirectory($this->settings->domainPath.'/Projections/*');
         $this->makeDirectory($this->settings->domainPath.'/Projectors/*');
+        $this->makeDirectory($this->settings->domainPath.'/Reactors/*');
 
         return $this;
     }
@@ -262,7 +296,8 @@ class DomainMakeCommand extends GeneratorCommand
             laravel: $this->laravel,
             domainPath: $this->settings->domainPath,
             domainName: $this->settings->domainName,
-            hasAggregateRoot: (bool) $this->settings->createAggregateRoot,
+            createAggregateRoot: (bool) $this->settings->createAggregateRoot,
+            createReactor: (bool) $this->settings->createReactor,
         ))->resolve($stubCallback);
 
         return $this;

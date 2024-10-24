@@ -3,7 +3,9 @@
 namespace Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Traversers;
 
 use Albertoarena\LaravelDomainGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelDomainGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
@@ -14,9 +16,148 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
 
     public function __construct(
         protected NodeTraverser $createSchemaNodeTraverser,
-        protected string $injectPrimaryKey,
         protected array $injectProperties,
+        protected array $options,
     ) {}
+
+    protected function createChainedMethodCall(array $chain): Node\Expr\MethodCall
+    {
+        $last = array_pop($chain);
+        $name = $last['name'];
+        $args = $last['args'] ?? [];
+        if (! is_array($args)) {
+            $args = [$args];
+        }
+
+        return new Node\Expr\MethodCall(
+            ! count($chain) ?
+                new Node\Expr\Variable('table') :
+                $this->createChainedMethodCall($chain),
+            $name,
+            Arr::map($args, function ($arg) {
+                return new Node\Arg(
+                    new Node\Scalar\String_($arg)
+                );
+            })
+        );
+    }
+
+    protected function handleInjectProperties(Node\Expr\Closure $closure): void
+    {
+        // Inject properties
+        if ($this->injectProperties) {
+            // Leave timestamps as the last item
+            $timestampsExpr = null;
+            /** @var Node\Stmt\Expression $lastStatement */
+            $lastStatement = Arr::last($closure->stmts);
+            if ($lastStatement->expr instanceof Node\Expr\MethodCall) {
+                if ($lastStatement->expr->name->name === 'timestamps') {
+                    $timestampsExpr = array_pop($closure->stmts);
+                }
+            }
+
+            foreach ($this->injectProperties as $variableName => $type) {
+                $nullable = false;
+                if (Str::startsWith($type, '?')) {
+                    $nullable = true;
+                    $type = Str::after($type, '?');
+                }
+
+                // Exclude non supported methods
+                if (in_array($type, BlueprintUnsupportedInterface::SKIPPED_METHODS, true)) {
+                    continue;
+                }
+
+                // Exclude non-supported columns
+                if (in_array($type, BlueprintUnsupportedInterface::UNSUPPORTED_COLUMN_TYPES, true)) {
+                    continue;
+                }
+
+                if ($nullable) {
+                    $newExpression = new Node\Stmt\Expression(
+                        new Node\Expr\MethodCall(
+                            new Node\Expr\MethodCall(
+                                new Node\Expr\Variable('table'),
+                                new Node\Identifier($this->builtInTypeToColumnType($type)),
+                                [
+                                    new Node\Arg(
+                                        new Node\Scalar\String_($variableName)
+                                    ),
+                                ]
+                            ),
+                            'nullable'
+                        )
+                    );
+                } else {
+                    $newExpression = new Node\Stmt\Expression(
+                        new Node\Expr\MethodCall(
+                            new Node\Expr\Variable('table'),
+                            new Node\Identifier($this->builtInTypeToColumnType($type)),
+                            [
+                                new Node\Arg(
+                                    new Node\Scalar\String_($variableName)
+                                ),
+                            ]
+                        )
+                    );
+                }
+
+                $closure->stmts[] = $newExpression;
+            }
+
+            if ($timestampsExpr) {
+                $closure->stmts[] = $timestampsExpr;
+            }
+        }
+
+        // @phpstan-ignore assign.propertyType
+        $closure->stmts = $this->createSchemaNodeTraverser->traverse($closure->stmts);
+    }
+
+    protected function handleReplacements(Node\Expr\Closure $closure): void
+    {
+        // Get primary key
+        $primaryKey = $this->options[':primary'] ?? null;
+        if ($primaryKey) {
+            $primaryKeyArgs = [];
+            if (is_array($primaryKey)) {
+                $primaryKeyArgs = array_slice($primaryKey, 1);
+                $primaryKey = $primaryKey[0] ?? null;
+            }
+
+            // Update primary key
+            /** @var Node\Stmt\Expression $firstStatement */
+            $firstStatement = Arr::first($closure->stmts);
+            if ($firstStatement->expr instanceof Node\Expr\MethodCall) {
+                if ($primaryKey && $firstStatement->expr->name->name !== $primaryKey) {
+                    $firstStatement->expr->name->name = $primaryKey;
+                    if ($primaryKeyArgs) {
+                        foreach ($primaryKeyArgs as $primaryKeyArg) {
+                            $newArg = new Node\Arg(
+                                new Node\Scalar\String_($primaryKeyArg),
+                            );
+
+                            $firstStatement->expr->args[] = $newArg;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Inject custom method calls
+        $injects = $this->options[':injects'] ?? [];
+        foreach ($injects as $inject) {
+            $chain = Arr::map($inject, fn ($value, $key) => ['name' => $key, 'args' => $value]);
+            $newExpression = new Node\Stmt\Expression(
+                $this->createChainedMethodCall($chain)
+            );
+
+            $closure->stmts[] = $newExpression;
+        }
+
+        // @phpstan-ignore assign.propertyType
+        $closure->stmts = $this->createSchemaNodeTraverser->traverse($closure->stmts);
+    }
 
     public function enterNode(Node $node): ?Node
     {
@@ -40,49 +181,10 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
                             if ($arg->value->params && $arg->value->params[0] instanceof Node\Param) {
                                 if ($arg->value->params[0]->type->name === 'Blueprint') {
                                     // Inject properties
-                                    if ($this->injectProperties) {
-                                        // Update primary key
-                                        /** @var Node\Stmt\Expression $firstStatement */
-                                        $firstStatement = Arr::first($arg->value->stmts);
-                                        if ($firstStatement->expr instanceof Node\Expr\MethodCall) {
-                                            if ($firstStatement->expr->name->name !== $this->injectPrimaryKey) {
-                                                $firstStatement->expr->name->name = $this->injectPrimaryKey;
-                                            }
-                                        }
+                                    $this->handleInjectProperties($arg->value);
 
-                                        // Leave timestamps as the last item
-                                        $timestampsExpr = null;
-                                        /** @var Node\Stmt\Expression $lastStatement */
-                                        $lastStatement = Arr::last($arg->value->stmts);
-                                        if ($lastStatement->expr instanceof Node\Expr\MethodCall) {
-                                            if ($lastStatement->expr->name->name === 'timestamps') {
-                                                $timestampsExpr = array_pop($arg->value->stmts);
-                                            }
-                                        }
-
-                                        foreach ($this->injectProperties as $variableName => $type) {
-                                            $newExpression = new Node\Stmt\Expression(
-                                                new Node\Expr\MethodCall(
-                                                    new Node\Expr\Variable('table'),
-                                                    new Node\Identifier($this->getBlueprintColumnType($type)),
-                                                    [
-                                                        new Node\Arg(
-                                                            new Node\Scalar\String_($variableName)
-                                                        ),
-                                                    ]
-                                                )
-                                            );
-
-                                            $arg->value->stmts[] = $newExpression;
-                                        }
-
-                                        if ($timestampsExpr) {
-                                            $arg->value->stmts[] = $timestampsExpr;
-                                        }
-                                    }
-
-                                    // @phpstan-ignore assign.propertyType
-                                    $arg->value->stmts = $this->createSchemaNodeTraverser->traverse($arg->value->stmts);
+                                    // Handle replacements
+                                    $this->handleReplacements($arg->value);
                                 }
                             }
                         }

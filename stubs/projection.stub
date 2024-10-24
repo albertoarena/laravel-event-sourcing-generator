@@ -10,18 +10,18 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property {{ primary_key:type }} ${{ primary_key }}
-{{ arguments:projection }}
+{{ properties:projection:phpdoc }}
  */
 class {{ class }} extends Projection
 {
     protected $primaryKey = '{{ primary_key }}';
 
     protected $fillable = [
-        {{ arguments:model:fillable }}
+        {{ properties:projection:fillable }}
     ];
 
     protected $casts = [
-        {{ arguments:model:cast }}
+        {{ properties:projection:cast }}
     ];
 
     public static function {{ primary_key }}({{ primary_key:type }} ${{ primary_key }}): static

@@ -4,6 +4,7 @@ namespace Tests;
 
 use Albertoarena\LaravelDomainGenerator\Providers\PackageServiceProvider;
 use Illuminate\Support\Facades\File;
+use Mockery;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
@@ -26,5 +27,12 @@ abstract class TestCase extends BaseTestCase
             File::cleanDirectory(app_path());
             File::cleanDirectory(database_path('migrations'));
         });
+    }
+
+    public function tearDown(): void
+    {
+        parent::tearDown();
+
+        Mockery::close();
     }
 }

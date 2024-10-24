@@ -15,7 +15,8 @@ class Stubs
         protected Application $laravel,
         protected string $domainPath,
         protected string $domainName,
-        protected bool $hasAggregateRoot,
+        protected bool $createAggregateRoot,
+        protected bool $createReactor,
     ) {
         $this->availableStubs = [];
     }
@@ -46,8 +47,17 @@ class Stubs
             if (! $context) {
                 return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
             } else {
+                $reactor = $stubResolverData['context']['reactor'] ?? null;
+                if (! is_null($reactor)) {
+                    if ($this->createReactor === $reactor) {
+                        return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
+                    }
+
+                    return false;
+                }
+
                 $aggregateRoot = $stubResolverData['context']['aggregate_root'] ?? null;
-                if (is_null($aggregateRoot) || $this->hasAggregateRoot === $aggregateRoot) {
+                if (is_null($aggregateRoot) || $this->createAggregateRoot === $aggregateRoot) {
                     return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
                 }
             }
