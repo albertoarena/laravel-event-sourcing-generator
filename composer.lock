@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d46cbc8933c9f04ca17ce1919d8060e3",
+    "content-hash": "b2ebb4bf2f23d074a37f45a00e89dd63",
     "packages": [
         {
             "name": "brick/math",
@@ -6930,6 +6930,83 @@
             "time": "2024-10-15T19:41:22+00:00"
         },
         {
+            "name": "laravel/pail",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/pail.git",
+                "reference": "085a2306b520c3896afa361c25704e5fa3c27bf0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/pail/zipball/085a2306b520c3896afa361c25704e5fa3c27bf0",
+                "reference": "085a2306b520c3896afa361c25704e5fa3c27bf0",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "illuminate/console": "^10.24|^11.0",
+                "illuminate/contracts": "^10.24|^11.0",
+                "illuminate/log": "^10.24|^11.0",
+                "illuminate/process": "^10.24|^11.0",
+                "illuminate/support": "^10.24|^11.0",
+                "nunomaduro/termwind": "^1.15|^2.0",
+                "php": "^8.2",
+                "symfony/console": "^6.0|^7.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.13",
+                "orchestra/testbench": "^8.12|^9.0",
+                "pestphp/pest": "^2.20",
+                "pestphp/pest-plugin-type-coverage": "^2.3",
+                "phpstan/phpstan": "^1.10",
+                "symfony/var-dumper": "^6.3|^7.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-main": "1.x-dev"
+                },
+                "laravel": {
+                    "providers": [
+                        "Laravel\\Pail\\PailServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Laravel\\Pail\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                },
+                {
+                    "name": "Nuno Maduro",
+                    "email": "enunomaduro@gmail.com"
+                }
+            ],
+            "description": "Easily delve into your Laravel application's log files directly from the command line.",
+            "homepage": "https://github.com/laravel/pail",
+            "keywords": [
+                "laravel",
+                "logs",
+                "php",
+                "tail"
+            ],
+            "support": {
+                "issues": "https://github.com/laravel/pail/issues",
+                "source": "https://github.com/laravel/pail"
+            },
+            "time": "2024-10-21T13:59:30+00:00"
+        },
+        {
             "name": "laravel/pint",
             "version": "v1.18.1",
             "source": {
@@ -7501,16 +7578,16 @@
         },
         {
             "name": "orchestra/testbench-core",
-            "version": "v9.5.3",
+            "version": "v9.5.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/orchestral/testbench-core.git",
-                "reference": "9a5754622881f601951427a94c04c50e448cbf09"
+                "reference": "9eb99ee55935da2178a471fd7d338c18164a7fbe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/orchestral/testbench-core/zipball/9a5754622881f601951427a94c04c50e448cbf09",
-                "reference": "9a5754622881f601951427a94c04c50e448cbf09",
+                "url": "https://api.github.com/repos/orchestral/testbench-core/zipball/9eb99ee55935da2178a471fd7d338c18164a7fbe",
+                "reference": "9eb99ee55935da2178a471fd7d338c18164a7fbe",
                 "shasum": ""
             },
             "require": {
@@ -7587,41 +7664,43 @@
                 "issues": "https://github.com/orchestral/testbench/issues",
                 "source": "https://github.com/orchestral/testbench-core"
             },
-            "time": "2024-10-06T11:20:27+00:00"
+            "time": "2024-10-24T03:25:02+00:00"
         },
         {
             "name": "orchestra/workbench",
-            "version": "v9.6.0",
+            "version": "v9.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/orchestral/workbench.git",
-                "reference": "4bb12d505f24b450d1693e88faddc44a1c835907"
+                "reference": "1744d07bfeee488270039b3b21605f528c3b696d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/orchestral/workbench/zipball/4bb12d505f24b450d1693e88faddc44a1c835907",
-                "reference": "4bb12d505f24b450d1693e88faddc44a1c835907",
+                "url": "https://api.github.com/repos/orchestral/workbench/zipball/1744d07bfeee488270039b3b21605f528c3b696d",
+                "reference": "1744d07bfeee488270039b3b21605f528c3b696d",
                 "shasum": ""
             },
             "require": {
                 "composer-runtime-api": "^2.2",
                 "fakerphp/faker": "^1.23",
                 "laravel/framework": "^11.11",
+                "laravel/pail": "^1.2",
                 "laravel/tinker": "^2.9",
                 "nunomaduro/collision": "^8.0",
                 "orchestra/canvas": "^9.1",
-                "orchestra/testbench-core": "^9.4",
-                "php": "^8.1",
+                "orchestra/testbench-core": "^9.5.3",
+                "php": "^8.2",
                 "spatie/laravel-ray": "^1.35",
-                "symfony/polyfill-php83": "^1.28",
-                "symfony/yaml": "^7.0"
+                "symfony/polyfill-php83": "^1.31",
+                "symfony/polyfill-php84": "^1.31",
+                "symfony/yaml": "^7.0.3"
             },
             "require-dev": {
                 "laravel/pint": "^1.17",
-                "mockery/mockery": "^1.6",
+                "mockery/mockery": "^1.6.10",
                 "phpstan/phpstan": "^1.11",
-                "phpunit/phpunit": "^10.5 || ^11.0",
-                "symfony/process": "^7.0"
+                "phpunit/phpunit": "^10.5.35 || ^11.3.6",
+                "symfony/process": "^7.0.3"
             },
             "suggest": {
                 "ext-pcntl": "Required to use all features of the console signal trapping."
@@ -7651,9 +7730,9 @@
             ],
             "support": {
                 "issues": "https://github.com/orchestral/workbench/issues",
-                "source": "https://github.com/orchestral/workbench/tree/v9.6.0"
+                "source": "https://github.com/orchestral/workbench/tree/v9.7.0"
             },
-            "time": "2024-08-26T05:38:42+00:00"
+            "time": "2024-10-24T06:22:45+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -10098,6 +10177,82 @@
                 }
             ],
             "time": "2024-09-09T11:45:10+00:00"
+        },
+        {
+            "name": "symfony/polyfill-php84",
+            "version": "v1.31.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php84.git",
+                "reference": "e5493eb51311ab0b1cc2243416613f06ed8f18bd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php84/zipball/e5493eb51311ab0b1cc2243416613f06ed8f18bd",
+                "reference": "e5493eb51311ab0b1cc2243416613f06ed8f18bd",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "name": "symfony/polyfill",
+                    "url": "https://github.com/symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php84\\": ""
+                },
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 8.4+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php84/tree/v1.31.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-09-09T12:04:04+00:00"
         },
         {
             "name": "symfony/stopwatch",
