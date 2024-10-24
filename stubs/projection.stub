@@ -7,6 +7,7 @@ namespace App\{{ domain }}\{{ class }}\Projections;
 {% if useCarbon %}
 use Illuminate\Support\Carbon;
 {% endif %}
+use Spatie\EventSourcing\Projections\Projection;
 
 /**
  * @property {{ primary_key:type }} ${{ primary_key }}
@@ -27,6 +28,6 @@ class {{ class }} extends Projection
     public static function {{ primary_key }}({{ primary_key:type }} ${{ primary_key }}): static
     {
         // @phpstan-ignore-next-line return-type
-        return static::query()->where('{{ primary_key }}', '=', ${{ primary_key }})->firstOrFail();
+        return static::query()->where('{{ primary_key }}', '=', ${{ primary_key }})->get()->firstOrFail();
     }
 }

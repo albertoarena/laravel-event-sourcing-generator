@@ -11,7 +11,7 @@ class Delete{{ class }}
     public function __invoke({{ primary_key:type }} ${{ id }}{{ primary_key:uppercase }}): void
     {
         {{ class }}AggregateRoot::retrieve(${{ id }}{{ primary_key:uppercase }})
-            ->delete()
+            ->remove()
             ->persist();
     }
 }
