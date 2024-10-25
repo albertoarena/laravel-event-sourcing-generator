@@ -120,6 +120,7 @@ class StubReplacer
                 function (MigrationCreateProperty $property) {
                     $type = $this->columnTypeToBuiltInType($property->type);
                     $type = $this->carbonToBuiltInType($type);
+                    $type = Str::replaceFirst('?', '', $type);
 
                     return "'$property->name' => '$type',";
                 })

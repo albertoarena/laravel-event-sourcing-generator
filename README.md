@@ -19,7 +19,6 @@ php artisan make:event-sourcing-domain
 | [Laravel](https://github.com/laravel/laravel)                               | 11.x    |
 | [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x     |
 
-
 ## Installation
 
 ### Composer setup
@@ -69,13 +68,13 @@ Do you want to specify model properties?
 Property name (exit to quit)?
 > name
 
-Property type (e.g. string, int, boolean)?
+Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)
 > string
 
 Property name (exit to quit)?
 > age
 
-Property type (e.g. string, int, boolean)?
+Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)
 > int
 
 Property name (exit to quit)?
@@ -92,15 +91,16 @@ Do you want to create a Reactor class?
 
 Your choices:
 
-| Option                     | Choice              |
-|----------------------------|---------------------|
-| Domain                     | Animal              |
-| Root domain folder         | Domain              |
-| Use migration              | no                  |
-| Primary key                | uuid                |
-| Create AggregateRoot class | yes                 |
-| Create Reactor class       | yes                 |
-| Model properties           | string name,int age |
+| Option                     | Choice      |
+|----------------------------|-------------|
+| Domain                     | Animal      |
+| Root domain folder         | Domain      |
+| Use migration              | no          |
+| Primary key                | uuid        |
+| Create AggregateRoot class | yes         |
+| Create Reactor class       | yes         |
+| Model properties           | string name |
+|                            | int age     |
 
 Do you confirm the generation of the domain?
 > yes
@@ -141,13 +141,13 @@ use App\Domain\Animal\Actions\CreateAnimal;
 use App\Domain\Animal\DataTransferObjects\AnimalData;
 use App\Domain\Animal\Projections\Animal;
 
+# This will create a record in 'animal' table, using projector AnimalProjector
 (new CreateAnimal())(new AnimalData(
   name: 'tiger',
   age: 7
 ));
 
-# This will create a record in 'animal' table, using projector AnimalProjector
-
+# Retrieve record
 $animal = Animal::query()->where('name', 'tiger')->first();
 ```
 
@@ -171,7 +171,8 @@ return new class extends Migration
         Schema::create('animals', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->index();
-            $table->string('age');
+            $table->int('age');
+            $table->json('meta');
             $table->timestamps();
         });
     }
@@ -187,7 +188,7 @@ It is not necessary to specify the full name of migration including the date tim
 - `2024_10_01_112344_create_animals_table` or
 - `create_animals_table`
 
-**Note:** migration will be asked interactively if not specified as command line option. 
+**Note:** migration will be asked interactively if not specified as command line option.
 
 ```shell
 php artisan make:event-sourcing-domain Animal --migration=create_animals_table
@@ -207,7 +208,9 @@ Your choices:
 | Primary key                | id                                         |
 | Create AggregateRoot class | no                                         |
 | Create Reactor class       | no                                         |
-| Model properties           | string name,int age                        |
+| Model properties           | string name                                |
+|                            | int age                                    |
+|                            | array meta                                 |
 
 Do you confirm the generation of the domain?
 > yes
@@ -245,13 +248,14 @@ use App\Domain\Animal\Actions\CreateAnimal;
 use App\Domain\Animal\DataTransferObjects\AnimalData;
 use App\Domain\Animal\Projections\Animal;
 
+# This will create a record in 'animal' table, using projector AnimalProjector
 (new CreateAnimal())(new AnimalData(
   name: 'tiger',
-  age: 7
+  age: 7,
+  meta: []
 ));
 
-# This will create a record in 'animal' table, using projector AnimalProjector
-
+# Retrieve record
 $animal = Animal::query()->where('name', 'tiger')->first();
 ```
 
@@ -319,7 +323,6 @@ The following column types are not yet supported:
 - `ulidMorphs`
 - `uuidMorphs`
 - `ulid`
-
 
 ### Future enhancements
 

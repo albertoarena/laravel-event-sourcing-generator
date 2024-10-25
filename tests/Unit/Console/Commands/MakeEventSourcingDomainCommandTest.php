@@ -65,9 +65,55 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
             ->expectsQuestion('Property name? (exit to quit)', 'name')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'string')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'int')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', true)
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Domain', $domain],
+                    ['Root domain folder', 'Domain'],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated($domain, modelProperties: $properties);
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_domain_via_artisan_command_with_nullable_parameters()
+    {
+        $domain = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => '?int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['name' => $domain])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', '?int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
@@ -111,9 +157,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
             ->expectsQuestion('Property name? (exit to quit)', 'name')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'string')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'int')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', false)
@@ -193,9 +239,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
             ->expectsQuestion('Property name? (exit to quit)', 'name')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'string')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'int')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
@@ -239,9 +285,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
             ->expectsQuestion('Property name? (exit to quit)', 'name')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'string')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'int')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
@@ -286,9 +332,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
             ->expectsQuestion('Property name? (exit to quit)', 'name')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'string')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'int')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
@@ -331,9 +377,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
             ->expectsQuestion('Property name? (exit to quit)', 'name')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'string')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'int')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
@@ -378,9 +424,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
             ->expectsQuestion('Property name? (exit to quit)', 'name')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'string')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'int')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
@@ -423,9 +469,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
             ->expectsQuestion('Property name? (exit to quit)', 'name')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'string')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
-            ->expectsQuestion('Property type (e.g. string, int, boolean)?', 'int')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)

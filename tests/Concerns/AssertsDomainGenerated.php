@@ -2,6 +2,7 @@
 
 namespace Tests\Concerns;
 
+use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubResolver;
@@ -12,6 +13,8 @@ use Illuminate\Support\Str;
 
 trait AssertsDomainGenerated
 {
+    use HasBlueprintColumnType;
+
     protected function getExpectedFiles(
         string $domain,
         string $domainBaseRoot,
@@ -130,6 +133,12 @@ trait AssertsDomainGenerated
                     $this->assertMatchesRegularExpression("/'uuid' => 'string',/", $generated);
                 } else {
                     $this->assertMatchesRegularExpression("/'id' => 'int',/", $generated);
+                }
+                foreach ($settings->modelProperties->toArray() as $property) {
+                    $type = $this->columnTypeToBuiltInType($property->type);
+                    $type = $this->carbonToBuiltInType($type);
+                    $type = Str::replaceFirst('?', '', $type);
+                    $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
                 }
             } elseif ($stubFile === 'projector.stub') {
                 if ($useUuid) {

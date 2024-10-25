@@ -142,7 +142,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                     if ($name === 'exit') {
                         break;
                     }
-                    $type = $this->ask('Property type (e.g. string, int, boolean)?');
+                    $type = $this->ask('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)');
                     $this->settings->modelProperties->add(new MigrationCreateProperty(
                         name: $name,
                         type: $type,
