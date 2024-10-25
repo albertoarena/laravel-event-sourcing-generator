@@ -158,7 +158,7 @@ Command can generate a full domain directory structure starting from an existing
 **Important: the command can process _only_ "create" migrations. Other migrations that modify table structure will be
 skipped.**
 
-E.g migration `2024_10_01_112344_create_animals_table.php`
+E.g. migration `2024_10_01_112344_create_animals_table.php`
 
 ```php
 return new class extends Migration
