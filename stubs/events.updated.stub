@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\{{ domain }}\{{ class }}\Events;
+namespace App\{{ namespace }}\{{ domain }}\Events;
 
-use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
+use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
 use Carbon\Carbon;
 use Spatie\EventSourcing\StoredEvents\ShouldBeStored;
 

@@ -2,6 +2,7 @@
 
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs;
 
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
 
@@ -24,24 +25,22 @@ class StubResolver
     }
 
     protected function resolveOutputPath(
-        string $domainPath,
-        string $domainName
+        CommandSettings $settings
     ): string {
         return Str::replace(
             ['{{path}}', '{{name}}', '{{ path }}', '{{ name }}', '//'],
-            [$domainPath, $domainName, $domainPath, $domainName, '/'],
+            [$settings->domainPath, $settings->name, $settings->domainPath, $settings->name, '/'],
             $this->resolverPattern
         );
     }
 
     public function resolve(
         Application $laravel,
-        string $domainPath,
-        string $domainName
+        CommandSettings $settings,
     ): array {
         return [
             $this->resolvePath($laravel),
-            $this->resolveOutputPath($domainPath, $domainName),
+            $this->resolveOutputPath($settings),
         ];
     }
 }

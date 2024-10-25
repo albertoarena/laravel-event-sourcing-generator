@@ -14,15 +14,15 @@ class CommandSettings
     protected MigrationCreateProperties $properties;
 
     public function __construct(
-        public readonly string $nameInput,
-        public readonly string $domainBaseRoot,
+        public readonly string $name,
+        public readonly string $domain,
+        public readonly string $namespace,
         public ?string $migration,
         public ?bool $createAggregateRoot,
         public ?bool $createReactor,
         public readonly int $indentation,
         public bool $useUuid,
-        public string $domainName = '',
-        public string $domainId = '',
+        public string $nameAsPrefix = '',
         public string $domainPath = '',
         public bool $useCarbon = false,
     ) {

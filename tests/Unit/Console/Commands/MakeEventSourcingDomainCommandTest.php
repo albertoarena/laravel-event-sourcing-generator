@@ -41,26 +41,27 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $output = Artisan::output();
         $this->assertMatchesRegularExpression("/Description:\n\s*Create a new domain for Spatie event sourcing/", $output);
         $this->assertMatchesRegularExpression("/Usage:\n\s*make:event-sourcing-domain \[options] \[--] <name>/", $output);
-        $this->assertMatchesRegularExpression("/Arguments:\n\s*name\s*Name of domain/", $output);
-        $this->assertMatchesRegularExpression("/\s*-d, --domain\[=DOMAIN]\s*Domain base root \[default: \"Domain\"]/", $output);
+        $this->assertMatchesRegularExpression("/Arguments:\n\s*name\s*Name of the model/", $output);
+        $this->assertMatchesRegularExpression("/\s*-d, --domain\[=DOMAIN]\s*Domain \[default: same as model]/", $output);
+        $this->assertMatchesRegularExpression("/\s*--namespace\[=NAMESPACE]\s*Namespace \[default: \"Domain\"]/", $output);
         $this->assertMatchesRegularExpression("/\s*-m, --migration\[=MIGRATION]\s*Existing migration for the model, with or without timestamp prefix/", $output);
-        $this->assertMatchesRegularExpression("/\s*--aggregate_root\[=AGGREGATE_ROOT]\s*Create aggregate root/", $output);
-        $this->assertMatchesRegularExpression("/\s*--reactor\[=REACTOR]\s*Create reactor/", $output);
-        $this->assertMatchesRegularExpression("/\s*--indentation\[=INDENTATION]\s*Indentation spaces \[default: \"4\"]/", $output);
+        $this->assertMatchesRegularExpression("/\s*-a, --aggregate_root\[=AGGREGATE_ROOT]\s*Create aggregate root/", $output);
+        $this->assertMatchesRegularExpression("/\s*-r, --reactor\[=REACTOR]\s*Create reactor/", $output);
+        $this->assertMatchesRegularExpression("/\s*-i, --indentation\[=INDENTATION]\s*Indentation spaces \[default: \"4\"]/", $output);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_domain_via_artisan_command()
     {
-        $domain = 'Animal';
+        $name = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $domain])
+        $this->artisan('make:event-sourcing-domain', ['name' => $name])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -78,8 +79,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Model', $name],
+                    ['Domain', $name],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -89,10 +91,162 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($domain, modelProperties: $properties);
+        $this->assertDomainGenerated($name, modelProperties: $properties);
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_domain_via_artisan_command_with_specific_domain()
+    {
+        $name = 'Tiger';
+        $domain = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $domain])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', true)
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $name],
+                    ['Domain', $domain],
+                    ['Namespace', 'Domain'],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name.'] created successfully.')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            name: $name,
+            domain: $domain,
+            modelProperties: $properties
+        );
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_multiple_models_for_same_domain_via_artisan_command()
+    {
+        $name1 = 'Tiger';
+        $name2 = 'Lion';
+        $domain = 'Animal';
+
+        $properties1 = [
+            'name' => 'string',
+            'age' => 'int',
+        ];
+        $properties2 = [
+            'name' => 'string',
+            'age' => 'int',
+            'colour' => '?string',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['name' => $name1, '--domain' => $domain])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', true)
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $name1],
+                    ['Domain', $domain],
+                    ['Namespace', 'Domain'],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Model properties', implode("\n", Arr::map($properties1, fn ($type, $name) => "$type $name"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name1.'] created successfully.')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            name: $name1,
+            domain: $domain,
+            modelProperties: $properties1
+        );
+
+        $this->artisan('make:event-sourcing-domain', ['name' => $name2, '--domain' => $domain])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'colour')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', '?string')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', false)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $name2],
+                    ['Domain', $domain],
+                    ['Namespace', 'Domain'],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'id'],
+                    ['Create AggregateRoot class', 'no'],
+                    ['Create Reactor class', 'yes'],
+                    ['Model properties', implode("\n", Arr::map($properties2, fn ($type, $name) => "$type $name"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name2.'] created successfully.')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            name: $name2,
+            domain: $domain,
+            createAggregateRoot: false,
+            useUuid: false,
+            modelProperties: $properties2
+        );
     }
 
     #[RunInSeparateProcess]
@@ -124,8 +278,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -135,7 +290,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domain, modelProperties: $properties);
@@ -169,8 +324,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -180,7 +336,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domain, useUuid: false, modelProperties: $properties);
@@ -205,8 +361,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -216,7 +373,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domain);
@@ -224,17 +381,18 @@ class MakeEventSourcingDomainCommandTest extends TestCase
 
     #[RunInSeparateProcess]
     #[Test]
-    public function it_can_create_a_domain_via_artisan_command_with_different_root_domain()
+    public function it_can_create_a_domain_via_artisan_command_with_different_namespace_and_domain()
     {
-        $rootDomain = 'Domains';
+        $namespace = 'Domains';
         $domain = 'Animal';
+        $name = 'Tiger';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $domain, '-d' => $rootDomain])
+        $this->artisan('make:event-sourcing-domain', ['name' => $name, '-d' => $domain, '--namespace' => $namespace])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -252,8 +410,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $name],
                     ['Domain', $domain],
-                    ['Root domain folder', $rootDomain],
+                    ['Namespace', $namespace],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -263,10 +422,15 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name.'] created successfully.')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($domain, domainBaseRoot: $rootDomain, modelProperties: $properties);
+        $this->assertDomainGenerated(
+            name: $name,
+            domain: $domain,
+            namespace: $namespace,
+            modelProperties: $properties
+        );
     }
 
     #[RunInSeparateProcess]
@@ -298,8 +462,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -309,7 +474,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domain, modelProperties: $properties, indentation: 2);
@@ -344,8 +509,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -355,7 +521,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domain, modelProperties: $properties);
@@ -390,8 +556,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'no'],
@@ -401,7 +568,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domain, createAggregateRoot: false, modelProperties: $properties);
@@ -436,8 +603,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -447,7 +615,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domain, modelProperties: $properties);
@@ -482,8 +650,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -493,7 +662,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domain, createReactor: false, modelProperties: $properties);
@@ -529,8 +698,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', $migrationPath],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -540,7 +710,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
@@ -579,8 +749,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', $migrationPath],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -590,7 +761,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
@@ -626,8 +797,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -636,7 +808,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
@@ -706,8 +878,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -716,7 +889,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
@@ -757,8 +930,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domain],
                     ['Domain', $domain],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -767,7 +941,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$domain.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
@@ -820,8 +994,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domainExpected],
                     ['Domain', $domainExpected],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -830,7 +1005,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domainExpected.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domainExpected.'] with model ['.$domainExpected.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domainExpected);
@@ -856,8 +1031,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
+                    ['Model', $domainExpected],
                     ['Domain', $domainExpected],
-                    ['Root domain folder', 'Domain'],
+                    ['Namespace', 'Domain'],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -866,7 +1042,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domainExpected.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domainExpected.'] with model ['.$domainExpected.'] created successfully.')
             ->assertSuccessful();
 
         $this->assertDomainGenerated($domainExpected);

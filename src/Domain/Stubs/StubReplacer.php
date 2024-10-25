@@ -59,8 +59,9 @@ class StubReplacer
 
     protected function replaceDomain(&$stub): self
     {
-        $this->replaceWithClosure($stub, 'domain', fn () => $this->settings->domainBaseRoot);
-        $this->replaceWithClosure($stub, 'id', fn () => $this->settings->domainId);
+        $this->replaceWithClosure($stub, 'domain', fn () => $this->settings->domain);
+        $this->replaceWithClosure($stub, 'namespace', fn () => $this->settings->namespace);
+        $this->replaceWithClosure($stub, 'id', fn () => $this->settings->nameAsPrefix);
 
         return $this;
     }
@@ -155,7 +156,7 @@ class StubReplacer
     {
         $indentSpace4 = $this->getIndentSpace(4);
 
-        $domainId = $this->settings->domainId;
+        $domainId = $this->settings->nameAsPrefix;
 
         $preparedProperties = Arr::map(
             $this->getModelProperties(),

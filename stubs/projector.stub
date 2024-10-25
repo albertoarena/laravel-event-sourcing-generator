@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\{{ domain }}\{{ class }}\Projectors;
+namespace App\{{ namespace }}\{{ domain }}\Projectors;
 
-use App\{{ domain }}\{{ class }}\Events\{{ class }}Created;
-use App\{{ domain }}\{{ class }}\Events\{{ class }}Deleted;
-use App\{{ domain }}\{{ class }}\Events\{{ class }}Updated;
-use App\{{ domain }}\{{ class }}\Projections\{{ class }};
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Created;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Deleted;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Updated;
+use App\{{ namespace }}\{{ domain }}\Projections\{{ class }};
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Spatie\EventSourcing\EventHandlers\Projectors\Projector;

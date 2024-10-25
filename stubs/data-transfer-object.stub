@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\{{ domain }}\{{ class }}\DataTransferObjects;
+namespace App\{{ namespace }}\{{ domain }}\DataTransferObjects;
 
 {% if useCarbon %}
 use Illuminate\Support\Carbon;

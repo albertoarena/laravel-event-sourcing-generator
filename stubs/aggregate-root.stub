@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\{{ domain }}\{{ class }};
+namespace App\{{ namespace }}\{{ domain }};
 
-use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
-use App\{{ domain }}\{{ class }}\Events\{{ class }}Created;
-use App\{{ domain }}\{{ class }}\Events\{{ class }}Deleted;
-use App\{{ domain }}\{{ class }}\Events\{{ class }}Updated;
+use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Created;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Deleted;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Updated;
 use Spatie\EventSourcing\AggregateRoots\AggregateRoot;
 
 class {{ class }}AggregateRoot extends AggregateRoot

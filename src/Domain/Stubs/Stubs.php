@@ -2,6 +2,7 @@
 
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs;
 
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Models\StubCallback;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Foundation\Application;
@@ -13,10 +14,7 @@ class Stubs
 
     public function __construct(
         protected Application $laravel,
-        protected string $domainPath,
-        protected string $domainName,
-        protected bool $createAggregateRoot,
-        protected bool $createReactor,
+        protected CommandSettings $settings,
     ) {
         $this->availableStubs = [];
     }
@@ -49,7 +47,7 @@ class Stubs
             } else {
                 $reactor = $stubResolverData['context']['reactor'] ?? null;
                 if (! is_null($reactor)) {
-                    if ($this->createReactor === $reactor) {
+                    if ($this->settings->createReactor === $reactor) {
                         return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
                     }
 
@@ -57,7 +55,7 @@ class Stubs
                 }
 
                 $aggregateRoot = $stubResolverData['context']['aggregate_root'] ?? null;
-                if (is_null($aggregateRoot) || $this->createAggregateRoot === $aggregateRoot) {
+                if (is_null($aggregateRoot) || $this->settings->createAggregateRoot === $aggregateRoot) {
                     return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
                 }
             }
@@ -76,7 +74,7 @@ class Stubs
         /** @var StubResolver $stubResolver */
         foreach ($this->getStubResolvers() as $stubResolver) {
             $callback->call(
-                ...$stubResolver->resolve($this->laravel, $this->domainPath, $this->domainName)
+                ...$stubResolver->resolve($this->laravel, $this->settings)
             );
         }
     }

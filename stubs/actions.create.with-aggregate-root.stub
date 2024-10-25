@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\{{ domain }}\{{ class }}\Actions;
+namespace App\{{ namespace }}\{{ domain }}\Actions;
 
-use App\{{ domain }}\{{ class }}\{{ class }}AggregateRoot;
-use App\{{ domain }}\{{ class }}\DataTransferObjects\{{ class }}Data;
+use App\{{ namespace }}\{{ domain }}\{{ class }}AggregateRoot;
+use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
 {% if uuid %}
 use Ramsey\Uuid\Uuid;
 {% endif %}

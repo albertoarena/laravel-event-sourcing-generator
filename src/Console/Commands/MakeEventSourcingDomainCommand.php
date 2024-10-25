@@ -29,12 +29,13 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
      * @var string
      */
     protected $signature = 'make:event-sourcing-domain 
-                            {name : Name of domain}
-                            {--d|domain=Domain : Domain base root}
+                            {name : Name of the model}
+                            {--d|domain= : Domain [default: same as model]}
+                            {--namespace=Domain : Namespace}
                             {--m|migration= : Existing migration for the model, with or without timestamp prefix}
-                            {--aggregate_root= : Create aggregate root}
-                            {--r|reactor= : Create reactor}
-                            {--indentation=4 : Indentation spaces}';
+                            {--a|aggregate_root= : Create aggregate root (accepts 0 or 1)}
+                            {--r|reactor= : Create reactor (accepts 0 or 1)}
+                            {--i|indentation=4 : Indentation spaces}';
 
     /**
      * @var string
@@ -84,7 +85,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
     {
         $name = Str::replaceFirst($this->rootNamespace(), '', $name);
 
-        return $this->laravel['path'].'/'.$this->settings->domainBaseRoot.'/'.str_replace('\\', '/', $name).'/';
+        return $this->laravel['path'].'/'.$this->settings->namespace.'/'.str_replace('\\', '/', $name).'/';
     }
 
     protected function alreadyExistsDomain($rawName): bool
@@ -94,7 +95,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace): string
     {
-        return "$rootNamespace\\{$this->settings->domainBaseRoot}";
+        return "$rootNamespace\\{$this->settings->namespace}";
     }
 
     /**
@@ -108,8 +109,8 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
         $this->stubReplacer->replace($stub);
 
-        $content = $this->replaceNamespace($stub, $this->settings->domainName)
-            ->replaceClass($stub, $this->settings->domainName);
+        $content = $this->replaceNamespace($stub, $this->settings->domain)
+            ->replaceClass($stub, $this->settings->name);
 
         $this->files->put($outputPath, $content);
     }
@@ -164,9 +165,13 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
      */
     protected function bootstrap(): bool
     {
+        $name = Str::ucfirst($this->getNameInput());
+        $domain = ! is_null($this->option('domain')) ? Str::ucfirst($this->option('domain')) : $name;
+
         $this->settings = new CommandSettings(
-            nameInput: Str::ucfirst($this->getNameInput()),
-            domainBaseRoot: Str::ucfirst($this->option('domain')),
+            name: $name,
+            domain: $domain,
+            namespace: Str::ucfirst($this->option('namespace')),
             migration: $this->option('migration'),
             createAggregateRoot: ! is_null($this->option('aggregate_root')) ? (bool) $this->option('aggregate_root') : null,
             createReactor: ! is_null($this->option('reactor')) ? (bool) $this->option('reactor') : null,
@@ -185,14 +190,14 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         }
 
         // Check if the given name is a reserved word within PHP language
-        if ($this->isReservedName($this->settings->nameInput)) {
-            $this->components->error('The name "'.$this->settings->nameInput.'" is reserved by PHP.');
+        if ($this->isReservedName($this->settings->name)) {
+            $this->components->error('The name "'.$this->settings->name.'" is reserved by PHP.');
 
             return false;
         }
 
         // Check if the domain already exists
-        if ($this->alreadyExistsDomain($this->settings->nameInput)) {
+        if ($this->alreadyExistsDomain($this->settings->name)) {
             $this->components->error($this->type.' already exists.');
 
             return false;
@@ -222,9 +227,8 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             $this->settings->createReactor = $this->confirm('Do you want to create a Reactor class?', true);
         }
 
-        $this->settings->domainName = $this->qualifyDomain($this->settings->nameInput);
-        $this->settings->domainId = Str::lcfirst(Str::camel($this->settings->nameInput));
-        $this->settings->domainPath = $this->getDomainPath($this->settings->domainName);
+        $this->settings->nameAsPrefix = Str::lcfirst(Str::camel($this->settings->name));
+        $this->settings->domainPath = $this->getDomainPath($this->qualifyDomain($this->settings->domain));
 
         return true;
     }
@@ -237,8 +241,9 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         $this->table(
             ['Option', 'Choice'],
             [
-                ['Domain', $this->settings->nameInput],
-                ['Root domain folder', $this->settings->domainBaseRoot],
+                ['Model', $this->settings->name],
+                ['Domain', $this->settings->domain],
+                ['Namespace', $this->settings->namespace],
                 ['Use migration', basename($this->settings->migration) ?: 'no'],
                 ['Primary key', $this->settings->primaryKey()],
                 ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
@@ -276,7 +281,9 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         $this->makeDirectory($this->settings->domainPath.'/Events/*');
         $this->makeDirectory($this->settings->domainPath.'/Projections/*');
         $this->makeDirectory($this->settings->domainPath.'/Projectors/*');
-        $this->makeDirectory($this->settings->domainPath.'/Reactors/*');
+        if ($this->settings->createReactor) {
+            $this->makeDirectory($this->settings->domainPath.'/Reactors/*');
+        }
 
         return $this;
     }
@@ -294,10 +301,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
         (new Stubs(
             laravel: $this->laravel,
-            domainPath: $this->settings->domainPath,
-            domainName: $this->settings->domainName,
-            createAggregateRoot: (bool) $this->settings->createAggregateRoot,
-            createReactor: (bool) $this->settings->createReactor,
+            settings: $this->settings,
         ))->resolve($stubCallback);
 
         return $this;
@@ -305,7 +309,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
     protected function outputResult(): void
     {
-        $this->components->info(sprintf('%s [%s] created successfully.', $this->type, $this->settings->domainName));
+        $this->components->info(sprintf('%s [%s] with model [%s] created successfully.', $this->type, $this->settings->domain, $this->settings->name));
     }
 
     // @phpstan-ignore method.childReturnType
