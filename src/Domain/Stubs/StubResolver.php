@@ -2,7 +2,7 @@
 
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs;
 
-use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Str;
 

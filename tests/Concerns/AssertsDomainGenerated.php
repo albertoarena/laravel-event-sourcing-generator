@@ -3,7 +3,7 @@
 namespace Tests\Concerns;
 
 use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
-use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubResolver;
 use Albertoarena\LaravelEventSourcingGenerator\Helpers\ParseMigration;

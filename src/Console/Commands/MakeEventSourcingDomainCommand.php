@@ -3,7 +3,7 @@
 namespace Albertoarena\LaravelEventSourcingGenerator\Console\Commands;
 
 use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
-use Albertoarena\LaravelEventSourcingGenerator\Domain\Commands\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Models\StubCallback;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
@@ -50,7 +50,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
     protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            'name' => 'Which domain you want to create?',
+            'name' => 'Which model you want to create?',
         ];
     }
 
@@ -88,9 +88,9 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         return $this->laravel['path'].'/'.$this->settings->namespace.'/'.str_replace('\\', '/', $name).'/';
     }
 
-    protected function alreadyExistsDomain($rawName): bool
+    protected function alreadyExistsModel(): bool
     {
-        return $this->files->exists($this->getDomainPath($rawName));
+        return $this->files->exists($this->getDomainPath($this->settings->name).'Actions/Create'.$this->settings->name.'.php');
     }
 
     protected function getDefaultNamespace($rootNamespace): string
@@ -105,6 +105,14 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         string $stubPath,
         string $outputPath
     ): void {
+        if ($this->files->exists($outputPath)) {
+            $basePath = $this->laravel->basePath('app/');
+            $outputPath = Str::replaceFirst($basePath, '', $outputPath);
+            $this->components->warn('A file already exists (it was not overwritten): '.$outputPath);
+
+            return;
+        }
+
         $stub = $this->files->get($stubPath);
 
         $this->stubReplacer->replace($stub);
@@ -133,8 +141,8 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 }
 
                 $this->settings->useUuid = $migration->primary() === 'uuid';
-            } catch (Exception) {
-                throw new Exception('Migration file does not exist');
+            } catch (Exception $e) {
+                throw new Exception($e->getMessage());
             }
         } else {
             if ($this->confirm('Do you want to specify model properties?')) {
@@ -160,13 +168,28 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         return class_exists('Spatie\EventSourcing\EventSourcingServiceProvider');
     }
 
+    protected function getNameInput(): string
+    {
+        return Str::ucfirst(parent::getNameInput());
+    }
+
+    protected function getDomainInput(): string
+    {
+        $domain = ! is_null($this->option('domain')) ? Str::ucfirst($this->option('domain')) : null;
+        if (! $domain) {
+            $domain = $this->ask('Which is the domain name?');
+        }
+
+        return Str::ucfirst($domain);
+    }
+
     /**
      * @throws Exception
      */
     protected function bootstrap(): bool
     {
-        $name = Str::ucfirst($this->getNameInput());
-        $domain = ! is_null($this->option('domain')) ? Str::ucfirst($this->option('domain')) : $name;
+        $name = $this->getNameInput();
+        $domain = $this->getDomainInput();
 
         $this->settings = new CommandSettings(
             name: $name,
@@ -196,9 +219,16 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             return false;
         }
 
+        // Check if the given domain is a reserved word within PHP language
+        if ($this->isReservedName($this->settings->domain)) {
+            $this->components->error('The domain "'.$this->settings->domain.'" is reserved by PHP.');
+
+            return false;
+        }
+
         // Check if the domain already exists
-        if ($this->alreadyExistsDomain($this->settings->name)) {
-            $this->components->error($this->type.' already exists.');
+        if ($this->alreadyExistsModel()) {
+            $this->components->error('Model already exists.');
 
             return false;
         }

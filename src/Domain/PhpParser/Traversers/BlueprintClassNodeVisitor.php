@@ -4,6 +4,8 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers
 
 use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\ParserFailedException;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\UpdateMigrationIsNotSupportedException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use PhpParser\Node;
@@ -20,10 +22,16 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
         protected array $options,
     ) {}
 
+    /**
+     * @throws ParserFailedException
+     */
     protected function createChainedMethodCall(array $chain): Node\Expr\MethodCall
     {
         $last = array_pop($chain);
-        $name = $last['name'];
+        $name = $last['name'] ?? null;
+        if (! $name) {
+            throw new ParserFailedException('Invalid chained method');
+        }
         $args = $last['args'] ?? [];
         if (! is_array($args)) {
             $args = [$args];
@@ -114,6 +122,9 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
         $closure->stmts = $this->createSchemaNodeTraverser->traverse($closure->stmts);
     }
 
+    /**
+     * @throws ParserFailedException
+     */
     protected function handleReplacements(Node\Expr\Closure $closure): void
     {
         // Get primary key
@@ -159,6 +170,10 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
         $closure->stmts = $this->createSchemaNodeTraverser->traverse($closure->stmts);
     }
 
+    /**
+     * @throws UpdateMigrationIsNotSupportedException
+     * @throws ParserFailedException
+     */
     public function enterNode(Node $node): ?Node
     {
         if ($node instanceof Node\Stmt\Class_) {
@@ -174,20 +189,24 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
             }
 
             if ($expression->expr instanceof Node\Expr\StaticCall) {
-                if ($expression->expr->class->name === 'Schema' && $expression->expr->name->name === 'create') {
-                    // Look for Blueprint table definition
-                    foreach ($expression->expr->args as $arg) {
-                        if ($arg->value instanceof Node\Expr\Closure) {
-                            if ($arg->value->params && $arg->value->params[0] instanceof Node\Param) {
-                                if ($arg->value->params[0]->type->name === 'Blueprint') {
-                                    // Inject properties
-                                    $this->handleInjectProperties($arg->value);
+                if ($expression->expr->class->name === 'Schema') {
+                    if ($expression->expr->name->name === 'create') {
+                        // Look for Blueprint table definition
+                        foreach ($expression->expr->args as $arg) {
+                            if ($arg->value instanceof Node\Expr\Closure) {
+                                if ($arg->value->params && $arg->value->params[0] instanceof Node\Param) {
+                                    if ($arg->value->params[0]->type->name === 'Blueprint') {
+                                        // Inject properties
+                                        $this->handleInjectProperties($arg->value);
 
-                                    // Handle replacements
-                                    $this->handleReplacements($arg->value);
+                                        // Handle replacements
+                                        $this->handleReplacements($arg->value);
+                                    }
                                 }
                             }
                         }
+                    } elseif ($expression->expr->name->name === 'table') {
+                        throw new UpdateMigrationIsNotSupportedException;
                     }
                 }
             }

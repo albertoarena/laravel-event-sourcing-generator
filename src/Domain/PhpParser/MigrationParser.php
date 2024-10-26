@@ -5,7 +5,7 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser;
 use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers\BlueprintClassCreateSchemaNodeVisitor;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers\BlueprintClassNodeVisitor;
-use Exception;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\ParserFailedException;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
@@ -54,7 +54,7 @@ class MigrationParser
     }
 
     /**
-     * @throws Exception
+     * @throws ParserFailedException
      */
     protected function getStatements(): ?array
     {
@@ -62,12 +62,12 @@ class MigrationParser
         try {
             return $parser->parse($this->migrationContent);
         } catch (Error $error) {
-            throw new Exception('Parser failed: '.$error->getMessage());
+            throw new ParserFailedException($error->getMessage());
         }
     }
 
     /**
-     * @throws Exception
+     * @throws ParserFailedException
      */
     public function parse(): self
     {
@@ -83,7 +83,7 @@ class MigrationParser
      * This is not intended to be used in production but only for test purposes.
      * It will modify the original migration.
      *
-     * @throws Exception
+     * @throws ParserFailedException
      */
     public function modify(array $injectProperties, array $options): string
     {

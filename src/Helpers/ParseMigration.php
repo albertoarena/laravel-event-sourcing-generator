@@ -4,6 +4,7 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Helpers;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\MigrationParser;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationDoesNotExistException;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
@@ -27,7 +28,7 @@ class ParseMigration
     }
 
     /**
-     * @throws Exception
+     * @throws MigrationDoesNotExistException
      */
     protected function getMigration(): ?string
     {
@@ -43,11 +44,11 @@ class ParseMigration
             }
         }
 
-        throw new Exception('Migration file does not exist');
+        throw new MigrationDoesNotExistException;
     }
 
     /**
-     * @throws Exception
+     * @throws MigrationDoesNotExistException
      */
     protected function parse(): void
     {

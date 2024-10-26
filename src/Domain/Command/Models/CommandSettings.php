@@ -1,6 +1,6 @@
 <?php
 
-namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Commands;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperties;
 use Illuminate\Support\Str;
