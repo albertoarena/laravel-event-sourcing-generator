@@ -83,6 +83,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -132,6 +133,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $domain],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$domain.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -191,6 +193,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name1],
                     ['Domain', $domain],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$domain.'/'.$name1],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -232,6 +235,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name2],
                     ['Domain', $domain],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$domain.'/'.$name2],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -287,6 +291,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -335,6 +340,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -374,6 +380,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -424,6 +431,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $domain],
                     ['Namespace', $namespace],
+                    ['Path', $namespace.'/'.$domain.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -441,6 +449,63 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             name: $name,
             domain: $domain,
             namespace: $namespace,
+            modelProperties: $properties
+        );
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_different_lowercase_namespace()
+    {
+        $namespace = 'domains';
+        $expectedNamespace = 'Domains';
+        $domain = 'Animal';
+        $name = 'Tiger';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['name' => $name, '-d' => $domain, '--namespace' => $namespace])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', true)
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $name],
+                    ['Domain', $domain],
+                    ['Namespace', $expectedNamespace],
+                    ['Path', $expectedNamespace.'/'.$domain.'/'.$name],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            name: $name,
+            domain: $domain,
+            namespace: $expectedNamespace,
             modelProperties: $properties
         );
     }
@@ -478,6 +543,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -526,6 +592,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -575,6 +642,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'no'],
@@ -623,6 +691,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -672,6 +741,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -722,6 +792,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', $migrationPath],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -775,6 +846,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', $migrationPath],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -825,6 +897,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -908,6 +981,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -962,6 +1036,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -1008,6 +1083,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $nameExpected],
                     ['Domain', $nameExpected],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$nameExpected.'/'.$nameExpected],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -1049,6 +1125,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $nameExpected],
                     ['Domain', $domainExpected],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$domainExpected.'/'.$nameExpected],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -1093,6 +1170,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $name],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$name.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -1135,6 +1213,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Model', $name],
                     ['Domain', $domain],
                     ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$domain.'/'.$name],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],

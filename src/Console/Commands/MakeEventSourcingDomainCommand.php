@@ -274,6 +274,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 ['Model', $this->settings->name],
                 ['Domain', $this->settings->domain],
                 ['Namespace', $this->settings->namespace],
+                ['Path', $this->settings->namespace.'/'.$this->settings->domain.'/'.$this->settings->name],
                 ['Use migration', basename($this->settings->migration) ?: 'no'],
                 ['Primary key', $this->settings->primaryKey()],
                 ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
