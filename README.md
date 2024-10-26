@@ -38,8 +38,16 @@ composer require albertoarena/laravel-event-sourcing-generator
 
 ## Usage
 
+Generate a model with same name of domain (e.g. `App/Domain/Animal/Actions/CreateAnimal`)
+
 ```shell
-php artisan make:event-sourcing-domain DOMAIN [options]
+php artisan make:event-sourcing-domain [options] [--] <name>
+```
+
+Generate a model with different domain (e.g. `App/Domain/Animal/Actions/CreateTiger`)
+
+```shell
+php artisan make:event-sourcing-domain [options] [--] <name> -d|--domain <domain>
 ```
 
 Help
@@ -59,6 +67,9 @@ php artisan make:event-sourcing-domain Animal
 ```
 
 ```
+Which is the domain name? [Animal]
+> Animal
+
 Do you want to import properties from existing database migration?
 > no
 
@@ -93,8 +104,9 @@ Your choices:
 
 | Option                     | Choice      |
 |----------------------------|-------------|
+| Model                      | Animal      |
 | Domain                     | Animal      |
-| Root domain folder         | Domain      |
+| Namespace                  | Domain      |
 | Use migration              | no          |
 | Primary key                | uuid        |
 | Create AggregateRoot class | yes         |
@@ -105,7 +117,7 @@ Your choices:
 Do you confirm the generation of the domain?
 > yes
 
-Domain Animal created successfully.
+Domain [Animal] with model [Animal] created successfully.
 ```
 
 Directory structure generated (using `uuid` as primary key)
@@ -195,6 +207,9 @@ php artisan make:event-sourcing-domain Animal --migration=create_animals_table
 ```
 
 ```
+Which is the domain name? [Animal]
+> Animal
+
 Do you want to create a Reactor class?
 > no
 
@@ -202,8 +217,9 @@ Your choices:
 
 | Option                     | Choice                                     |
 |----------------------------|--------------------------------------------|
+| Model                      | Animal                                     |
 | Domain                     | Animal                                     |
-| Root domain folder         | Domain                                     |
+| Namespace                  | Domain                                     |
 | Use migration              | 2024_10_01_112344_create_animals_table.php |
 | Primary key                | id                                         |
 | Create AggregateRoot class | no                                         |
@@ -261,13 +277,55 @@ $animal = Animal::query()->where('name', 'tiger')->first();
 
 ## Options
 
-### Change domain root folder
+### Specify domain
 
 ```shell
-php artisan make:event-sourcing-domain Animal --domain=CustomDomain
+php artisan make:event-sourcing-domain Tiger --domain=Animal
+php artisan make:event-sourcing-domain Lion --domain=Animal
 ```
 
-This setup will use `CustomDomain` as the root folder
+This will create multiple models in the same domain
+
+```
+app
+├── Domain
+│   └── Animal
+│       ├── Actions
+│       │   ├── CreateLion
+│       │   ├── CreateTiger
+│       │   ├── DeleteLion
+│       │   ├── DeleteTiger
+│       │   ├── UpdateLion
+│       │   └── UpdateTiger
+│       ├── DataTransferObjects
+│       │   ├── LionData
+│       │   └── TigerData
+│       ├── Events
+│       │   ├── LionCreated
+│       │   ├── TigerCreated
+│       │   ├── LionDeleted
+│       │   ├── TigerDeleted
+│       │   ├── LionDeleted
+│       │   └── TigerUpdated
+│       ├── Projections
+│       │   ├── Lion
+│       │   └── Tiger
+│       ├── Projectors
+│       │   ├── LionProjector
+│       │   └── TigerProjector
+│       ├── LionAggregateRoot
+│       └── TigerAggregateRoot
+└── etc.
+```
+
+
+### Specify namespace
+
+```shell
+php artisan make:event-sourcing-domain Animal --namespace=CustomDomain
+```
+
+This setup will use `CustomDomain` as the namespace
 
 ```
 app
@@ -292,7 +350,7 @@ app
 └── etc.
 ```
 
-### Change indentation
+### Specify indentation
 
 Default indentation of generated files is 4 space.
 
