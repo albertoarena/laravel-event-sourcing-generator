@@ -170,7 +170,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
     protected function getModelInput(): string
     {
-        return Str::ucfirst(Str::trim($this->argument('model')));
+        return Str::ucfirst(trim($this->argument('model')));
     }
 
     protected function getDomainInput(): string

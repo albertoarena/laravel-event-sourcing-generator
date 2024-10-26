@@ -23,8 +23,8 @@
     ],
     "require": {
         "php": "^8.2",
-        "illuminate/contracts": "*",
-        "illuminate/support": "*",
+        "illuminate/contracts": "^11.0",
+        "illuminate/support": "^11.0",
         "nikic/php-parser": "^5.1",
         "spatie/laravel-event-sourcing": "^7.9"
     },

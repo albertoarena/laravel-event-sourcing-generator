@@ -13,11 +13,13 @@ php artisan make:event-sourcing-domain
 
 ## Compatibility
 
-| What                                                                        | Version |
-|-----------------------------------------------------------------------------|---------|
-| PHP                                                                         | 8.2     |
-| [Laravel](https://github.com/laravel/laravel)                               | 11.x    |
-| [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x     |
+| What                                                                        | Version  |
+|-----------------------------------------------------------------------------|----------|
+| PHP                                                                         | 8.2      |
+| [Laravel](https://github.com/laravel/laravel)                               | 11.x (*) |
+| [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x      |
+
+> (*) Package has been tested on Laravel 10.x but it is not officially released for that version.
 
 ## Installation
 
