@@ -29,12 +29,12 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
      * @var string
      */
     protected $signature = 'make:event-sourcing-domain 
-                            {name : Name of the model}
-                            {--d|domain= : Domain [default: same as model]}
-                            {--namespace=Domain : Namespace}
-                            {--m|migration= : Existing migration for the model, with or without timestamp prefix}
-                            {--a|aggregate_root= : Create aggregate root (accepts 0 or 1)}
-                            {--r|reactor= : Create reactor (accepts 0 or 1)}
+                            {model : The name of the model}
+                            {--d|domain= : The name of the domain}
+                            {--namespace=Domain : The namespace or root folder}
+                            {--m|migration= : Indicate any existing migration for the model, with or without timestamp prefix}
+                            {--a|aggregate_root= : Indicate if aggregate root must be created or not (accepts 0 or 1)}
+                            {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
                             {--i|indentation=4 : Indentation spaces}';
 
     /**
@@ -50,7 +50,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
     protected function promptForMissingArgumentsUsing(): array
     {
         return [
-            'name' => 'Which model you want to create?',
+            'model' => 'Which is the name of the model?',
         ];
     }
 
@@ -90,7 +90,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
     protected function alreadyExistsModel(): bool
     {
-        return $this->files->exists($this->getDomainPath($this->settings->name).'Actions/Create'.$this->settings->name.'.php');
+        return $this->files->exists($this->getDomainPath($this->settings->model).'Actions/Create'.$this->settings->model.'.php');
     }
 
     protected function getDefaultNamespace($rootNamespace): string
@@ -118,7 +118,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         $this->stubReplacer->replace($stub);
 
         $content = $this->replaceNamespace($stub, $this->settings->domain)
-            ->replaceClass($stub, $this->settings->name);
+            ->replaceClass($stub, $this->settings->model);
 
         $this->files->put($outputPath, $content);
     }
@@ -168,16 +168,16 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         return class_exists('Spatie\EventSourcing\EventSourcingServiceProvider');
     }
 
-    protected function getNameInput(): string
+    protected function getModelInput(): string
     {
-        return Str::ucfirst(parent::getNameInput());
+        return Str::ucfirst(Str::trim($this->argument('model')));
     }
 
     protected function getDomainInput(): string
     {
         $domain = ! is_null($this->option('domain')) ? Str::ucfirst($this->option('domain')) : null;
         if (! $domain) {
-            $domain = $this->ask('Which is the domain name?');
+            $domain = $this->ask('Which is the name of the domain?');
         }
 
         return Str::ucfirst($domain);
@@ -188,12 +188,9 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
      */
     protected function bootstrap(): bool
     {
-        $name = $this->getNameInput();
-        $domain = $this->getDomainInput();
-
         $this->settings = new CommandSettings(
-            name: $name,
-            domain: $domain,
+            model: $this->getModelInput(),
+            domain: $this->getDomainInput(),
             namespace: Str::ucfirst($this->option('namespace')),
             migration: $this->option('migration'),
             createAggregateRoot: ! is_null($this->option('aggregate_root')) ? (bool) $this->option('aggregate_root') : null,
@@ -213,8 +210,8 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         }
 
         // Check if the given name is a reserved word within PHP language
-        if ($this->isReservedName($this->settings->name)) {
-            $this->components->error('The name "'.$this->settings->name.'" is reserved by PHP.');
+        if ($this->isReservedName($this->settings->model)) {
+            $this->components->error('The model "'.$this->settings->model.'" is reserved by PHP.');
 
             return false;
         }
@@ -257,7 +254,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             $this->settings->createReactor = $this->confirm('Do you want to create a Reactor class?', true);
         }
 
-        $this->settings->nameAsPrefix = Str::lcfirst(Str::camel($this->settings->name));
+        $this->settings->nameAsPrefix = Str::lcfirst(Str::camel($this->settings->model));
         $this->settings->domainPath = $this->getDomainPath($this->qualifyDomain($this->settings->domain));
 
         return true;
@@ -271,10 +268,10 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         $this->table(
             ['Option', 'Choice'],
             [
-                ['Model', $this->settings->name],
+                ['Model', $this->settings->model],
                 ['Domain', $this->settings->domain],
                 ['Namespace', $this->settings->namespace],
-                ['Path', $this->settings->namespace.'/'.$this->settings->domain.'/'.$this->settings->name],
+                ['Path', $this->settings->namespace.'/'.$this->settings->domain.'/'.$this->settings->model],
                 ['Use migration', basename($this->settings->migration) ?: 'no'],
                 ['Primary key', $this->settings->primaryKey()],
                 ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
@@ -340,7 +337,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
     protected function outputResult(): void
     {
-        $this->components->info(sprintf('%s [%s] with model [%s] created successfully.', $this->type, $this->settings->domain, $this->settings->name));
+        $this->components->info(sprintf('%s [%s] with model [%s] created successfully.', $this->type, $this->settings->domain, $this->settings->model));
     }
 
     // @phpstan-ignore method.childReturnType

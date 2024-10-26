@@ -29,7 +29,7 @@ class StubResolver
     ): string {
         return Str::replace(
             ['{{path}}', '{{name}}', '{{ path }}', '{{ name }}', '//'],
-            [$settings->domainPath, $settings->name, $settings->domainPath, $settings->name, '/'],
+            [$settings->domainPath, $settings->model, $settings->domainPath, $settings->model, '/'],
             $this->resolverPattern
         );
     }

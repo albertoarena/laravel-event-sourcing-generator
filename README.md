@@ -38,19 +38,33 @@ composer require albertoarena/laravel-event-sourcing-generator
 
 ## Usage
 
-Generate a model with same name of domain (e.g. `App/Domain/Animal/Actions/CreateAnimal`)
-
 ```shell
-php artisan make:event-sourcing-domain [options] [--] <name>
+# App/Domain/Animal/Actions/CreateAnimal
+php artisan make:event-sourcing-domain <model> [--domain=<domain>]
 ```
 
-Generate a model with different domain (e.g. `App/Domain/Animal/Actions/CreateTiger`)
+Generate a model with same name of domain
 
 ```shell
-php artisan make:event-sourcing-domain [options] [--] <name> -d|--domain <domain>
+# App/Domain/Animal/Actions/CreateAnimal
+php artisan make:event-sourcing-domain Animal
 ```
 
-Help
+Generate a model with different domain
+
+```shell
+# App/Domain/Animal/Actions/CreateTiger
+php artisan make:event-sourcing-domain Tiger --domain=Animal
+```
+
+Generate a model with different domain and namespace 
+
+```shell
+# App/CustomDomain/Animal/Actions/CreateTiger
+php artisan make:event-sourcing-domain Tiger --domain=Animal --namespace=CustomDomain 
+```
+
+Show help
 
 ```shell
 php artisan help make:event-sourcing-domain
@@ -67,7 +81,7 @@ php artisan make:event-sourcing-domain Animal
 ```
 
 ```
-Which is the domain name? [Animal]
+Which is the name of the domain? [Animal]
 > Animal
 
 Do you want to import properties from existing database migration?
@@ -195,10 +209,12 @@ return new class extends Migration
 
 In this example, `id` will be used as primary key. No aggregate root will be available.
 
-It is not necessary to specify the full name of migration including the date timestamp:
+It is possible to specify the migration interactively or, more efficiently, passing it to command options. Please notice
+that the migration filename timestamp is not needed:
 
-- `2024_10_01_112344_create_animals_table` or
-- `create_animals_table`
+```shell
+php artisan make:event-sourcing-domain Animal --migration=create_animals_table
+```
 
 **Note:** migration will be asked interactively if not specified as command line option.
 
@@ -207,7 +223,7 @@ php artisan make:event-sourcing-domain Animal --migration=create_animals_table
 ```
 
 ```
-Which is the domain name? [Animal]
+Which is the name of the domain? [Animal]
 > Animal
 
 Do you want to create a Reactor class?
@@ -231,7 +247,7 @@ Your choices:
 Do you confirm the generation of the domain?
 > yes
 
-Domain Animal created successfully.
+Domain [Animal] with model [Animal] created successfully.
 ```
 
 Directory structure generated (using `id` as primary key)

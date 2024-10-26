@@ -40,13 +40,13 @@ class MakeEventSourcingDomainCommandTest extends TestCase
 
         $output = Artisan::output();
         $this->assertMatchesRegularExpression("/Description:\n\s*Create a new domain for Spatie event sourcing/", $output);
-        $this->assertMatchesRegularExpression("/Usage:\n\s*make:event-sourcing-domain \[options] \[--] <name>/", $output);
-        $this->assertMatchesRegularExpression("/Arguments:\n\s*name\s*Name of the model/", $output);
-        $this->assertMatchesRegularExpression("/\s*-d, --domain\[=DOMAIN]\s*Domain \[default: same as model]/", $output);
-        $this->assertMatchesRegularExpression("/\s*--namespace\[=NAMESPACE]\s*Namespace \[default: \"Domain\"]/", $output);
-        $this->assertMatchesRegularExpression("/\s*-m, --migration\[=MIGRATION]\s*Existing migration for the model, with or without timestamp prefix/", $output);
-        $this->assertMatchesRegularExpression("/\s*-a, --aggregate_root\[=AGGREGATE_ROOT]\s*Create aggregate root/", $output);
-        $this->assertMatchesRegularExpression("/\s*-r, --reactor\[=REACTOR]\s*Create reactor/", $output);
+        $this->assertMatchesRegularExpression("/Usage:\n\s*make:event-sourcing-domain \[options] \[--] <model>/", $output);
+        $this->assertMatchesRegularExpression("/Arguments:\n\s*model\s*The name of the model/", $output);
+        $this->assertMatchesRegularExpression("/\s*-d, --domain\[=DOMAIN]\s*The name of the domain/", $output);
+        $this->assertMatchesRegularExpression("/\s*--namespace\[=NAMESPACE]\s*The namespace or root folder \[default: \"Domain\"]/", $output);
+        $this->assertMatchesRegularExpression("/\s*-m, --migration\[=MIGRATION]\s*Indicate any existing migration for the model, with or without timestamp prefix/", $output);
+        $this->assertMatchesRegularExpression("/\s*-a, --aggregate_root\[=AGGREGATE_ROOT]\s*Indicate if aggregate root must be created or not \(accepts 0 or 1\)/", $output);
+        $this->assertMatchesRegularExpression("/\s*-r, --reactor\[=REACTOR]\s*Indicate if reactor must be created or not \(accepts 0 or 1\)/", $output);
         $this->assertMatchesRegularExpression("/\s*-i, --indentation\[=INDENTATION]\s*Indentation spaces \[default: \"4\"]/", $output);
     }
 
@@ -54,15 +54,15 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[Test]
     public function it_can_create_a_model_and_domain()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -80,31 +80,31 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name, modelProperties: $properties);
+        $this->assertDomainGenerated($model, modelProperties: $properties);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_different_domain()
     {
-        $name = 'Tiger';
+        $model = 'Tiger';
         $domain = 'Animal';
 
         $properties = [
@@ -112,7 +112,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $domain])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -130,25 +130,25 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
+                    ['Model', $model],
                     ['Domain', $domain],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$domain.'/'.$name],
+                    ['Path', 'Domain/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            name: $name,
+            model: $model,
             domain: $domain,
             modelProperties: $properties
         );
@@ -158,8 +158,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[Test]
     public function it_can_create_multiple_models_for_same_domain()
     {
-        $name1 = 'Tiger';
-        $name2 = 'Lion';
+        $model1 = 'Tiger';
+        $model2 = 'Lion';
         $domain = 'Animal';
 
         $properties1 = [
@@ -172,7 +172,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             'colour' => '?string',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name1, '--domain' => $domain])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model1, '--domain' => $domain])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -190,30 +190,30 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name1],
+                    ['Model', $model1],
                     ['Domain', $domain],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$domain.'/'.$name1],
+                    ['Path', 'Domain/'.$domain.'/'.$model1],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties1, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties1, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name1.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model1.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            name: $name1,
+            model: $model1,
             domain: $domain,
             modelProperties: $properties1
         );
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name2, '--domain' => $domain])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model2, '--domain' => $domain])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -232,25 +232,25 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name2],
+                    ['Model', $model2],
                     ['Domain', $domain],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$domain.'/'.$name2],
+                    ['Path', 'Domain/'.$domain.'/'.$model2],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties2, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties2, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name2.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model2.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            name: $name2,
+            model: $model2,
             domain: $domain,
             createAggregateRoot: false,
             useUuid: false,
@@ -262,15 +262,15 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[Test]
     public function it_can_create_a_model_and_domain_with_nullable_parameters()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => '?int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -288,39 +288,39 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name, modelProperties: $properties);
+        $this->assertDomainGenerated($model, modelProperties: $properties);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_using_id_as_primary_key()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -337,34 +337,34 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name, useUuid: false, modelProperties: $properties);
+        $this->assertDomainGenerated($model, useUuid: false, modelProperties: $properties);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_without_properties()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', false)
@@ -377,10 +377,10 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -390,27 +390,27 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name);
+        $this->assertDomainGenerated($model);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_different_namespace()
     {
-        $namespace = 'Domains';
+        $modelspace = 'Domains';
         $domain = 'Animal';
-        $name = 'Tiger';
+        $model = 'Tiger';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '-d' => $domain, '--namespace' => $namespace])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '-d' => $domain, '--namespace' => $modelspace])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -428,27 +428,27 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
+                    ['Model', $model],
                     ['Domain', $domain],
-                    ['Namespace', $namespace],
-                    ['Path', $namespace.'/'.$domain.'/'.$name],
+                    ['Namespace', $modelspace],
+                    ['Path', $modelspace.'/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            name: $name,
+            model: $model,
             domain: $domain,
-            namespace: $namespace,
+            namespace: $modelspace,
             modelProperties: $properties
         );
     }
@@ -457,17 +457,17 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[Test]
     public function it_can_create_a_model_and_domain_with_different_lowercase_namespace()
     {
-        $namespace = 'domains';
+        $modelspace = 'domains';
         $expectedNamespace = 'Domains';
         $domain = 'Animal';
-        $name = 'Tiger';
+        $model = 'Tiger';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '-d' => $domain, '--namespace' => $namespace])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '-d' => $domain, '--namespace' => $modelspace])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -485,25 +485,25 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
+                    ['Model', $model],
                     ['Domain', $domain],
                     ['Namespace', $expectedNamespace],
-                    ['Path', $expectedNamespace.'/'.$domain.'/'.$name],
+                    ['Path', $expectedNamespace.'/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            name: $name,
+            model: $model,
             domain: $domain,
             namespace: $expectedNamespace,
             modelProperties: $properties
@@ -514,15 +514,15 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[Test]
     public function it_can_create_a_model_and_domain_with_indentation_argument()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--indentation' => 2])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--indentation' => 2])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -540,39 +540,39 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name, modelProperties: $properties, indentation: 2);
+        $this->assertDomainGenerated($model, modelProperties: $properties, indentation: 2);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_aggregate_root_argument()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--aggregate_root' => true])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--aggregate_root' => true])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -589,39 +589,39 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name, modelProperties: $properties);
+        $this->assertDomainGenerated($model, modelProperties: $properties);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_without_aggregate_root()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -639,39 +639,39 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name, createAggregateRoot: false, modelProperties: $properties);
+        $this->assertDomainGenerated($model, createAggregateRoot: false, modelProperties: $properties);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_reactor_argument()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--reactor' => true])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--reactor' => true])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -688,39 +688,39 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name, modelProperties: $properties);
+        $this->assertDomainGenerated($model, modelProperties: $properties);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_without_reactor()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         $properties = [
             'name' => 'string',
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -738,24 +738,24 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'no'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($name, createReactor: false, modelProperties: $properties);
+        $this->assertDomainGenerated($model, createReactor: false, modelProperties: $properties);
     }
 
     /**
@@ -771,10 +771,10 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         ];
 
         $migrationPath = basename($this->createMockCreateMigration('animal', $properties));
-        $name = 'Animal';
+        $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', true)
             ->expectsChoice(
                 'Select database migration',
@@ -789,25 +789,25 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', $migrationPath],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            $name,
+            $model,
             migration: 'create_animals_table',
             modelProperties: $properties
         );
@@ -826,10 +826,10 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         ];
 
         $migrationPath = basename($this->createMockCreateMigration('animal', $properties, [':primary' => 'id']));
-        $name = 'Animal';
+        $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', true)
             ->expectsChoice(
                 'Select database migration',
@@ -843,25 +843,25 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', $migrationPath],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            $name,
+            $model,
             migration: 'create_animals_table',
             createAggregateRoot: false,
             useUuid: false,
@@ -882,10 +882,10 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         ];
 
         $this->createMockCreateMigration('animal', $properties);
-        $name = 'Animal';
+        $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--migration' => 'create_animals_table'])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--migration' => 'create_animals_table'])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             // Options
             ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
@@ -894,24 +894,24 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
-                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $name) => "$type $name"))],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            $name,
+            $model,
             migration: 'create_animals_table',
             modelProperties: $properties
         );
@@ -966,22 +966,22 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ':primary' => ['bigIncrements', 'id'],
         ];
 
-        $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $name) => $this->columnTypeToBuiltInType($type)." $name"));
+        $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $model) => $this->columnTypeToBuiltInType($type)." $model"));
 
         $this->createMockCreateMigration('animal', $properties, $options);
-        $name = 'Animal';
+        $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--migration' => 'create_animals_table', '--reactor' => 0])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--migration' => 'create_animals_table', '--reactor' => 0])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             // Confirmation
             ->expectsOutput('Your choices:')
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -990,12 +990,12 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            $name,
+            $model,
             migration: 'create_animals_table',
             createAggregateRoot: false,
             createReactor: false,
@@ -1021,22 +1021,22 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ],
         ];
 
-        $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $name) => $this->columnTypeToBuiltInType($type)." $name"));
+        $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $model) => $this->columnTypeToBuiltInType($type)." $model"));
 
         $this->createMockCreateMigration('animal', $properties, $options);
-        $name = 'Animal';
+        $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--migration' => 'create_animals_table', '--reactor' => 0])
-            ->expectsQuestion('Which is the domain name?', $name)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--migration' => 'create_animals_table', '--reactor' => 0])
+            ->expectsQuestion('Which is the name of the domain?', $model)
             // Confirmation
             ->expectsOutput('Your choices:')
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
@@ -1045,12 +1045,12 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
-            $name,
+            $model,
             migration: 'create_animals_table',
             createAggregateRoot: false,
             createReactor: false,
@@ -1062,12 +1062,12 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[Test]
     public function it_can_create_a_model_and_domain_with_not_specified_domain()
     {
-        $name = 'Animal';
-        $nameExpected = Str::ucfirst($name);
+        $model = 'Animal';
+        $modelExpected = Str::ucfirst($model);
 
         $this->artisan('make:event-sourcing-domain')
-            ->expectsQuestion('Which model you want to create?', $name)
-            ->expectsQuestion('Which is the domain name?', $name)
+            ->expectsQuestion('Which is the name of the model?', $model)
+            ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', false)
@@ -1080,10 +1080,10 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $nameExpected],
-                    ['Domain', $nameExpected],
+                    ['Model', $modelExpected],
+                    ['Domain', $modelExpected],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$nameExpected.'/'.$nameExpected],
+                    ['Path', 'Domain/'.$modelExpected.'/'.$modelExpected],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -1092,24 +1092,24 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$nameExpected.'] with model ['.$nameExpected.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$modelExpected.'] with model ['.$modelExpected.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($nameExpected);
+        $this->assertDomainGenerated($modelExpected);
     }
 
     #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_lowercase_inputs()
     {
-        $name = 'tiger';
+        $model = 'tiger';
         $domain = 'animal';
-        $nameExpected = Str::ucfirst($name);
+        $modelExpected = Str::ucfirst($model);
         $domainExpected = Str::ucfirst($domain);
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $domain)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $domain)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', false)
@@ -1122,10 +1122,10 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $nameExpected],
+                    ['Model', $modelExpected],
                     ['Domain', $domainExpected],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$domainExpected.'/'.$nameExpected],
+                    ['Path', 'Domain/'.$domainExpected.'/'.$modelExpected],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -1134,27 +1134,27 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domainExpected.'] with model ['.$nameExpected.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domainExpected.'] with model ['.$modelExpected.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated(name: $nameExpected, domain: $domainExpected);
+        $this->assertDomainGenerated(model: $modelExpected, domain: $domainExpected);
     }
 
     #[RunInSeparateProcess] #[Test]
     public function it_can_partially_create_a_model_without_overwriting_already_existing_files()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         // Create domain structure
         File::makeDirectory(app_path('Domain'));
-        File::makeDirectory(app_path("Domain/$name"));
-        File::makeDirectory(app_path("Domain/$name/Events"));
-        File::makeDirectory(app_path("Domain/$name/Reactors"));
-        File::put(app_path("Domain/$name/Events/{$name}Deleted.php"), "<?php\nclass {$name}Deleted {}\n");
-        File::put(app_path("Domain/$name/Reactors/{$name}Reactor.php"), "<?php\nclass {$name}Reactor {}\n");
+        File::makeDirectory(app_path("Domain/$model"));
+        File::makeDirectory(app_path("Domain/$model/Events"));
+        File::makeDirectory(app_path("Domain/$model/Reactors"));
+        File::put(app_path("Domain/$model/Events/{$model}Deleted.php"), "<?php\nclass {$model}Deleted {}\n");
+        File::put(app_path("Domain/$model/Reactors/{$model}Reactor.php"), "<?php\nclass {$model}Reactor {}\n");
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $name])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', false)
@@ -1167,10 +1167,10 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
-                    ['Domain', $name],
+                    ['Model', $model],
+                    ['Domain', $model],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$name.'/'.$name],
+                    ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -1178,16 +1178,16 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                 ]
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
-            ->expectsOutputToContain('WARN  A file already exists (it was not overwritten): '."Domain/$name/Events/{$name}Deleted.php")
-            ->expectsOutputToContain('WARN  A file already exists (it was not overwritten): '."Domain/$name/Reactors/{$name}Reactor.php")
-            ->expectsOutputToContain('INFO  Domain ['.$name.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('WARN  A file already exists (it was not overwritten): '."Domain/$model/Events/{$model}Deleted.php")
+            ->expectsOutputToContain('WARN  A file already exists (it was not overwritten): '."Domain/$model/Reactors/{$model}Reactor.php")
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
             ->assertSuccessful();
     }
 
     #[RunInSeparateProcess] #[Test]
     public function it_can_create_a_model_if_only_the_domain_already_exists()
     {
-        $name = 'Tiger';
+        $model = 'Tiger';
         $domain = 'Animal';
 
         // Create domain structure
@@ -1196,8 +1196,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         File::makeDirectory(app_path("Domain/$domain/Actions"));
         File::put(app_path("Domain/$domain/Actions/CreateLion.php"), "<?php\nclass CreateLion {}\n");
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name])
-            ->expectsQuestion('Which is the domain name?', $domain)
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $domain)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', false)
@@ -1210,10 +1210,10 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsTable(
                 ['Option', 'Choice'],
                 [
-                    ['Model', $name],
+                    ['Model', $model],
                     ['Domain', $domain],
                     ['Namespace', 'Domain'],
-                    ['Path', 'Domain/'.$domain.'/'.$name],
+                    ['Path', 'Domain/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -1222,23 +1222,24 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             )
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
-            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$name.'] created successfully.')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model.'] created successfully.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated(name: $name, domain: $domain);
+        $this->assertDomainGenerated(model: $model, domain: $domain);
     }
 
+    #[RunInSeparateProcess]
     #[Test]
     public function it_cannot_create_a_model_and_domain_with_update_migration()
     {
-        $name = 'Animal';
+        $model = 'Animal';
         $properties = [
             'new_field' => '?string',
         ];
         $migrationPath = $this->createMockUpdateMigration('animal', $properties);
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $name, '--migration' => $migrationPath])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--migration' => $migrationPath])
             ->expectsOutputToContain('ERROR  There was an error: Update migration file is not supported.')
             ->assertFailed();
     }
@@ -1247,9 +1248,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[Test]
     public function it_cannot_create_a_model_and_domain_with_non_existing_migration()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $name, '--migration' => 'create_non_existing_table'])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--migration' => 'create_non_existing_table'])
             ->expectsOutputToContain('ERROR  There was an error: Migration file does not exist.')
             ->assertFailed();
     }
@@ -1259,30 +1260,30 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     {
         $this->hideSpatiePackage();
 
-        $name = 'Animal';
+        $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $name, '--verbose' => 1])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--verbose' => 1])
             ->expectsOutputToContain('ERROR  Spatie Event Sourcing package has not been installed. Run what follows:')
             ->expectsOutputToContain('ERROR  composer require spatie/laravel-event-sourcing')
             ->assertFailed();
 
         $this->assertFalse(
-            File::exists(app_path('Domain/'.$name.'.php'))
+            File::exists(app_path('Domain/'.$model.'.php'))
         );
     }
 
     #[RunInSeparateProcess] #[Test]
     public function it_cannot_create_a_model_if_already_exists()
     {
-        $name = 'Animal';
+        $model = 'Animal';
 
         // Create domain structure
         File::makeDirectory(app_path('Domain'));
-        File::makeDirectory(app_path("Domain/$name"));
-        File::makeDirectory(app_path("Domain/$name/Actions"));
-        File::put(app_path("Domain/$name/Actions/Create$name.php"), "<?php\nclass CreateAnimal {}\n");
+        File::makeDirectory(app_path("Domain/$model"));
+        File::makeDirectory(app_path("Domain/$model/Actions"));
+        File::put(app_path("Domain/$model/Actions/Create$model.php"), "<?php\nclass CreateAnimal {}\n");
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $name])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model])
             ->expectsOutputToContain('ERROR  Model already exists.')
             ->assertFailed();
     }
@@ -1290,21 +1291,21 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[RunInSeparateProcess] #[Test]
     public function it_cannot_create_a_model_with_reserved_name()
     {
-        $name = 'Array';
+        $model = 'Array';
         $domain = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $domain])
-            ->expectsOutputToContain('The name "'.$name.'" is reserved by PHP.')
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain])
+            ->expectsOutputToContain('The model "'.$model.'" is reserved by PHP.')
             ->assertFailed();
     }
 
     #[RunInSeparateProcess] #[Test]
     public function it_cannot_create_a_domain_with_reserved_name()
     {
-        $name = 'Animal';
+        $model = 'Animal';
         $domain = 'Array';
 
-        $this->artisan('make:event-sourcing-domain', ['name' => $name, '--domain' => $domain])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain])
             ->expectsOutputToContain('The domain "'.$domain.'" is reserved by PHP.')
             ->assertFailed();
     }

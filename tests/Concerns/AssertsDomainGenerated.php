@@ -58,7 +58,7 @@ trait AssertsDomainGenerated
     }
 
     protected function assertDomainGenerated(
-        string $name,
+        string $model,
         ?string $domain = null,
         string $namespace = 'Domain',
         ?string $migration = null,
@@ -72,7 +72,7 @@ trait AssertsDomainGenerated
             $createAggregateRoot = false;
         }
 
-        [$expectedFiles, $unexpectedFiles] = $this->getExpectedFiles($name, $domain ?? $name, $namespace, $createAggregateRoot, $createReactor);
+        [$expectedFiles, $unexpectedFiles] = $this->getExpectedFiles($model, $domain ?? $model, $namespace, $createAggregateRoot, $createReactor);
 
         // Assert that the files were created
         foreach (array_keys($expectedFiles) as $generatedFile) {
@@ -89,15 +89,15 @@ trait AssertsDomainGenerated
 
         // Create settings
         $settings = new CommandSettings(
-            name: $name,
-            domain: $domain ?? $name,
+            model: $model,
+            domain: $domain ?? $model,
             namespace: $namespace,
             migration: $migration,
             createAggregateRoot: $createAggregateRoot,
             createReactor: $createReactor,
             indentation: $indentation,
             useUuid: $useUuid,
-            nameAsPrefix: Str::lcfirst(Str::camel($name)),
+            nameAsPrefix: Str::lcfirst(Str::camel($model)),
             domainPath: '',
         );
         $settings->modelProperties->import($modelProperties);
@@ -116,7 +116,7 @@ trait AssertsDomainGenerated
 
             // Replace content
             $stubReplacer
-                ->replaceWithClosure($stub, 'class', fn () => $name)
+                ->replaceWithClosure($stub, 'class', fn () => $model)
                 ->replace($stub);
 
             // Load generated file

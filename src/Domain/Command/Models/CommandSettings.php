@@ -14,7 +14,7 @@ class CommandSettings
     protected MigrationCreateProperties $properties;
 
     public function __construct(
-        public readonly string $name,
+        public readonly string $model,
         public readonly string $domain,
         public readonly string $namespace,
         public ?string $migration,
