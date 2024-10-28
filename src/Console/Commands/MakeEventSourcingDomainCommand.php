@@ -59,13 +59,6 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         ];
     }
 
-    protected function resolveStubPath($stub): string
-    {
-        return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
-            ? $customPath
-            : __DIR__.'/../../../'.$stub;
-    }
-
     protected function getDatabaseMigrations(): array
     {
         return Arr::map(
@@ -74,10 +67,13 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         );
     }
 
+    // @codeCoverageIgnoreStart
     protected function getStub(): string
     {
-        return $this->resolveStubPath('stubs/event-domain.stub');
+        // This method is unused
+        return '';
     }
+    // @codeCoverageIgnoreEnd
 
     protected function qualifyDomain(string $name): string
     {
@@ -103,11 +99,6 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
     protected function alreadyExistsModel(): bool
     {
         return $this->files->exists($this->getDomainPath($this->settings->model).'Actions/Create'.$this->settings->model.'.php');
-    }
-
-    protected function getDefaultNamespace($rootNamespace): string
-    {
-        return "$rootNamespace\\{$this->settings->namespace}";
     }
 
     /**
@@ -358,7 +349,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             }
 
             if (! $this->confirmChoices()) {
-                $this->components->warn('Aborted');
+                $this->components->warn('Aborted!');
 
                 return self::FAILURE;
             }

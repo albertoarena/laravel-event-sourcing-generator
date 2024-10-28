@@ -13,13 +13,13 @@ php artisan make:event-sourcing-domain
 
 ## Compatibility
 
-| What                                                                        | Version  |
-|-----------------------------------------------------------------------------|----------|
-| PHP                                                                         | 8.2      |
-| [Laravel](https://github.com/laravel/laravel)                               | 11.x (*) |
-| [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x      |
+| What                                                                        | Version         |
+|-----------------------------------------------------------------------------|-----------------|
+| PHP                                                                         | 8.2             |
+| [Laravel](https://github.com/laravel/laravel)                               | 10.x / 11.x (*) |
+| [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x             |
 
-> (*) Package has been tested on Laravel 10.x but it is not officially released for that version.
+> (*) Package has been tested in Laravel 10, even it is not officially released for that version.
 
 ## Installation
 
@@ -43,6 +43,13 @@ composer require albertoarena/laravel-event-sourcing-generator
 ```shell
 # App/Domain/Animal/Actions/CreateAnimal
 php artisan make:event-sourcing-domain <model> [--domain=<domain>]
+  [--namespace=<namespace>]
+  [--migration=<existing_migration_filename>]
+  [--aggregate-root=<0|1>]
+  [--reactor=<0|1>]
+  [--unit-test]
+  [--primary-key=<uuid|id>]
+  [--indentation=<indent>]
 ```
 
 Generate a model with same name of domain
@@ -64,6 +71,13 @@ Generate a model with different domain and namespace
 ```shell
 # App/CustomDomain/Animal/Actions/CreateTiger
 php artisan make:event-sourcing-domain Tiger --domain=Animal --namespace=CustomDomain 
+```
+
+Generate a model from existing migration with unit test
+
+```shell
+# App/Domain/Animal/Actions/CreateAnimal
+php artisan make:event-sourcing-domain Animal --migration=create_animal_table --unit-test
 ```
 
 Show help
@@ -366,6 +380,22 @@ app
 │       └── Reactors
 │           └── AnimalReactor
 └── etc.
+```
+
+
+### Create unit test
+
+```shell
+php artisan make:event-sourcing-domain Animal --unit-test
+```
+
+This setup will create a unit test, already working for create / update / event events.
+
+```shell
+tests
+├── Domain
+│   └── Animal
+│       └── AnimalTest.php
 ```
 
 ### Specify indentation

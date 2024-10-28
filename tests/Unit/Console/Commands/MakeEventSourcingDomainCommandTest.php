@@ -1102,6 +1102,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
+                    ['Create Reactor class', 'no'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", $expectedPrintedProperties)],
                 ]
             )
@@ -1117,6 +1119,73 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             createAggregateRoot: false,
             createReactor: false,
             modelProperties: $properties
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_migration_argument_using_unsupported_blueprint_column_types()
+    {
+        $validProperties = [
+            'name' => 'string',
+        ];
+
+        $properties = array_merge(
+            $validProperties, [
+                'binary_field' => 'binary',
+                'foreign_id_for_field' => 'foreignIdFor',
+                'foreign_ulid_field' => 'foreignUlid',
+                'geography_field' => 'geography',
+                'geometry_field' => 'geometry',
+                'jsonb_field' => 'jsonb',
+                'nullable_morphs_field' => 'nullableMorphs',
+                'nullable_ulid_morphs_field' => 'nullableUlidMorphs',
+                'nullable_uuid_morphs_field' => 'nullableUuidMorphs',
+                'set_field' => 'set',
+                'ulid_morphs_field' => 'ulidMorphs',
+                'uuid_morphs_field' => 'uuidMorphs',
+                'ulid_field' => 'ulid',
+            ]
+        );
+
+        $expectedPrintedProperties = array_values(Arr::map($validProperties, fn ($type, $model) => "$type $model"));
+
+        $this->createMockCreateMigration('animal', $properties);
+        $model = 'Animal';
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--migration' => 'create_animals_table', '--aggregate-root' => 0, '--reactor' => 0])
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'create_animals_table'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'no'],
+                    ['Create Reactor class', 'no'],
+                    ['Create unit test', 'no'],
+                    ['Model properties', implode("\n", $expectedPrintedProperties)],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            $model,
+            migration: 'create_animals_table',
+            createAggregateRoot: false,
+            createReactor: false,
+            modelProperties: $validProperties
         );
     }
 
@@ -1530,6 +1599,54 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             modelProperties: $properties,
             createUnitTest: true
         );
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_cannot_create_a_model_and_domain_if_choices_are_not_confirmed()
+    {
+        $model = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', true)
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'no')
+            // Result
+            ->expectsOutputToContain('WARN  Aborted!')
+            ->assertFailed();
     }
 
     #[RunInSeparateProcess]

@@ -2,12 +2,12 @@
 
 namespace Tests\Concerns;
 
-use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\MigrationParser;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Tests\Domain\PhpParser\MigrationModifyParser;
 
 trait CreatesMockMigration
 {
@@ -34,7 +34,7 @@ trait CreatesMockMigration
             $migrationFile = File::get(base_path($migration));
 
             // Parse file and inject properties
-            $newCode = (new MigrationParser($migrationFile))->modify($modelProperties, $options);
+            $newCode = (new MigrationModifyParser($migrationFile, $modelProperties, $options))->modify();
 
             // Save file with new properties
             File::put(base_path($migration), $newCode);
