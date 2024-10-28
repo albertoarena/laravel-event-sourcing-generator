@@ -91,5 +91,13 @@
       "properties": true,
       "reactor": true
     }
+  },
+  "test": {
+    "stub": "stubs/test",
+    "output": "{{ test_path }}/{{ name }}Test.php",
+    "context": {
+      "properties": true,
+      "test": true
+    }
   }
 }

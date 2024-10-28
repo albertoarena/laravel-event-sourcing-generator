@@ -42,12 +42,14 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $this->assertMatchesRegularExpression("/Description:\n\s*Create a new domain for Spatie event sourcing/", $output);
         $this->assertMatchesRegularExpression("/Usage:\n\s*make:event-sourcing-domain \[options] \[--] <model>/", $output);
         $this->assertMatchesRegularExpression("/Arguments:\n\s*model\s*The name of the model/", $output);
-        $this->assertMatchesRegularExpression("/\s*-d, --domain\[=DOMAIN]\s*The name of the domain/", $output);
-        $this->assertMatchesRegularExpression("/\s*--namespace\[=NAMESPACE]\s*The namespace or root folder \[default: \"Domain\"]/", $output);
-        $this->assertMatchesRegularExpression("/\s*-m, --migration\[=MIGRATION]\s*Indicate any existing migration for the model, with or without timestamp prefix/", $output);
-        $this->assertMatchesRegularExpression("/\s*-a, --aggregate_root\[=AGGREGATE_ROOT]\s*Indicate if aggregate root must be created or not \(accepts 0 or 1\)/", $output);
-        $this->assertMatchesRegularExpression("/\s*-r, --reactor\[=REACTOR]\s*Indicate if reactor must be created or not \(accepts 0 or 1\)/", $output);
-        $this->assertMatchesRegularExpression("/\s*-i, --indentation\[=INDENTATION]\s*Indentation spaces \[default: \"4\"]/", $output);
+        $this->assertMatchesRegularExpression('/\s*-d, --domain\[=DOMAIN]\s*The name of the domain/', $output);
+        $this->assertMatchesRegularExpression('/\s*--namespace\[=NAMESPACE]\s*The namespace or root folder \[default: "Domain"]/', $output);
+        $this->assertMatchesRegularExpression('/\s*-m, --migration\[=MIGRATION]\s*Indicate any existing migration for the model, with or without timestamp prefix/', $output);
+        $this->assertMatchesRegularExpression('/\s*-a, --aggregate-root\[=AGGREGATE-ROOT]\s*Indicate if aggregate root must be created or not \(accepts 0 or 1\)/', $output);
+        $this->assertMatchesRegularExpression('/\s*-r, --reactor\[=REACTOR]\s*Indicate if reactor must be created or not \(accepts 0 or 1\)/', $output);
+        $this->assertMatchesRegularExpression('/\s*-u, --unit-test\s*Indicate if unit test must be created/', $output);
+        $this->assertMatchesRegularExpression('/\s*-p, --primary-key\[=PRIMARY-KEY]\s*Indicate which is the primary key \(uuid, id\)/', $output);
+        $this->assertMatchesRegularExpression('/\s*-i, --indentation\[=INDENTATION]\s*Indentation spaces \[default: "4"]/', $output);
     }
 
     #[RunInSeparateProcess]
@@ -88,6 +90,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -138,6 +141,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -198,6 +202,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties1, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -240,6 +245,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties2, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -260,7 +266,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
 
     #[RunInSeparateProcess]
     #[Test]
-    public function it_can_create_a_model_and_domain_with_nullable_parameters()
+    public function it_can_create_a_model_and_domain_with_nullable_properties()
     {
         $model = 'Animal';
 
@@ -296,6 +302,57 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated($model, modelProperties: $properties);
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_uuid_as_primary_key_argument()
+    {
+        $model = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--primary-key' => 'uuid'])
+            ->expectsQuestion('Which is the name of the domain?', $model)
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -345,6 +402,56 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated($model, useUuid: false, modelProperties: $properties);
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_id_as_primary_key_argument()
+    {
+        $model = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--primary-key' => 'id'])
+            ->expectsQuestion('Which is the name of the domain?', $model)
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'id'],
+                    ['Create AggregateRoot class', 'no'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -385,6 +492,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', 'none'],
                 ]
             )
@@ -436,6 +544,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -493,6 +602,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -548,6 +658,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -571,7 +682,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--aggregate_root' => true])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--aggregate-root' => true])
             ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
@@ -597,6 +708,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -647,6 +759,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -696,6 +809,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -746,6 +860,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'no'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -797,6 +912,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -851,6 +967,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
                     ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                 ]
             )
@@ -1185,7 +1302,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     }
 
     #[RunInSeparateProcess] #[Test]
-    public function it_can_create_a_model_if_only_the_domain_already_exists()
+    public function it_can_create_a_model_even_if_the_domain_already_exists()
     {
         $model = 'Tiger';
         $domain = 'Animal';
@@ -1227,6 +1344,192 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->assertSuccessful();
 
         $this->assertDomainGenerated(model: $model, domain: $domain);
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_unit_tests()
+    {
+        $model = 'Tiger';
+        $domain = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain, '--primary-key' => 'uuid', '--unit-test' => true])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $domain],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$domain.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'yes'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated($model, domain: $domain, modelProperties: $properties, createUnitTest: true);
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_unit_tests_using_id_as_primary_key()
+    {
+        $model = 'Tiger';
+        $domain = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain, '--primary-key' => 'id', '--unit-test' => true])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $domain],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$domain.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'id'],
+                    ['Create AggregateRoot class', 'no'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'yes'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated($model, domain: $domain, useUuid: false, modelProperties: $properties, createUnitTest: true);
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_migration_argument_using_all_blueprint_column_types_and_unit_test()
+    {
+        $properties = [
+            'bool_field' => 'bool',
+            'boolean_field' => 'boolean',
+            'big_integer_field' => 'bigInteger',
+            'integer_field' => 'int',
+            'foreign_id_field' => 'foreignId',
+            'medium_integer_field' => 'mediumInteger',
+            'small_integer_field' => 'smallInteger',
+            'tiny_integer_field' => 'tinyInteger',
+            'json_field' => 'json',
+            'string_field' => 'string',
+            'datetime_tz_field' => 'dateTimeTz',
+            'datetime_field' => 'dateTime',
+            'soft_deletes_tz_field' => 'softDeletesTz',
+            'soft_deletes_field' => 'softDeletes',
+            'timestamp_tz_field' => 'timestampTz',
+            'timestamp_field' => 'timestamp',
+            'timestamps_tz_field' => 'timestampsTz',
+            'time_tz_field' => 'timeTz',
+            'time_field' => 'time',
+            'char_field' => 'char',
+            'enum_field' => 'enum',
+            'foreign_uuid_field' => 'foreignUuid',
+            'ip_address_field' => 'ipAddress',
+            'long_text_field' => 'longText',
+            'mac_address_field' => 'macAddress',
+            'medium_text_field' => 'mediumText',
+            'remember_token_field' => 'rememberToken',
+            'text_field' => 'text',
+            'tiny_text_field' => 'tinyText',
+            'date_field' => 'date',
+            'nullable_timestamps_field' => 'nullableTimestamps',
+            'nullable_string_field' => '?string',
+            'nullable_int_field' => '?int',
+            'nullable_float_field' => '?float',
+            'uuid_field' => 'uuid',
+        ];
+
+        $options = [
+            ':primary' => ['bigIncrements', 'id'],
+        ];
+
+        $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $model) => $this->columnTypeToBuiltInType($type)." $model"));
+
+        $this->createMockCreateMigration('animal', $properties, $options);
+        $model = 'Animal';
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--migration' => 'create_animals_table', '--reactor' => 0, '--unit-test' => true])
+            ->expectsQuestion('Which is the name of the domain?', $model)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'create_animals_table'],
+                    ['Primary key', 'id'],
+                    ['Create AggregateRoot class', 'no'],
+                    ['Model properties', implode("\n", $expectedPrintedProperties)],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            $model,
+            migration: 'create_animals_table',
+            createAggregateRoot: false,
+            createReactor: false,
+            modelProperties: $properties,
+            createUnitTest: true
+        );
     }
 
     #[RunInSeparateProcess]
@@ -1307,6 +1610,16 @@ class MakeEventSourcingDomainCommandTest extends TestCase
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain])
             ->expectsOutputToContain('The domain "'.$domain.'" is reserved by PHP.')
+            ->assertFailed();
+    }
+
+    #[RunInSeparateProcess] #[Test]
+    public function it_cannot_create_a_domain_with_invalid_primary_key()
+    {
+        $model = 'Animal';
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--primary-key' => 'hello'])
+            ->expectsOutputToContain('The primary key "hello" is not valid (please specify uuid or id)')
             ->assertFailed();
     }
 }

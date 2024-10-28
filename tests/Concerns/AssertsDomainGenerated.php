@@ -16,39 +16,49 @@ trait AssertsDomainGenerated
     use HasBlueprintColumnType;
 
     protected function getExpectedFiles(
-        string $name,
+        string $model,
         string $domain,
-        string $baseRoot,
+        string $namespace,
         bool $createAggregateRoot,
         bool $createReactor,
+        bool $createUnitTest
     ): array {
         $unexpectedFiles = [];
         $expectedFiles = [
-            "$baseRoot/$domain/Actions/Create$name.php" => $createAggregateRoot ?
+            "$namespace/$domain/Actions/Create$model.php" => $createAggregateRoot ?
                 'actions.create.with-aggregate-root.stub' :
                 'actions.create.without-aggregate-root.stub',
-            "$baseRoot/$domain/Actions/Delete$name.php" => $createAggregateRoot ?
+            "$namespace/$domain/Actions/Delete$model.php" => $createAggregateRoot ?
                 'actions.delete.with-aggregate-root.stub' :
                 'actions.delete.without-aggregate-root.stub',
-            "$baseRoot/$domain/Actions/Update$name.php" => $createAggregateRoot ?
+            "$namespace/$domain/Actions/Update$model.php" => $createAggregateRoot ?
                 'actions.update.with-aggregate-root.stub' :
                 'actions.update.without-aggregate-root.stub',
-            "$baseRoot/$domain/DataTransferObjects/{$name}Data.php" => 'data-transfer-object.stub',
-            "$baseRoot/$domain/Events/{$name}Created.php" => 'events.created.stub',
-            "$baseRoot/$domain/Events/{$name}Deleted.php" => 'events.deleted.stub',
-            "$baseRoot/$domain/Events/{$name}Updated.php" => 'events.updated.stub',
-            "$baseRoot/$domain/Projections/{$name}.php" => 'projection.stub',
-            "$baseRoot/$domain/Projectors/{$name}Projector.php" => 'projector.stub',
+            "$namespace/$domain/DataTransferObjects/{$model}Data.php" => 'data-transfer-object.stub',
+            "$namespace/$domain/Events/{$model}Created.php" => 'events.created.stub',
+            "$namespace/$domain/Events/{$model}Deleted.php" => 'events.deleted.stub',
+            "$namespace/$domain/Events/{$model}Updated.php" => 'events.updated.stub',
+            "$namespace/$domain/Projections/{$model}.php" => 'projection.stub',
+            "$namespace/$domain/Projectors/{$model}Projector.php" => 'projector.stub',
         ];
+
         if ($createAggregateRoot) {
-            $expectedFiles["$baseRoot/$domain/{$name}AggregateRoot.php"] = 'aggregate-root.stub';
+            $expectedFiles["$namespace/$domain/{$model}AggregateRoot.php"] = 'aggregate-root.stub';
         } else {
-            $unexpectedFiles["$baseRoot/$domain/{$name}AggregateRoot.php"] = 'aggregate-root.stub';
+            $unexpectedFiles["$namespace/$domain/{$model}AggregateRoot.php"] = 'aggregate-root.stub';
         }
+
         if ($createReactor) {
-            $expectedFiles["$baseRoot/$domain/Reactors/{$name}Reactor.php"] = 'reactor.stub';
+            $expectedFiles["$namespace/$domain/Reactors/{$model}Reactor.php"] = 'reactor.stub';
         } else {
-            $unexpectedFiles["$baseRoot/$domain/Reactors/{$name}Reactor.php"] = 'reactor.stub';
+            $unexpectedFiles["$namespace/$domain/Reactors/{$model}Reactor.php"] = 'reactor.stub';
+        }
+
+        if ($createUnitTest) {
+            // tests/Domain/World/HelloTest.php
+            $expectedFiles["tests/$namespace/$domain/{$model}Test.php"] = 'test.stub';
+        } else {
+            $unexpectedFiles["tests/$namespace/$domain/{$model}Test.php"] = 'test.stub';
         }
 
         return [
@@ -67,16 +77,28 @@ trait AssertsDomainGenerated
         bool $useUuid = true,
         array $modelProperties = [],
         int $indentation = 4,
+        bool $createUnitTest = false,
     ): void {
         if (! $useUuid) {
             $createAggregateRoot = false;
         }
 
-        [$expectedFiles, $unexpectedFiles] = $this->getExpectedFiles($model, $domain ?? $model, $namespace, $createAggregateRoot, $createReactor);
+        [$expectedFiles, $unexpectedFiles] = $this->getExpectedFiles(
+            model: $model,
+            domain: $domain ?? $model,
+            namespace: $namespace,
+            createAggregateRoot: $createAggregateRoot,
+            createReactor: $createReactor,
+            createUnitTest: $createUnitTest,
+        );
 
         // Assert that the files were created
         foreach (array_keys($expectedFiles) as $generatedFile) {
-            $this->assertTrue(File::exists(app_path($generatedFile)));
+            if (Str::startsWith($generatedFile, 'tests')) {
+                $this->assertTrue(File::exists(base_path($generatedFile)));
+            } else {
+                $this->assertTrue(File::exists(app_path($generatedFile)));
+            }
         }
 
         // Load existing migration
@@ -99,6 +121,7 @@ trait AssertsDomainGenerated
             useUuid: $useUuid,
             nameAsPrefix: Str::lcfirst(Str::camel($model)),
             domainPath: '',
+            createUnitTest: $createUnitTest,
         );
         $settings->modelProperties->import($modelProperties);
 
@@ -119,11 +142,17 @@ trait AssertsDomainGenerated
                 ->replaceWithClosure($stub, 'class', fn () => $model)
                 ->replace($stub);
 
+            $isTest = Str::startsWith($generatedFile, 'tests');
+
             // Load generated file
-            $generated = File::get(app_path($generatedFile));
+            $generated = File::get($isTest ?
+                base_path($generatedFile) :
+                app_path($generatedFile)
+            );
 
             // Assert namespace
-            $this->assertStringContainsString('namespace App\\'.$stubReplacer->settings->namespace.'\\'.$stubReplacer->settings->domain, $generated);
+            $baseNamespace = $isTest ? 'Tests' : 'App';
+            $this->assertStringContainsString('namespace '.$baseNamespace.'\\'.$stubReplacer->settings->namespace.'\\'.$stubReplacer->settings->domain, $generated);
 
             // Assert specific expectations
             if ($stubFile === 'data-transfer-object.stub') {
@@ -147,6 +176,14 @@ trait AssertsDomainGenerated
                     $this->assertMatchesRegularExpression("/'uuid' => \\\$event->{$stubReplacer->settings->nameAsPrefix}Uuid/", $generated);
                 } else {
                     $this->assertDoesNotMatchRegularExpression("/'id' => \\\$event->{$stubReplacer->settings->nameAsPrefix}Id/", $generated);
+                }
+            } elseif ($stubFile === 'test.stub') {
+                if ($createUnitTest) {
+                    $modelLower = Str::lower($settings->model);
+                    $this->assertMatchesRegularExpression("/protected function fakeData\(\): {$settings->model}Data/", $generated);
+                    $this->assertMatchesRegularExpression("/public function can_create_{$modelLower}_model/", $generated);
+                    $this->assertMatchesRegularExpression("/public function can_update_{$modelLower}_model/", $generated);
+                    $this->assertMatchesRegularExpression("/public function can_delete_{$modelLower}_model/", $generated);
                 }
             }
         }

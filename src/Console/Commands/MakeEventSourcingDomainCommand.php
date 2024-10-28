@@ -3,6 +3,7 @@
 namespace Albertoarena\LaravelEventSourcingGenerator\Console\Commands;
 
 use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Console\Concerns\CanCreateDirectories;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Models\StubCallback;
@@ -14,11 +15,13 @@ use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
 class MakeEventSourcingDomainCommand extends GeneratorCommand
 {
+    use CanCreateDirectories;
     use HasBlueprintColumnType;
 
     protected CommandSettings $settings;
@@ -33,8 +36,10 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--d|domain= : The name of the domain}
                             {--namespace=Domain : The namespace or root folder}
                             {--m|migration= : Indicate any existing migration for the model, with or without timestamp prefix}
-                            {--a|aggregate_root= : Indicate if aggregate root must be created or not (accepts 0 or 1)}
+                            {--a|aggregate-root= : Indicate if aggregate root must be created or not (accepts 0 or 1)}
                             {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
+                            {--u|unit-test : Indicate if unit test must be created}
+                            {--p|primary-key= : Indicate which is the primary key (uuid, id)}
                             {--i|indentation=4 : Indentation spaces}';
 
     /**
@@ -86,6 +91,13 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         $name = Str::replaceFirst($this->rootNamespace(), '', $name);
 
         return $this->laravel['path'].'/'.$this->settings->namespace.'/'.str_replace('\\', '/', $name).'/';
+    }
+
+    protected function getTestDomainPath($name): string
+    {
+        $name = Str::replaceFirst($this->rootNamespace(), '', $name);
+
+        return $this->laravel->basePath('tests/').$this->settings->namespace.'/'.str_replace('\\', '/', $name).'/';
     }
 
     protected function alreadyExistsModel(): bool
@@ -159,7 +171,9 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 }
             }
 
-            $this->settings->useUuid = $this->confirm('Do you want to use uuid as model primary key?', true);
+            if (is_null($this->settings->useUuid)) {
+                $this->settings->useUuid = $this->confirm('Do you want to use uuid as model primary key?', true);
+            }
         }
     }
 
@@ -188,15 +202,23 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
      */
     protected function bootstrap(): bool
     {
+        $primaryKey = ! is_null($this->option('primary-key')) ? $this->option('primary-key') : null;
+        if ($primaryKey && ! in_array($primaryKey, ['uuid', 'id'])) {
+            $this->components->error('The primary key "'.$primaryKey.'" is not valid (please specify uuid or id)');
+
+            return false;
+        }
+
         $this->settings = new CommandSettings(
             model: $this->getModelInput(),
             domain: $this->getDomainInput(),
             namespace: Str::ucfirst($this->option('namespace')),
             migration: $this->option('migration'),
-            createAggregateRoot: ! is_null($this->option('aggregate_root')) ? (bool) $this->option('aggregate_root') : null,
+            createAggregateRoot: ! is_null($this->option('aggregate-root')) ? (bool) $this->option('aggregate-root') : null,
             createReactor: ! is_null($this->option('reactor')) ? (bool) $this->option('reactor') : null,
             indentation: (int) $this->option('indentation'),
-            useUuid: false
+            useUuid: ! is_null($primaryKey) ? $primaryKey === 'uuid' : null,
+            createUnitTest: (bool) $this->option('unit-test'),
         );
 
         $this->stubReplacer = new StubReplacer($this->settings);
@@ -241,12 +263,12 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         $this->loadProperties();
 
         // If not using uuid as primary key, no Aggregate Root
-        if (! $this->settings->useUuid) {
+        if ($this->settings->useUuid === false) {
             $this->line('You are not using uuid as model primary key, therefore you cannot use an AggregateRoot class');
             $this->settings->createAggregateRoot = false;
         }
 
-        if (is_null($this->settings->createAggregateRoot)) {
+        if ($this->settings->useUuid && is_null($this->settings->createAggregateRoot)) {
             $this->settings->createAggregateRoot = $this->confirm('Do you want to create an AggregateRoot class?', true);
         }
 
@@ -256,6 +278,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
         $this->settings->nameAsPrefix = Str::lcfirst(Str::camel($this->settings->model));
         $this->settings->domainPath = $this->getDomainPath($this->qualifyDomain($this->settings->domain));
+        $this->settings->testDomainPath = $this->getTestDomainPath($this->qualifyDomain($this->settings->domain));
 
         return true;
     }
@@ -276,6 +299,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 ['Primary key', $this->settings->primaryKey()],
                 ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
                 ['Create Reactor class', $this->settings->createReactor ? 'yes' : 'no'],
+                ['Create unit test', $this->settings->createUnitTest ? 'yes' : 'no'],
                 [
                     'Model properties',
                     $modelProperties ?
@@ -299,21 +323,6 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         );
 
         return $this->confirm('Do you confirm the generation of the domain?', true);
-    }
-
-    protected function createDirectories(): self
-    {
-        // Create domain directories
-        $this->makeDirectory($this->settings->domainPath.'/Actions/*');
-        $this->makeDirectory($this->settings->domainPath.'/DataTransferObjects/*');
-        $this->makeDirectory($this->settings->domainPath.'/Events/*');
-        $this->makeDirectory($this->settings->domainPath.'/Projections/*');
-        $this->makeDirectory($this->settings->domainPath.'/Projectors/*');
-        if ($this->settings->createReactor) {
-            $this->makeDirectory($this->settings->domainPath.'/Reactors/*');
-        }
-
-        return $this;
     }
 
     /**
@@ -361,6 +370,13 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             return self::SUCCESS;
         } catch (Exception $e) {
             $this->components->error('There was an error: '.$e->getMessage().'.');
+
+            // Log error
+            Log::error('make:event-sourcing-domain failed', [
+                'arguments' => $this->input->getArguments(),
+                'options' => $this->input->getOptions(),
+                'error' => $e->getMessage(),
+            ]);
 
             return self::FAILURE;
         }

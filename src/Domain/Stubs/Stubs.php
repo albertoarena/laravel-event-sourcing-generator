@@ -45,6 +45,15 @@ class Stubs
             if (! $context) {
                 return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
             } else {
+                $test = $stubResolverData['context']['test'] ?? null;
+                if (! is_null($test)) {
+                    if ($this->settings->createUnitTest) {
+                        return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
+                    }
+
+                    return false;
+                }
+
                 $reactor = $stubResolverData['context']['reactor'] ?? null;
                 if (! is_null($reactor)) {
                     if ($this->settings->createReactor === $reactor) {

@@ -8,10 +8,12 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\Migration
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Tests\Concerns\HasBlueprintFake;
 
 class StubReplacer
 {
     use HasBlueprintColumnType;
+    use HasBlueprintFake;
 
     /** @var MigrationCreateProperty[] */
     protected array $modelProperties;
@@ -30,7 +32,6 @@ class StubReplacer
                 $this->modelProperties[$property->name] = $property;
             }
         }
-        //        dd($this->settings->modelProperties->withoutReservedFields());
 
         return $this->modelProperties;
     }
@@ -163,7 +164,7 @@ class StubReplacer
             fn (MigrationCreateProperty $property) => "'$property->name' => \$event->{$domainId}Data->$property->name,"
         );
 
-        foreach ($this->getSearch('properties:projector') as $search) {
+        foreach ($this->getSearch(patterns: 'properties:projector') as $search) {
             $stub = str_replace(
                 $search,
                 [implode("\n$indentSpace4", $preparedProperties)],
@@ -235,6 +236,37 @@ class StubReplacer
         return $this;
     }
 
+    protected function replaceUnitTest(&$stub): self
+    {
+        $indentSpace2 = $this->getIndentSpace(2);
+        $indentSpace3 = $this->getIndentSpace(3);
+
+        // Test, data transfer object properties
+        $preparedProperties = Arr::map(
+            $this->getModelProperties(),
+            function (MigrationCreateProperty $property) {
+                $type = $this->columnTypeToBuiltInType($property->type);
+                $fakeFunction = $this->blueprintToFakeFunction($type);
+
+                return "$property->name: $fakeFunction";
+            }
+        );
+        $preparedProperties = implode(",\n$indentSpace3", $preparedProperties);
+        $this->replaceWithClosure($stub, 'test:data-transfer-object', fn () => $preparedProperties);
+
+        // Test asserts
+        $properties = $this->getModelProperties();
+        $this->replaceWithClosureRegexp($stub, '/{{\s*test:assert\((.*), (.*)\)\s*}}/', function ($match) use ($properties, $indentSpace2) {
+            $data = $match[1];
+            $record = $match[2];
+            $ret = Arr::map($properties, fn (MigrationCreateProperty $property) => "\$this->assertEquals({$data}->$property->name, {$record}->$property->name);");
+
+            return implode("\n$indentSpace2", $ret);
+        });
+
+        return $this;
+    }
+
     public function replace(&$stub): self
     {
         return $this->replaceDomain($stub)
@@ -245,17 +277,21 @@ class StubReplacer
             ->replaceProjectorProperties($stub)
             ->replacePrimaryKey($stub)
             ->replaceIfBlocks($stub)
-            ->replaceIndentation($stub);
+            ->replaceIndentation($stub)
+            ->replaceUnitTest($stub);
+    }
+
+    public function replaceWithClosureRegexp(&$stub, string $searchPattern, Closure $closure): self
+    {
+        $stub = preg_replace_callback($searchPattern, $closure, $stub);
+
+        return $this;
     }
 
     public function replaceWithClosure(&$stub, string $searchPattern, Closure $closure): self
     {
         foreach ($this->getSearch($searchPattern) as $search) {
-            $stub = str_replace(
-                $search,
-                [$closure($search, $stub)],
-                $stub
-            );
+            $stub = str_replace($search, [$closure($search, $stub)], $stub);
         }
 
         return $this;

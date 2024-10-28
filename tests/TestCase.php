@@ -26,6 +26,8 @@ abstract class TestCase extends BaseTestCase
         $this->afterApplicationCreated(function () {
             File::cleanDirectory(app_path());
             File::cleanDirectory(database_path('migrations'));
+            File::cleanDirectory(base_path('tests/Domain'));
+            File::cleanDirectory(base_path('storage/logs'));
         });
     }
 

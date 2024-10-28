@@ -1,0 +1,79 @@
+<?php
+
+namespace Tests\{{ namespace }}\{{ domain }};
+
+use App\{{ namespace }}\{{ domain }}\Actions\Create{{ class }};
+use App\{{ namespace }}\{{ domain }}\Actions\Delete{{ class }};
+use App\{{ namespace }}\{{ domain }}\Actions\Update{{ class }};
+use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
+use App\{{ namespace }}\{{ domain }}\Projections\{{ class }};
+{% if useCarbon %}
+use Illuminate\Support\Carbon;
+{% endif %}
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\WithFaker;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+class {{ class }}Test extends TestCase
+{
+    use DatabaseMigrations;
+    use WithFaker;
+
+    protected function fakeData(): {{ class }}Data
+    {
+        return new {{ class }}Data(
+            {{ test:data-transfer-object }}
+        );
+    }
+
+    #[Test]
+    public function can_create_{{ id }}_model()
+    {
+        $data = $this->fakeData();
+
+        (new Create{{ class }})($data);
+
+        /** @var {{ class }} $record */
+        $record = {{ class }}::query()->first();
+        $this->assertNotEmpty($record);
+        {{ test:assert($data, $record) }}
+    }
+
+    #[Test]
+    public function can_update_{{ id }}_model()
+    {
+        $data = $this->fakeData();
+
+        (new Create{{ class }})($data);
+
+        /** @var {{ class }} $record */
+        $record = {{ class }}::query()->first();
+        $this->assertNotEmpty($record);
+        {{ test:assert($data, $record) }}
+
+        $updateData = $this->fakeData();
+
+        (new Update{{ class }})($record->{{ primary_key }}, $updateData);
+
+        $updatedRecord = {{ class }}::{{ primary_key }}($record->{{ primary_key }});
+        $this->assertNotEmpty($updatedRecord);
+        {{ test:assert($updateData, $updatedRecord) }}
+    }
+
+    #[Test]
+    public function can_delete_{{ id }}_model()
+    {
+        $data = $this->fakeData();
+
+        (new Create{{ class }})($data);
+
+        /** @var {{ class }} $record */
+        $record = {{ class }}::query()->first();
+        $this->assertNotNull($record);
+
+        (new Delete{{ class }})($record->{{ primary_key }});
+
+        $this->assertNull({{ class }}::query()->where('{{ primary_key }}', $record->{{ primary_key }})->first());
+    }
+}
