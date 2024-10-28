@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\{{ namespace }}\{{ domain }}\Projections;
 
 {% if useCarbon %}
@@ -27,7 +25,6 @@ class {{ class }} extends Projection
 
     public static function {{ primary_key }}({{ primary_key:type }} ${{ primary_key }}): static
     {
-        // @phpstan-ignore-next-line return-type
         return static::query()->where('{{ primary_key }}', '=', ${{ primary_key }})->get()->firstOrFail();
     }
 }
