@@ -395,6 +395,7 @@ tests
 ├── Domain
 │   └── Animal
 │       └── AnimalTest.php
+└── etc.
 ```
 
 ### Specify indentation
