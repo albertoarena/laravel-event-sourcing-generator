@@ -40,8 +40,7 @@ composer require albertoarena/laravel-event-sourcing-generator
 
 ## Usage
 
-```shell
-# App/Domain/Animal/Actions/CreateAnimal
+```text
 php artisan make:event-sourcing-domain <model> [--domain=<domain>]
   [--namespace=<namespace>]
   [--migration=<existing_migration_filename>]
