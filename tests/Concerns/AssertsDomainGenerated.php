@@ -2,11 +2,11 @@
 
 namespace Tests\Concerns;
 
-use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubResolver;
-use Albertoarena\LaravelEventSourcingGenerator\Helpers\ParseMigration;
 use Exception;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -104,7 +104,7 @@ trait AssertsDomainGenerated
         // Load existing migration
         if ($migration) {
             try {
-                $useUuid = (new ParseMigration($migration))->primary() === 'uuid';
+                $useUuid = (new Migration($migration))->primary() === 'uuid';
             } catch (Exception) {
             }
         }

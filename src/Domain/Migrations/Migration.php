@@ -1,20 +1,21 @@
 <?php
 
-namespace Albertoarena\LaravelEventSourcingGenerator\Helpers;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\MigrationParser;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperties;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationDoesNotExistException;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\ParserFailedException;
 use Exception;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
-class ParseMigration
+class Migration
 {
     protected ?string $primary;
 
-    /** @var MigrationCreateProperty[] */
-    protected array $properties;
+    protected MigrationCreateProperties $properties;
 
     /**
      * @throws Exception
@@ -23,7 +24,7 @@ class ParseMigration
         protected string $path
     ) {
         $this->primary = null;
-        $this->properties = [];
+        $this->properties = new MigrationCreateProperties;
         $this->parse();
     }
 
@@ -38,7 +39,7 @@ class ParseMigration
             $files = File::files(database_path('migrations'));
             foreach ($files as $file) {
                 $filename = $file->getFilename();
-                if (preg_match("/$this->path/", $filename)) {
+                if (Str::contains($filename, $this->path)) {
                     return $file->getContents();
                 }
             }
@@ -49,16 +50,12 @@ class ParseMigration
 
     /**
      * @throws MigrationDoesNotExistException
+     * @throws ParserFailedException
      */
     protected function parse(): void
     {
-        $this->properties = (new MigrationParser($this->getMigration()))->parse()->getProperties();
-
-        $primary = Arr::where($this->properties, function (MigrationCreateProperty $property) {
-            return $property->name === 'id' || $property->name === 'uuid';
-        })[0] ?? Arr::first($this->properties);
-
-        $this->primary = $primary->name;
+        $this->properties->import((new MigrationParser($this->getMigration()))->parse()->getProperties());
+        $this->primary = $this->properties->primary()->name;
     }
 
     public function primary(): ?string
@@ -71,6 +68,6 @@ class ParseMigration
      */
     public function properties(): array
     {
-        return $this->properties;
+        return $this->properties->toArray();
     }
 }

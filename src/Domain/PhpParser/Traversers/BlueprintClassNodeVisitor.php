@@ -2,8 +2,9 @@
 
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers;
 
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Concerns\HasSchemaUpNode;
-use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\EnterNode;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\UpdateMigrationIsNotSupportedException;
 use PhpParser\Node;
@@ -29,30 +30,30 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
      */
     public function enterNode(Node $node): ?Node
     {
-        $node = $this->enterSchemaUpNode(
+        return $this->enterSchemaUpNode(
             $node,
-            function (Node\Stmt\Expression $expression) {
-                if ($expression->expr instanceof Node\Expr\StaticCall) {
-                    if ($expression->expr->class->name === 'Schema') {
-                        if ($expression->expr->name->name === 'table') {
-                            throw new UpdateMigrationIsNotSupportedException;
+            new EnterNode(
+                function (Node\Stmt\Expression $expression) {
+                    if ($expression->expr instanceof Node\Expr\StaticCall) {
+                        if ($expression->expr->class->name === 'Schema') {
+                            if ($expression->expr->name->name === 'table') {
+                                throw new UpdateMigrationIsNotSupportedException;
+                            }
+                        }
+                    }
+                },
+                function (Node $node) {
+                    if ($node instanceof Node\Stmt\Expression) {
+                        // Collect properties from Schema::up method
+                        if ($node->expr instanceof Node\Expr\MethodCall) {
+                            $property = MigrationCreateProperty::createFromExprMethodCall($node->expr);
+                            if (! in_array($property->type, $this->ignored)) {
+                                $this->properties[$property->name] = $property;
+                            }
                         }
                     }
                 }
-            },
-            function (Node $node) {
-                if ($node instanceof Node\Stmt\Expression) {
-                    // Collect properties from Schema::up method
-                    if ($node->expr instanceof Node\Expr\MethodCall) {
-                        $property = MigrationCreateProperty::createFromExprMethodCall($node->expr);
-                        if (! in_array($property->type, $this->ignored)) {
-                            $this->properties[$property->name] = $property;
-                        }
-                    }
-                }
-            }
+            )
         );
-
-        return $node;
     }
 }

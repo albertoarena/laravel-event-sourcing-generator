@@ -1,6 +1,6 @@
 <?php
 
-namespace Albertoarena\LaravelEventSourcingGenerator\Concerns;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns;
 
 trait HasBlueprintColumnType
 {

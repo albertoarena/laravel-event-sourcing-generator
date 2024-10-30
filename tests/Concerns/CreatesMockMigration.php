@@ -7,7 +7,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Tests\Domain\PhpParser\MigrationModifyParser;
+use Tests\Domain\Migrations\Contracts\MigrationOptionInterface;
+use Tests\Domain\Migrations\ModifyMigration;
 
 trait CreatesMockMigration
 {
@@ -18,7 +19,7 @@ trait CreatesMockMigration
         string $tableName,
         array $modelProperties,
         array $options = [
-            ':primary' => 'uuid',
+            MigrationOptionInterface::PRIMARY_KEY => 'uuid',
         ],
     ): ?string {
         $this->withoutMockingConsoleOutput()
@@ -34,7 +35,7 @@ trait CreatesMockMigration
             $migrationFile = File::get(base_path($migration));
 
             // Parse file and inject properties
-            $newCode = (new MigrationModifyParser($migrationFile, $modelProperties, $options))->modify();
+            $newCode = (new ModifyMigration($migrationFile, $modelProperties, $options))->modify();
 
             // Save file with new properties
             File::put(base_path($migration), $newCode);

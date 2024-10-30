@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Console\Commands;
 
-use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
@@ -14,6 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Spatie\EventSourcing\EventSourcingServiceProvider;
 use Tests\Concerns\AssertsDomainGenerated;
 use Tests\Concerns\CreatesMockMigration;
+use Tests\Domain\Migrations\Contracts\MigrationOptionInterface;
 use Tests\TestCase;
 
 use function class_exists;
@@ -1080,7 +1081,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         ];
 
         $options = [
-            ':primary' => ['bigIncrements', 'id'],
+            MigrationOptionInterface::PRIMARY_KEY => ['bigIncrements', 'id'],
         ];
 
         $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $model) => $this->columnTypeToBuiltInType($type)." $model"));
@@ -1202,7 +1203,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         ];
 
         $options = [
-            ':injects' => [
+            MigrationOptionInterface::INJECTS => [
                 ['foreign' => 'dummyId', 'references' => 'id', 'on' => 'dummy', 'onDelete' => 'cascade'],
             ],
         ];
@@ -1661,6 +1662,27 @@ class MakeEventSourcingDomainCommandTest extends TestCase
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--migration' => $migrationPath])
             ->expectsOutputToContain('ERROR  There was an error: Update migration file is not supported.')
+            ->assertFailed();
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_cannot_create_a_model_and_domain_with_damaged_migration()
+    {
+        $model = 'Animal';
+        $properties = [
+            'new_field' => '?string',
+        ];
+        $migrationPath = $this->createMockCreateMigration('animal', $properties);
+
+        $code = File::get($migrationPath);
+        File::put($migrationPath, $code."\nops");
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--migration' => $migrationPath])
+            ->expectsOutputToContain('ERROR  There was an error: Parser failed: Syntax error, unexpected EOF on line 27')
             ->assertFailed();
     }
 

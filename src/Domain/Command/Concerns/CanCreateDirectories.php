@@ -1,6 +1,6 @@
 <?php
 
-namespace Albertoarena\LaravelEventSourcingGenerator\Console\Concerns;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Concerns;
 
 trait CanCreateDirectories
 {

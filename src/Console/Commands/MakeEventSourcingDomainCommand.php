@@ -2,14 +2,14 @@
 
 namespace Albertoarena\LaravelEventSourcingGenerator\Console\Commands;
 
-use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
-use Albertoarena\LaravelEventSourcingGenerator\Console\Concerns\CanCreateDirectories;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Concerns\CanCreateDirectories;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Models\StubCallback;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\Stubs;
-use Albertoarena\LaravelEventSourcingGenerator\Helpers\ParseMigration;
 use Exception;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
@@ -135,7 +135,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         if ($this->settings->migration) {
             try {
                 // Load migration
-                $migration = (new ParseMigration($this->settings->migration));
+                $migration = (new Migration($this->settings->migration));
                 foreach ($migration->properties() as $property) {
                     $this->settings->modelProperties->add($property);
                     if ($property->type === 'Carbon') {

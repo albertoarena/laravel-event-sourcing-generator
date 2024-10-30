@@ -2,15 +2,17 @@
 
 namespace Tests\Domain\PhpParser\Traversers;
 
-use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Concerns\HasSchemaUpNode;
-use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Contracts\BlueprintUnsupportedInterface;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\EnterNode;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\ParserFailedException;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\UpdateMigrationIsNotSupportedException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use Tests\Domain\Migrations\Contracts\MigrationOptionInterface;
 
 class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
 {
@@ -143,7 +145,7 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
     protected function handleReplacements(Node\Expr\Closure $closure): void
     {
         // Get primary key
-        $primaryKey = $this->options[':primary'] ?? null;
+        $primaryKey = $this->options[MigrationOptionInterface::PRIMARY_KEY] ?? null;
         if ($primaryKey) {
             $primaryKeyArgs = [];
             if (is_array($primaryKey)) {
@@ -171,7 +173,7 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
         }
 
         // Inject custom method calls
-        $injects = $this->options[':injects'] ?? [];
+        $injects = $this->options[MigrationOptionInterface::INJECTS] ?? [];
         foreach ($injects as $inject) {
             $chain = Arr::map($inject, fn ($value, $key) => ['name' => $key, 'args' => $value]);
             $newExpression = new Node\Stmt\Expression(
@@ -190,28 +192,30 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
     {
         return $this->enterSchemaUpNode(
             $node,
-            function (Node\Stmt\Expression $expression) {
-                if ($expression->expr instanceof Node\Expr\StaticCall) {
-                    if ($expression->expr->class->name === 'Schema') {
-                        if ($expression->expr->name->name === 'create') {
-                            // Look for Blueprint table definition
-                            foreach ($expression->expr->args as $arg) {
-                                if ($arg->value instanceof Node\Expr\Closure) {
-                                    if ($arg->value->params && $arg->value->params[0] instanceof Node\Param) {
-                                        if ($arg->value->params[0]->type->name === 'Blueprint') {
-                                            // Inject properties and handle replacements
-                                            $this->handleInjectProperties($arg->value)
-                                                ->handleReplacements($arg->value);
+            new EnterNode(
+                function (Node\Stmt\Expression $expression) {
+                    if ($expression->expr instanceof Node\Expr\StaticCall) {
+                        if ($expression->expr->class->name === 'Schema') {
+                            if ($expression->expr->name->name === 'create') {
+                                // Look for Blueprint table definition
+                                foreach ($expression->expr->args as $arg) {
+                                    if ($arg->value instanceof Node\Expr\Closure) {
+                                        if ($arg->value->params && $arg->value->params[0] instanceof Node\Param) {
+                                            if ($arg->value->params[0]->type->name === 'Blueprint') {
+                                                // Inject properties and handle replacements
+                                                $this->handleInjectProperties($arg->value)
+                                                    ->handleReplacements($arg->value);
+                                            }
                                         }
                                     }
                                 }
+                            } elseif ($expression->expr->name->name === 'table') {
+                                throw new UpdateMigrationIsNotSupportedException;
                             }
-                        } elseif ($expression->expr->name->name === 'table') {
-                            throw new UpdateMigrationIsNotSupportedException;
                         }
                     }
                 }
-            }
+            )
         );
     }
 }

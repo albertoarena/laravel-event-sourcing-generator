@@ -9,6 +9,8 @@ class MigrationCreateProperties
 {
     public const RESERVED_FIELDS = ['id', 'uuid', 'timestamps'];
 
+    public const PRIMARY_KEY = ['id', 'uuid'];
+
     protected Collection $collection;
 
     public function __construct(array|Collection|null $collection = null)
@@ -23,14 +25,21 @@ class MigrationCreateProperties
 
     public function add($property): self
     {
-        if ($property instanceof MigrationCreateProperty) {
-            // Check if property already exists
-            if (! $this->collection->offsetExists($property->name)) {
-                $this->collection->offsetSet($property->name, $property);
-            }
+        // Check if property type is correct and if it already exists
+        if ($property instanceof MigrationCreateProperty &&
+            ! $this->collection->offsetExists($property->name)
+        ) {
+            $this->collection->offsetSet($property->name, $property);
         }
 
         return $this;
+    }
+
+    public function primary(): MigrationCreateProperty
+    {
+        return $this->collection->where(
+            fn (MigrationCreateProperty $property) => in_array($property->name, self::PRIMARY_KEY)
+        )[0] ?? $this->collection->first();
     }
 
     public function import(array|Collection $modelProperties): self

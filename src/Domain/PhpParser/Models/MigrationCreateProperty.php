@@ -2,7 +2,7 @@
 
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
-use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Illuminate\Support\Arr;
 use PhpParser\Node;
 

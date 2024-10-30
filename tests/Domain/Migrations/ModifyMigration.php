@@ -1,15 +1,15 @@
 <?php
 
-namespace Tests\Domain\PhpParser;
+namespace Tests\Domain\Migrations;
 
-use Albertoarena\LaravelEventSourcingGenerator\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\MigrationParser;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\ParserFailedException;
 use PhpParser\NodeTraverser;
 use PhpParser\PrettyPrinter;
 use Tests\Domain\PhpParser\Traversers\BlueprintClassModifyNodeVisitor;
 
-class MigrationModifyParser extends MigrationParser
+class ModifyMigration extends MigrationParser
 {
     use HasBlueprintColumnType;
 
