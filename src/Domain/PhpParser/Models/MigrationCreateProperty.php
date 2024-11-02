@@ -10,14 +10,19 @@ class MigrationCreateProperty
 {
     use HasBlueprintColumnType;
 
+    public MigrationCreatePropertyType $type;
+
     public function __construct(
         public string $name,
-        public string $type,
-        public bool $nullable = false,
+        string|MigrationCreatePropertyType $type,
     ) {
+        $this->type = $type instanceof MigrationCreatePropertyType ?
+            $type :
+            new MigrationCreatePropertyType($type);
+
         if (! $this->name) {
-            $this->name = $this->type;
-            $this->type = $this->columnTypeToBuiltInType($this->type);
+            $this->name = $this->type->toString();
+            $this->type->setAsBuiltInType();
         }
     }
 
@@ -43,6 +48,9 @@ class MigrationCreateProperty
             $name = $args[0];
         }
 
-        return new self($name, $type, $nullable);
+        return new self(
+            $name,
+            new MigrationCreatePropertyType($type, $nullable),
+        );
     }
 }

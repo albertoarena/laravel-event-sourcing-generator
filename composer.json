@@ -23,6 +23,7 @@
     ],
     "require": {
         "php": "^8.2",
+        "aldemeery/onion": "^1.0",
         "illuminate/contracts": "*",
         "illuminate/support": "*",
         "nikic/php-parser": "^5.1",

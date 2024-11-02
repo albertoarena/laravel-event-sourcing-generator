@@ -138,7 +138,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 $migration = (new Migration($this->settings->migration));
                 foreach ($migration->properties() as $property) {
                     $this->settings->modelProperties->add($property);
-                    if ($property->type === 'Carbon') {
+                    if ($property->type->toString() === 'Carbon') {
                         $this->settings->useCarbon = true;
                     }
                 }
@@ -297,13 +297,8 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                         implode("\n", Arr::map(
                             $modelProperties,
                             function (MigrationCreateProperty $property) {
-                                $type = $this->columnTypeToBuiltInType($property->type);
-                                if (Str::startsWith($type, '?')) {
-                                    $nullable = '?';
-                                    $type = Str::substr($type, 1);
-                                } else {
-                                    $nullable = $property->nullable ? '?' : '';
-                                }
+                                $type = $property->type->toBuiltInType();
+                                $nullable = $property->type->nullable ? '?' : '';
 
                                 return "$nullable$type $property->name";
                             })

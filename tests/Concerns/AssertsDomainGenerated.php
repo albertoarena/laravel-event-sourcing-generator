@@ -158,6 +158,16 @@ trait AssertsDomainGenerated
             if ($stubFile === 'data-transfer-object.stub') {
                 if (! $modelProperties) {
                     $this->assertMatchesRegularExpression("/\/\/ Add here public properties, e.g.:/", $generated);
+                } else {
+                    // Assert that model properties are using camel format
+                    foreach ($settings->modelProperties->toArray() as $property) {
+                        $name = Str::camel($property->name);
+
+                        $type = $property->type->toNormalisedBuiltInType();
+                        $nullable = $property->type->nullable ? '\\?' : '';
+
+                        $this->assertMatchesRegularExpression("/public $nullable$type \\$$name/", $generated);
+                    }
                 }
             } elseif ($stubFile === 'projection.stub') {
                 if ($useUuid) {
@@ -166,9 +176,8 @@ trait AssertsDomainGenerated
                     $this->assertMatchesRegularExpression("/'id' => 'int',/", $generated);
                 }
                 foreach ($settings->modelProperties->toArray() as $property) {
-                    $type = $this->columnTypeToBuiltInType($property->type);
-                    $type = $this->carbonToBuiltInType($type);
-                    $type = Str::replaceFirst('?', '', $type);
+                    $type = $property->type->toProjection();
+
                     $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
                 }
             } elseif ($stubFile === 'projector.stub') {
@@ -177,6 +186,11 @@ trait AssertsDomainGenerated
                 } else {
                     $this->assertDoesNotMatchRegularExpression("/'id' => \\\$event->{$stubReplacer->settings->nameAsPrefix}Id/", $generated);
                 }
+                // Assert that model properties are using camel format
+                foreach ($settings->modelProperties->toArray() as $item) {
+                    $name = Str::camel($item->name);
+                    $this->assertMatchesRegularExpression("/'$item->name'\s=>\s\\\$event->{$stubReplacer->settings->nameAsPrefix}Data->$name/", $generated);
+                }
             } elseif ($stubFile === 'test.stub') {
                 if ($createUnitTest) {
                     $modelLower = Str::lower($settings->model);
@@ -184,6 +198,11 @@ trait AssertsDomainGenerated
                     $this->assertMatchesRegularExpression("/public function can_create_{$modelLower}_model/", $generated);
                     $this->assertMatchesRegularExpression("/public function can_update_{$modelLower}_model/", $generated);
                     $this->assertMatchesRegularExpression("/public function can_delete_{$modelLower}_model/", $generated);
+                    // Assert that model properties are using camel format
+                    foreach ($settings->modelProperties->toArray() as $item) {
+                        $this->assertMatchesRegularExpression('/\\$this->assertEquals\(\\$data->'.Str::camel($item->name).", \\\$record->$item->name\)/", $generated);
+                        $this->assertMatchesRegularExpression('/\\$this->assertEquals\(\\$updateData->'.Str::camel($item->name).", \\\$updatedRecord->$item->name\)/", $generated);
+                    }
                 }
             }
         }

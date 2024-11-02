@@ -74,11 +74,11 @@ class StubReplacer
         $preparedProperties = Arr::map(
             $this->getModelProperties(),
             function (MigrationCreateProperty $property) {
-                $type = $this->columnTypeToBuiltInType($property->type);
-                $type = $this->normaliseCarbon($type);
-                $nullable = $property->nullable ? '?' : '';
+                $type = $property->type->toNormalisedBuiltInType();
+                $nullable = $property->type->nullable ? '?' : '';
+                $name = Str::camel($property->name);
 
-                return "public $nullable$type \$$property->name";
+                return "public $nullable$type \$$name";
             }
         );
         $preparedProperties = implode(",\n$indentSpace2", $preparedProperties);
@@ -120,9 +120,7 @@ class StubReplacer
             Arr::map(
                 $this->getModelProperties(),
                 function (MigrationCreateProperty $property) {
-                    $type = $this->columnTypeToBuiltInType($property->type);
-                    $type = $this->carbonToBuiltInType($type);
-                    $type = Str::replaceFirst('?', '', $type);
+                    $type = $property->type->toProjection();
 
                     return "'$property->name' => '$type',";
                 })
@@ -139,9 +137,8 @@ class StubReplacer
         $preparedProperties = Arr::map(
             $this->getModelProperties(),
             function (MigrationCreateProperty $property) {
-                $type = $this->columnTypeToBuiltInType($property->type);
-                $type = $this->normaliseCarbon($type);
-                $nullable = $property->nullable ? '|null' : '';
+                $type = $property->type->toNormalisedBuiltInType();
+                $nullable = $property->type->nullable ? '|null' : '';
 
                 return " * @property $type$nullable \$$property->name";
             }
@@ -161,7 +158,7 @@ class StubReplacer
 
         $preparedProperties = Arr::map(
             $this->getModelProperties(),
-            fn (MigrationCreateProperty $property) => "'$property->name' => \$event->{$domainId}Data->$property->name,"
+            fn (MigrationCreateProperty $property) => "'$property->name' => \$event->{$domainId}Data->".Str::camel($property->name).','
         );
 
         foreach ($this->getSearch(patterns: 'properties:projector') as $search) {
@@ -245,10 +242,10 @@ class StubReplacer
         $preparedProperties = Arr::map(
             $this->getModelProperties(),
             function (MigrationCreateProperty $property) {
-                $type = $this->columnTypeToBuiltInType($property->type);
+                $type = $property->type->toBuiltInType();
                 $fakeFunction = $this->blueprintToFakeFunction($type);
 
-                return "$property->name: $fakeFunction";
+                return Str::camel($property->name).": $fakeFunction";
             }
         );
         $preparedProperties = implode(",\n$indentSpace3", $preparedProperties);
@@ -259,7 +256,7 @@ class StubReplacer
         $this->replaceWithClosureRegexp($stub, '/{{\s*test:assert\((.*), (.*)\)\s*}}/', function ($match) use ($properties, $indentSpace2) {
             $data = $match[1];
             $record = $match[2];
-            $ret = Arr::map($properties, fn (MigrationCreateProperty $property) => "\$this->assertEquals({$data}->$property->name, {$record}->$property->name);");
+            $ret = Arr::map($properties, fn (MigrationCreateProperty $property) => "\$this->assertEquals({$data}->".Str::camel($property->name).", {$record}->$property->name);");
 
             return implode("\n$indentSpace2", $ret);
         });

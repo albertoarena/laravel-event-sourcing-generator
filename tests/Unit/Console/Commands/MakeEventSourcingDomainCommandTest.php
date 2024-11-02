@@ -33,7 +33,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             });
     }
 
-    #[RunInSeparateProcess] #[Test]
+    #[RunInSeparateProcess]
+    #[Test]
     public function it_can_show_help_for_artisan_command()
     {
         $this->withoutMockingConsoleOutput()
@@ -62,6 +63,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => 'int',
         ];
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model])
@@ -72,6 +74,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'name')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
@@ -114,6 +118,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => 'int',
         ];
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain])
@@ -123,6 +128,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'name')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
@@ -170,10 +177,12 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties1 = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => 'int',
         ];
         $properties2 = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => 'int',
             'colour' => '?string',
         ];
 
@@ -184,6 +193,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'name')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
@@ -226,6 +237,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'name')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'colour')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', '?string')
@@ -567,7 +580,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
     #[Test]
     public function it_can_create_a_model_and_domain_with_different_lowercase_namespace()
     {
-        $modelspace = 'domains';
+        $namespace = 'domains';
         $expectedNamespace = 'Domains';
         $domain = 'Animal';
         $model = 'Tiger';
@@ -577,7 +590,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['model' => $model, '-d' => $domain, '--namespace' => $modelspace])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '-d' => $domain, '--namespace' => $namespace])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -630,6 +643,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => 'int',
         ];
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--indentation' => 2])
@@ -640,6 +654,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'name')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
@@ -884,6 +900,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => '?int',
         ];
 
         $migrationPath = basename($this->createMockCreateMigration('animal', $properties));
@@ -940,6 +957,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => '?int',
         ];
 
         $migrationPath = basename($this->createMockCreateMigration('animal', $properties, [':primary' => 'id']));
@@ -997,6 +1015,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => '?int',
         ];
 
         $this->createMockCreateMigration('animal', $properties);
@@ -1426,6 +1445,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => '?int',
         ];
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain, '--primary-key' => 'uuid', '--unit-test' => true])
@@ -1436,6 +1456,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', '?int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
@@ -1476,6 +1498,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         $properties = [
             'name' => 'string',
             'age' => 'int',
+            'number_of_bones' => '?int',
         ];
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain, '--primary-key' => 'id', '--unit-test' => true])
@@ -1486,6 +1509,8 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
             ->expectsQuestion('Property name? (exit to quit)', 'age')
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', '?int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to create a Reactor class?', true)

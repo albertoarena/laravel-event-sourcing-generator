@@ -47,7 +47,7 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
                         // Collect properties from Schema::up method
                         if ($node->expr instanceof Node\Expr\MethodCall) {
                             $property = MigrationCreateProperty::createFromExprMethodCall($node->expr);
-                            if (! in_array($property->type, $this->ignored)) {
+                            if (! in_array($property->type->toString(), $this->ignored)) {
                                 $this->properties[$property->name] = $property;
                             }
                         }

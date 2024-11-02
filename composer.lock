@@ -4,8 +4,75 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f5905c1ef4df8a67f2ddcb9e5ced2a3f",
+    "content-hash": "878bb6672fea22ee77d884951ae168d5",
     "packages": [
+        {
+            "name": "aldemeery/onion",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aldemeery/onion.git",
+                "reference": "e93eb8de18f64e271fef928ad77ca0037d3f13db"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aldemeery/onion/zipball/e93eb8de18f64e271fef928ad77ca0037d3f13db",
+                "reference": "e93eb8de18f64e271fef928ad77ca0037d3f13db",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "infection/infection": "^0.29.0",
+                "laravel/pint": "^1.16",
+                "laravel/sail": "^1.29",
+                "phpstan/phpstan": "^1.11",
+                "phpstan/phpstan-phpunit": "^1.4",
+                "phpunit/phpunit": "^11.1",
+                "squizlabs/php_codesniffer": "^3.10",
+                "symfony/var-dumper": "^7.0",
+                "thecodingmachine/phpstan-safe-rule": "^1.2"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Aldemeery\\Onion\\": "src/",
+                    "Tests\\Aldemeery\\Onion\\": "tests/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Osama Aldemeery",
+                    "email": "aldemeery@gmail.com"
+                }
+            ],
+            "description": "A layering mechanism for PHP applications.",
+            "homepage": "https://github.com/aldemeery/onion",
+            "keywords": [
+                "compose",
+                "layer",
+                "layered",
+                "middleware",
+                "onion",
+                "pipeline",
+                "reduce",
+                "reducer",
+                "stack"
+            ],
+            "support": {
+                "issues": "https://github.com/aldemeery/onion/issues",
+                "source": "https://github.com/aldemeery/onion"
+            },
+            "time": "2024-10-26T00:30:42+00:00"
+        },
         {
             "name": "brick/math",
             "version": "0.12.1",

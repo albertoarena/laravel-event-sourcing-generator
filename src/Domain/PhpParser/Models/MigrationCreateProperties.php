@@ -3,7 +3,6 @@
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class MigrationCreateProperties
 {
@@ -49,13 +48,9 @@ class MigrationCreateProperties
             if ($typeOrProperty instanceof MigrationCreateProperty) {
                 $this->add($typeOrProperty);
             } else {
-                $nullable = Str::startsWith($name, '?');
-                $name = $nullable ? Str::substr($name, 1) : $name;
-
                 $this->add(new MigrationCreateProperty(
                     name: $name,
                     type: $typeOrProperty,
-                    nullable: $nullable,
                 ));
             }
         }
@@ -68,6 +63,9 @@ class MigrationCreateProperties
         return new self($this->collection->except(self::RESERVED_FIELDS));
     }
 
+    /**
+     * @return MigrationCreateProperty[]
+     */
     public function toArray(): array
     {
         return $this->collection->toArray();
