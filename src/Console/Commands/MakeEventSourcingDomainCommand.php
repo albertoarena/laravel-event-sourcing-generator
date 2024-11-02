@@ -138,7 +138,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 $migration = (new Migration($this->settings->migration));
                 foreach ($migration->properties() as $property) {
                     $this->settings->modelProperties->add($property);
-                    if ($property->type->toString() === 'Carbon') {
+                    if ($property->type->type === 'Carbon') {
                         $this->settings->useCarbon = true;
                     }
                 }

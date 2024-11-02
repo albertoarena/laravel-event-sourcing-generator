@@ -21,7 +21,7 @@ class MigrationCreateProperty
             new MigrationCreatePropertyType($type);
 
         if (! $this->name) {
-            $this->name = $this->type->toString();
+            $this->name = $this->type->type;
             $this->type->setAsBuiltInType();
         }
     }

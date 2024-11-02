@@ -37,4 +37,6 @@ interface BlueprintUnsupportedInterface
         'uuidMorphs',
         'ulid',
     ];
+
+    public const IGNORED = [...self::SKIPPED_METHODS, ...self::UNSUPPORTED_COLUMN_TYPES];
 }

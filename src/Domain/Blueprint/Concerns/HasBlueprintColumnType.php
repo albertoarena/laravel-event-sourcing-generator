@@ -23,7 +23,7 @@ trait HasBlueprintColumnType
     protected function carbonToBuiltInType(string $type): string
     {
         return match ($type) {
-            'Carbon' => 'date:Y-m-d H:i:s',
+            'Carbon', '?Carbon' => 'date:Y-m-d H:i:s',
             'Carbon:Y-m-d' => 'date:Y-m-d',
             'Carbon:H:i:s' => 'date:H:i:s',
             default => $type

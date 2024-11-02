@@ -9,7 +9,7 @@ trait HasMethodNode
 {
     protected function enterMethodNode(Node $node, string $method, EnterNode $enterNode): ?Node
     {
-        // Check if Schema::up() method exists
+        // Check if method exists
         if ($node instanceof Node\Stmt\Class_) {
             $currentMethod = $node->getMethod($method);
             if (! $currentMethod) {

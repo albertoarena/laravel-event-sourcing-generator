@@ -2,7 +2,6 @@
 
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers;
 
-use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Concerns\HasSchemaUpNode;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\EnterNode;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
@@ -14,16 +13,9 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
 {
     use HasSchemaUpNode;
 
-    protected array $ignored;
-
     public function __construct(
         protected array &$properties
-    ) {
-        $this->ignored = array_merge(
-            BlueprintUnsupportedInterface::SKIPPED_METHODS,
-            BlueprintUnsupportedInterface::UNSUPPORTED_COLUMN_TYPES
-        );
-    }
+    ) {}
 
     /**
      * @throws UpdateMigrationIsNotSupportedException
@@ -47,7 +39,7 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
                         // Collect properties from Schema::up method
                         if ($node->expr instanceof Node\Expr\MethodCall) {
                             $property = MigrationCreateProperty::createFromExprMethodCall($node->expr);
-                            if (! in_array($property->type->toString(), $this->ignored)) {
+                            if (! $property->type->isIgnored()) {
                                 $this->properties[$property->name] = $property;
                             }
                         }

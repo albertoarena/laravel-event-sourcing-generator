@@ -3,6 +3,7 @@
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Aldemeery\Onion\Onion;
 use Illuminate\Support\Str;
 
@@ -10,12 +11,13 @@ class MigrationCreatePropertyType
 {
     use HasBlueprintColumnType;
 
-    public readonly bool $nullable;
+    public bool $nullable;
 
     public function __construct(
         public string $type,
         bool $nullable = false,
     ) {
+        $this->nullable = false;
         if ($nullable) {
             $this->nullable = $nullable;
         } else {
@@ -23,19 +25,7 @@ class MigrationCreatePropertyType
             if (Str::startsWith($this->columnTypeToBuiltInType($type), '?')) {
                 $this->nullable = true;
             }
-            // Check if type starts with ? (nullable)
-            else {
-                $this->nullable = Str::startsWith($type, '?');
-                if ($this->nullable) {
-                    $this->type = Str::substr($this->type, 1);
-                }
-            }
         }
-    }
-
-    public function toString(): string
-    {
-        return $this->type;
     }
 
     public function setAsBuiltInType(): void
@@ -66,5 +56,10 @@ class MigrationCreatePropertyType
             fn ($type) => $this->carbonToBuiltInType($type),
             fn ($type) => Str::replaceFirst('?', '', $type),
         ]))->peel($this->type);
+    }
+
+    public function isIgnored(): bool
+    {
+        return in_array($this->type, array_merge(BlueprintUnsupportedInterface::IGNORED));
     }
 }
