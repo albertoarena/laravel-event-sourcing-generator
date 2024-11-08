@@ -1100,7 +1100,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         ];
 
         $options = [
-            MigrationOptionInterface::PRIMARY_KEY => ['bigIncrements', 'id'],
+            MigrationOptionInterface::PRIMARY_KEY => ['bigIncrements' => 'id'],
         ];
 
         $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $model) => $this->columnTypeToBuiltInType($type)." $model"));
@@ -1586,7 +1586,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         ];
 
         $options = [
-            ':primary' => ['bigIncrements', 'id'],
+            ':primary' => ['bigIncrements' => 'id'],
         ];
 
         $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $model) => $this->columnTypeToBuiltInType($type)." $model"));
@@ -1672,6 +1672,37 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'no')
             // Result
             ->expectsOutputToContain('WARN  Aborted!')
+            ->assertFailed();
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_cannot_create_a_model_and_domain_with_migration_using_uuid_as_primary_key_with_id_field_name()
+    {
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+            'number_of_bones' => '?int',
+        ];
+
+        $migrationPath = basename($this->createMockCreateMigration('animal', $properties, [
+            MigrationOptionInterface::PRIMARY_KEY => ['uuid' => 'id'], // $table->uuid('id')->primary()
+        ]));
+        $model = 'Animal';
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model])
+            ->expectsQuestion('Which is the name of the domain?', $model)
+            ->expectsQuestion('Do you want to import properties from existing database migration?', true)
+            ->expectsChoice(
+                'Select database migration',
+                $migrationPath,
+                [$migrationPath],
+            )
+            // Result
+            ->expectsOutputToContain('ERROR  There was an error: Primary key is not valid.')
             ->assertFailed();
     }
 

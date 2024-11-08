@@ -8,6 +8,7 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Concerns\HasSche
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\EnterNode;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\ParserFailedException;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\UpdateMigrationIsNotSupportedException;
+use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use PhpParser\Node;
@@ -139,33 +140,56 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
         return $this;
     }
 
+    protected function getPrimaryKey(string|array|null $primaryKey): array
+    {
+        $primaryKeyArgs = [];
+
+        // Handle array primary key, e.g. ['bigIncrements' => 'id'] --> $table->bigIncrements('id');
+        if (is_array($primaryKey)) {
+            $primaryKeyArgs = array_values($primaryKey)[0];
+            if (! is_array($primaryKeyArgs)) {
+                $primaryKeyArgs = [$primaryKeyArgs];
+            }
+            $primaryKey = array_keys($primaryKey)[0];
+        }
+
+        return [$primaryKey, $primaryKeyArgs];
+    }
+
     /**
      * @throws ParserFailedException
+     * @throws Exception
      */
     protected function handleReplacements(Node\Expr\Closure $closure): void
     {
         // Get primary key
         $primaryKey = $this->options[MigrationOptionInterface::PRIMARY_KEY] ?? null;
         if ($primaryKey) {
-            $primaryKeyArgs = [];
-            if (is_array($primaryKey)) {
-                $primaryKeyArgs = array_slice($primaryKey, 1);
-                $primaryKey = $primaryKey[0] ?? null;
-            }
+
+            // Handle array primary key, e.g. ['bigIncrements' => 'id'] --> $table->bigIncrements('id');
+            [$primaryKey, $primaryKeyArgs] = $this->getPrimaryKey($primaryKey);
 
             // Update primary key
             /** @var Node\Stmt\Expression $firstStatement */
             $firstStatement = Arr::first($closure->stmts);
             if ($firstStatement->expr instanceof Node\Expr\MethodCall) {
                 if ($primaryKey && $firstStatement->expr->name->name !== $primaryKey) {
-                    $firstStatement->expr->name->name = $primaryKey;
-                    if ($primaryKeyArgs) {
-                        foreach ($primaryKeyArgs as $primaryKeyArg) {
-                            $newArg = new Node\Arg(
-                                new Node\Scalar\String_($primaryKeyArg),
-                            );
+                    if ($primaryKey === 'uuid') {
+                        // Handle uuid primary key, e.g. 'uuid' --> $table->uuid('uuid')->primary();
+                        $firstStatement->expr = $this->createChainedMethodCall([
+                            ['name' => 'uuid', 'args' => $primaryKeyArgs],
+                            ['name' => 'primary'],
+                        ]);
+                    } else {
+                        $firstStatement->expr->name->name = $primaryKey;
+                        if ($primaryKeyArgs) {
+                            foreach ($primaryKeyArgs as $primaryKeyArg) {
+                                $newArg = new Node\Arg(
+                                    new Node\Scalar\String_($primaryKeyArg),
+                                );
 
-                            $firstStatement->expr->args[] = $newArg;
+                                $firstStatement->expr->args[] = $newArg;
+                            }
                         }
                     }
                 }

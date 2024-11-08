@@ -5,6 +5,7 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Traversers
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Concerns\HasSchemaUpNode;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\EnterNode;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationInvalidPrimaryKeyException;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\UpdateMigrationIsNotSupportedException;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
@@ -18,6 +19,7 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
     ) {}
 
     /**
+     * @throws MigrationInvalidPrimaryKeyException
      * @throws UpdateMigrationIsNotSupportedException
      */
     public function enterNode(Node $node): ?Node

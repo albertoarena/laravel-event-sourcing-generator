@@ -3,6 +3,7 @@
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationInvalidPrimaryKeyException;
 use Illuminate\Support\Arr;
 use PhpParser\Node;
 
@@ -38,6 +39,9 @@ class MigrationCreateProperty
         return [$type, $args, $nullable];
     }
 
+    /**
+     * @throws MigrationInvalidPrimaryKeyException
+     */
     public static function createFromExprMethodCall(Node\Expr\MethodCall $expr): self
     {
         [$type, $args, $nullable] = self::exprMethodCallToTypeArgs($expr);
@@ -46,6 +50,12 @@ class MigrationCreateProperty
             $name = '';
         } else {
             $name = $args[0];
+        }
+
+        // If $table->uuid('id') is used, cannot parse migration
+        if ($type === 'uuid' && $name === 'id') {
+            // Bad setup, cannot parse migration
+            throw new MigrationInvalidPrimaryKeyException;
         }
 
         return new self(
