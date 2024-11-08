@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Concerns;
+namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns;
 
 use Illuminate\Support\Str;
 

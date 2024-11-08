@@ -3,12 +3,12 @@
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintFake;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Tests\Concerns\HasBlueprintFake;
 
 class StubReplacer
 {
@@ -27,7 +27,6 @@ class StubReplacer
     protected function getModelProperties(): array
     {
         if (! $this->modelProperties) {
-            /** @var MigrationCreateProperty $property */
             foreach ($this->settings->modelProperties->withoutReservedFields()->toArray() as $property) {
                 $this->modelProperties[$property->name] = $property;
             }
