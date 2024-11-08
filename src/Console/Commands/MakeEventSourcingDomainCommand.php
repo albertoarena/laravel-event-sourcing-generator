@@ -178,11 +178,11 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         return Str::ucfirst(trim($this->argument('model')));
     }
 
-    protected function getDomainInput(): string
+    protected function getDomainInput(string $model): string
     {
         $domain = ! is_null($this->option('domain')) ? Str::ucfirst($this->option('domain')) : null;
         if (! $domain) {
-            $domain = $this->ask('Which is the name of the domain?');
+            $domain = $this->ask('Which is the name of the domain?', $model);
         }
 
         return Str::ucfirst($domain);
@@ -200,9 +200,11 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             return false;
         }
 
+        $model = $this->getModelInput();
+
         $this->settings = new CommandSettings(
-            model: $this->getModelInput(),
-            domain: $this->getDomainInput(),
+            model: $model,
+            domain: $this->getDomainInput($model),
             namespace: Str::ucfirst($this->option('namespace')),
             migration: $this->option('migration'),
             createAggregateRoot: ! is_null($this->option('aggregate-root')) ? (bool) $this->option('aggregate-root') : null,
