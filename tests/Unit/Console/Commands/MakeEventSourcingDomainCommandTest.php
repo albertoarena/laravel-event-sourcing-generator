@@ -1074,8 +1074,6 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             'string_field' => 'string',
             'datetime_tz_field' => 'dateTimeTz',
             'datetime_field' => 'dateTime',
-            'soft_deletes_tz_field' => 'softDeletesTz',
-            'soft_deletes_field' => 'softDeletes',
             'timestamp_tz_field' => 'timestampTz',
             'timestamp_field' => 'timestamp',
             'timestamps_tz_field' => 'timestampsTz',
@@ -1214,7 +1212,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
      */
     #[RunInSeparateProcess]
     #[Test]
-    public function it_can_create_a_model_and_domain_with_migration_argument_ignoring_indexes_and_foreign_keys()
+    public function it_can_create_a_model_and_domain_with_migration_argument_ignoring_indexes_foreign_keys_and_soft_deletes()
     {
         $properties = [
             'name' => 'string',
@@ -1222,6 +1220,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
         ];
 
         $options = [
+            MigrationOptionInterface::SOFT_DELETES => 'softDeletesTz',
             MigrationOptionInterface::INJECTS => [
                 ['index' => 'name'],
                 ['rawIndex' => ['name', 'name']],
@@ -1563,8 +1562,6 @@ class MakeEventSourcingDomainCommandTest extends TestCase
             'string_field' => 'string',
             'datetime_tz_field' => 'dateTimeTz',
             'datetime_field' => 'dateTime',
-            'soft_deletes_tz_field' => 'softDeletesTz',
-            'soft_deletes_field' => 'softDeletes',
             'timestamp_tz_field' => 'timestampTz',
             'timestamp_field' => 'timestamp',
             'timestamps_tz_field' => 'timestampsTz',

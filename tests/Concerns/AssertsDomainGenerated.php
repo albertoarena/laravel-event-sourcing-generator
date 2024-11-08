@@ -3,6 +3,7 @@
 namespace Tests\Concerns;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
@@ -168,6 +169,9 @@ trait AssertsDomainGenerated
 
                         $this->assertMatchesRegularExpression("/public $nullable$type \\$$name/", $generated);
                     }
+                    foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
+                        $this->assertDoesNotMatchRegularExpression("/public .* \\\$$method;/", $generated);
+                    }
                 }
             } elseif ($stubFile === 'projection.stub') {
                 if ($useUuid) {
@@ -180,6 +184,9 @@ trait AssertsDomainGenerated
 
                     $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
                 }
+                foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
+                    $this->assertDoesNotMatchRegularExpression("/'$method' => '.*'/", $generated);
+                }
             } elseif ($stubFile === 'projector.stub') {
                 if ($useUuid) {
                     $this->assertMatchesRegularExpression("/'uuid' => \\\$event->{$stubReplacer->settings->nameAsPrefix}Uuid/", $generated);
@@ -190,6 +197,9 @@ trait AssertsDomainGenerated
                 foreach ($settings->modelProperties->toArray() as $item) {
                     $name = Str::camel($item->name);
                     $this->assertMatchesRegularExpression("/'$item->name'\s=>\s\\\$event->{$stubReplacer->settings->nameAsPrefix}Data->$name/", $generated);
+                }
+                foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
+                    $this->assertDoesNotMatchRegularExpression("/'$method'\s=>\s\\\$event->{$stubReplacer->settings->nameAsPrefix}Data->$method/", $generated);
                 }
             } elseif ($stubFile === 'test.stub') {
                 if ($createUnitTest) {

@@ -3,6 +3,7 @@
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationInvalidPrimaryKeyException;
 use Illuminate\Support\Arr;
 use PhpParser\Node;
@@ -19,7 +20,10 @@ class MigrationCreateProperty
     ) {
         $this->type = $type instanceof MigrationCreatePropertyType ?
             $type :
-            new MigrationCreatePropertyType($type);
+            new MigrationCreatePropertyType(
+                type: $type,
+                isIgnored: in_array($name, BlueprintUnsupportedInterface::IGNORED)
+            );
 
         if (! $this->name) {
             $this->name = $this->type->type;
@@ -60,7 +64,11 @@ class MigrationCreateProperty
 
         return new self(
             $name,
-            new MigrationCreatePropertyType($type, $nullable),
+            new MigrationCreatePropertyType(
+                type: $type,
+                nullable: $nullable,
+                isIgnored: in_array($name, BlueprintUnsupportedInterface::IGNORED)
+            ),
         );
     }
 }

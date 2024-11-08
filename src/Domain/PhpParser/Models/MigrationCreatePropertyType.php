@@ -13,9 +13,12 @@ class MigrationCreatePropertyType
 
     public bool $nullable;
 
+    public readonly bool $isIgnored;
+
     public function __construct(
         public string $type,
         bool $nullable = false,
+        bool $isIgnored = false,
     ) {
         $this->nullable = false;
         if ($nullable) {
@@ -26,6 +29,8 @@ class MigrationCreatePropertyType
                 $this->nullable = true;
             }
         }
+
+        $this->isIgnored = $isIgnored || in_array($this->type, BlueprintUnsupportedInterface::IGNORED);
     }
 
     public function setAsBuiltInType(): void
@@ -56,10 +61,5 @@ class MigrationCreatePropertyType
             fn ($type) => $this->carbonToBuiltInType($type),
             fn ($type) => Str::replaceFirst('?', '', $type),
         ]))->peel($this->type);
-    }
-
-    public function isIgnored(): bool
-    {
-        return in_array($this->type, array_merge(BlueprintUnsupportedInterface::IGNORED));
     }
 }

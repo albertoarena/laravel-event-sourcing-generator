@@ -53,16 +53,16 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
         );
     }
 
-    protected function createMethodCall(string $type, string $variableName, array $args = []): Node\Expr\MethodCall
+    protected function createMethodCall(string $type, ?string $variableName = null, array $args = []): Node\Expr\MethodCall
     {
         return new Node\Expr\MethodCall(
             new Node\Expr\Variable('table'),
             new Node\Identifier($this->builtInTypeToColumnType($type)),
-            array_merge([
+            array_merge($variableName ? [
                 new Node\Arg(
                     new Node\Scalar\String_($variableName)
                 ),
-            ], $args)
+            ] : [], $args)
         );
     }
 
@@ -205,6 +205,14 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
             );
 
             $closure->stmts[] = $newExpression;
+        }
+
+        // Inject soft deletes
+        $softDeletes = $this->options[MigrationOptionInterface::SOFT_DELETES] ?? false;
+        if ($softDeletes) {
+            $closure->stmts[] = new Node\Stmt\Expression(
+                $this->createMethodCall(is_string($softDeletes) ? $softDeletes : 'softDeletes')
+            );
         }
     }
 

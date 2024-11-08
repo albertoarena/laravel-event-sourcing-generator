@@ -23,6 +23,10 @@ interface BlueprintUnsupportedInterface
         'index',
         'rawIndex',
         'spatialIndex',
+        // Soft deletes
+        'softDeletes',
+        'softDeletesTz',
+        'softDeletesDatetime',
     ];
 
     public const UNSUPPORTED_COLUMN_TYPES = [
