@@ -1214,7 +1214,7 @@ class MakeEventSourcingDomainCommandTest extends TestCase
      */
     #[RunInSeparateProcess]
     #[Test]
-    public function it_can_create_a_model_and_domain_with_migration_argument_ignoring_foreign_keys()
+    public function it_can_create_a_model_and_domain_with_migration_argument_ignoring_indexes_and_foreign_keys()
     {
         $properties = [
             'name' => 'string',
@@ -1223,6 +1223,9 @@ class MakeEventSourcingDomainCommandTest extends TestCase
 
         $options = [
             MigrationOptionInterface::INJECTS => [
+                ['index' => 'name'],
+                ['rawIndex' => ['name', 'name']],
+                ['spatialIndex' => 'name'],
                 ['foreign' => 'dummyId', 'references' => 'id', 'on' => 'dummy', 'onDelete' => 'cascade'],
             ],
         ];

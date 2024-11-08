@@ -19,6 +19,10 @@ interface BlueprintUnsupportedInterface
         'restrictOnDelete',
         'nullOnDelete',
         'noActionOnDelete',
+        // Indexes
+        'index',
+        'rawIndex',
+        'spatialIndex',
     ];
 
     public const UNSUPPORTED_COLUMN_TYPES = [
