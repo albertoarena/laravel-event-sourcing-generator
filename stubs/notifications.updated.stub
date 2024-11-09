@@ -1,0 +1,100 @@
+<?php
+
+namespace App\{{ namespace }}\{{ domain }}\Notifications;
+
+use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
+use App\{{ namespace }}\{{ domain }}\Notifications\Concerns\HasDataAsArray;
+use Illuminate\Notifications\Notification;
+
+{% if notifications.mail %}
+use Illuminate\Support\Arr;
+use Illuminate\Notifications\Messages\MailMessage;
+{% endif %}
+
+{% if notifications.slack %}
+use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
+use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+use Illuminate\Notifications\Slack\BlockKit\Composites\ConfirmObject;
+use Illuminate\Notifications\Slack\SlackMessage;
+{% endif %}
+
+{% if notifications.teams %}
+use App\{{ namespace }}\{{ domain }}\Notifications\Concerns\HasMicrosoftTeamsNotification;
+use NotificationChannels\MicrosoftTeams\Exceptions\CouldNotSendNotification;
+use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
+use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
+{% endif %}
+
+class {{ class }}Updated extends Notification
+{
+    use HasDataAsArray;
+    {% if notifications.teams %}
+    use HasMicrosoftTeamsNotification;
+    {% endif %}
+
+    public function __construct(
+        public {{ primary_key:type }} ${{ id }}{{ primary_key:uppercase }},
+        public {{ class }}Data|array ${{ id }}Data,
+    ) {}
+
+    public function via($notifiable): array
+    {
+        return [
+            {% if notifications.mail %}
+            'mail',
+            {% endif %}
+            {% if notifications.teams %}
+            MicrosoftTeamsChannel::class,
+            {% endif %}
+            {% if notifications.slack %}
+            'slack',
+            {% endif %}
+        ];
+    }
+
+    {% if notifications.mail %}
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->from(config('mail.from.address'))
+            ->subject('{{ class }} updated successfully')
+            ->greeting('Hello,')
+            ->line('A new {{ class }} has been updated')
+            ->line('- {{ primary_key }}: '.$this->{{ id }}{{ primary_key:uppercase }})
+            ->lines(Arr::map($this->getDataAsArray(), function ($value, $key) {
+                return '- '.$key.': '.$value;
+            }));
+    }
+    {% endif %}
+
+    {% if notifications.teams %}
+    /**
+     * @throws CouldNotSendNotification
+     */
+    public function toMicrosoftTeams($notifiable): MicrosoftTeamsMessage
+    {
+        return MicrosoftTeamsMessage::create()
+            ->to(config('services.microsoft_teams.webhook_url'))
+            ->type('success')
+            ->title('{{ class }} updated successfully')
+            ->content(
+                $this->getMicrosoftTeamsContent('A new {{ class }} has been updated', '{{ primary_key }}', $this->{{ id }}{{ primary_key:uppercase }})
+            );
+    }
+    {% endif %}
+
+    {% if notifications.slack %}
+    public function toSlack($notifiable): SlackMessage
+    {
+        return (new SlackMessage)
+            ->text('A new {{ class }} has been updated')
+            ->headerBlock('A new {{ class }} has been updated')
+            ->sectionBlock(function (SectionBlock $block) {
+                $block->field("*{{ primary_key }}:* $this->{{ id }}{{ primary_key:uppercase }}")->markdown();
+                foreach ($this->getDataAsArray() as $key => $value) {
+                    $block->field("*$key:* $value")->markdown();
+                }
+            });
+    }
+    {% endif %}
+}

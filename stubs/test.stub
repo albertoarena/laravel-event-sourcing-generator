@@ -7,13 +7,30 @@ use App\{{ namespace }}\{{ domain }}\Actions\Delete{{ class }};
 use App\{{ namespace }}\{{ domain }}\Actions\Update{{ class }};
 use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
 use App\{{ namespace }}\{{ domain }}\Projections\{{ class }};
+
 {% if useCarbon %}
 use Illuminate\Support\Carbon;
 {% endif %}
+
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\WithFaker;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+
+{% if notifications %}
+use Illuminate\Support\Facades\Notification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}Created as {{ class }}CreatedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}Deleted as {{ class }}DeletedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}Updated as {{ class }}UpdatedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}CreationFailed as {{ class }}CreationFailedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}DeletionFailed as {{ class }}DeletionFailedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}UpdateFailed as {{ class }}UpdateFailedNotification;
+use Illuminate\Notifications\AnonymousNotifiable;
+{% endif %}
+
+{% if uuid %}
+use Ramsey\Uuid\Uuid;
+{% endif %}
 
 class {{ class }}Test extends TestCase
 {
@@ -30,6 +47,10 @@ class {{ class }}Test extends TestCase
     #[Test]
     public function can_create_{{ id }}_model()
     {
+        {% if notifications %}
+        Notification::fake();
+        {% endif %}
+
         $data = $this->fakeData();
 
         (new Create{{ class }})($data);
@@ -38,11 +59,20 @@ class {{ class }}Test extends TestCase
         $record = {{ class }}::query()->first();
         $this->assertNotEmpty($record);
         {{ test:assert($data, $record) }}
+
+        {% if notifications %}
+        Notification::assertSentTo(new AnonymousNotifiable, {{ class }}CreatedNotification::class);
+        Notification::assertNotSentTo(new AnonymousNotifiable, {{ class }}CreationFailedNotification::class);
+        {% endif %}
     }
 
     #[Test]
     public function can_update_{{ id }}_model()
     {
+        {% if notifications %}
+        Notification::fake();
+        {% endif %}
+
         $data = $this->fakeData();
 
         (new Create{{ class }})($data);
@@ -59,11 +89,44 @@ class {{ class }}Test extends TestCase
         $updatedRecord = {{ class }}::{{ primary_key }}($record->{{ primary_key }});
         $this->assertNotEmpty($updatedRecord);
         {{ test:assert($updateData, $updatedRecord) }}
+
+        {% if notifications %}
+        Notification::assertSentTo(new AnonymousNotifiable, {{ class }}UpdatedNotification::class);
+        Notification::assertNotSentTo(new AnonymousNotifiable, {{ class }}UpdateFailedNotification::class);
+        {% endif %}
+    }
+
+    #[Test]
+    public function cannot_update_non_existing_{{ id }}_model()
+    {
+        {% if notifications %}
+        Notification::fake();
+        {% endif %}
+
+        {% if uuid %}
+        $primaryKey = Uuid::uuid4()->toString();
+        {% endif %}
+        {% if !uuid %}
+        $primaryKey = rand(111111, 99999999);
+        {% endif %}
+
+        $updateData = $this->fakeData();
+
+        (new Update{{ class }})($primaryKey, $updateData);
+
+        {% if notifications %}
+        Notification::assertNotSentTo(new AnonymousNotifiable, {{ class }}UpdatedNotification::class);
+        Notification::assertSentTo(new AnonymousNotifiable, {{ class }}UpdateFailedNotification::class);
+        {% endif %}
     }
 
     #[Test]
     public function can_delete_{{ id }}_model()
     {
+        {% if notifications %}
+        Notification::fake();
+        {% endif %}
+
         $data = $this->fakeData();
 
         (new Create{{ class }})($data);
@@ -75,5 +138,33 @@ class {{ class }}Test extends TestCase
         (new Delete{{ class }})($record->{{ primary_key }});
 
         $this->assertNull({{ class }}::query()->where('{{ primary_key }}', $record->{{ primary_key }})->first());
+
+        {% if notifications %}
+        Notification::assertSentTo(new AnonymousNotifiable, {{ class }}DeletedNotification::class);
+        Notification::assertNotSentTo(new AnonymousNotifiable, {{ class }}DeletionFailedNotification::class);
+        {% endif %}
+    }
+
+    #[Test]
+    public function cannot_delete_non_existing_{{ id }}_model()
+    {
+        {% if notifications %}
+        Notification::fake();
+        {% endif %}
+
+        {% if uuid %}
+        $primaryKey = Uuid::uuid4()->toString();
+        {% endif %}
+        {% if !uuid %}
+        $primaryKey = rand(111111, 99999999);
+        {% endif %}
+        (new Delete{{ class }})($primaryKey);
+
+        $this->assertNull({{ class }}::query()->where('{{ primary_key }}', $primaryKey)->first());
+
+        {% if notifications %}
+        Notification::assertNotSentTo(new AnonymousNotifiable, {{ class }}DeletedNotification::class);
+        Notification::assertSentTo(new AnonymousNotifiable, {{ class }}DeletionFailedNotification::class);
+        {% endif %}
     }
 }

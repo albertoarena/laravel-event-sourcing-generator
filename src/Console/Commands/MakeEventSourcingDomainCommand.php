@@ -4,6 +4,7 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Console\Commands;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Concerns\CanCreateDirectories;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Contracts\AcceptedNotificationInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
@@ -40,7 +41,9 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
                             {--u|unit-test : Indicate if unit test must be created}
                             {--p|primary-key= : Indicate which is the primary key (uuid, id)}
-                            {--i|indentation=4 : Indentation spaces}';
+                            {--i|indentation=4 : Indentation spaces}
+                            {--failed-events=0 : Indicate if failed events must be created (accepts 0 or 1)}
+                            {--notifications=no : Notifications, comma separated (accepts mail,no,slack,teams)}';
 
     /**
      * @var string
@@ -89,6 +92,11 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         return $this->laravel['path'].'/'.$this->settings->namespace.'/'.str_replace('\\', '/', $name).'/';
     }
 
+    protected function getNamespacePath(): string
+    {
+        return $this->laravel['path'].'/'.$this->settings->namespace.'/';
+    }
+
     protected function getTestDomainPath($name): string
     {
         $name = Str::replaceFirst($this->rootNamespace(), '', $name);
@@ -120,10 +128,12 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
         $this->stubReplacer->replace($stub);
 
-        $content = $this->replaceNamespace($stub, $this->settings->domain)
+        $stub = $this->replaceNamespace($stub, $this->settings->domain)
             ->replaceClass($stub, $this->settings->model);
 
-        $this->files->put($outputPath, $content);
+        $this->stubReplacer->afterReplacements($stub);
+
+        $this->files->put($outputPath, $stub);
     }
 
     /**
@@ -173,6 +183,16 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         return class_exists('Spatie\EventSourcing\EventSourcingServiceProvider');
     }
 
+    protected function checkNotificationMicrosoftTeamsPackage(): bool
+    {
+        return class_exists('NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel');
+    }
+
+    protected function checkNotificationSlackPackage(): bool
+    {
+        return class_exists('Illuminate\Notifications\Slack\SlackMessage');
+    }
+
     protected function getModelInput(): string
     {
         return Str::ucfirst(trim($this->argument('model')));
@@ -186,6 +206,16 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         }
 
         return Str::ucfirst($domain);
+    }
+
+    protected function getNotifications(): array
+    {
+        $notifications = ! is_null($this->option('notifications')) ? explode(',', $this->option('notifications')) : [];
+
+        return array_filter(
+            Arr::map($notifications, fn ($item) => Str::trim($item)),
+            fn ($item) => in_array($item, AcceptedNotificationInterface::ACCEPTED)
+        );
     }
 
     /**
@@ -210,8 +240,10 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             createAggregateRoot: ! is_null($this->option('aggregate-root')) ? (bool) $this->option('aggregate-root') : null,
             createReactor: ! is_null($this->option('reactor')) ? (bool) $this->option('reactor') : null,
             indentation: (int) $this->option('indentation'),
+            notifications: $this->getNotifications(),
             useUuid: ! is_null($primaryKey) ? $primaryKey === 'uuid' : null,
             createUnitTest: (bool) $this->option('unit-test'),
+            createFailedEvents: (bool) $this->option('failed-events'),
         );
 
         $this->stubReplacer = new StubReplacer($this->settings);
@@ -271,6 +303,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
         $this->settings->nameAsPrefix = Str::lcfirst(Str::camel($this->settings->model));
         $this->settings->domainPath = $this->getDomainPath($this->qualifyDomain($this->settings->domain));
+        $this->settings->namespacePath = $this->getNamespacePath();
         $this->settings->testDomainPath = $this->getTestDomainPath($this->qualifyDomain($this->settings->domain));
 
         return true;
@@ -293,6 +326,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
                 ['Create Reactor class', $this->settings->createReactor ? 'yes' : 'no'],
                 ['Create unit test', $this->settings->createUnitTest ? 'yes' : 'no'],
+                ['Create failed events', $this->settings->createFailedEvents ? 'yes' : 'no'],
                 [
                     'Model properties',
                     $modelProperties ?
@@ -307,6 +341,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                         ) :
                         'none',
                 ],
+                ['Notifications', $this->settings->notifications ? implode(',', $this->settings->notifications) : 'no'],
             ]
         );
 
@@ -354,6 +389,16 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             $this->createDirectories()
                 ->createDomainFiles()
                 ->outputResult();
+
+            if (in_array('teams', $this->settings->notifications) && ! $this->checkNotificationMicrosoftTeamsPackage()) {
+                $this->components->warn('Please install Microsoft Teams notifications via composer:');
+                $this->components->warn('composer require laravel-notification-channels/microsoft-teams');
+            }
+
+            if (in_array('slack', $this->settings->notifications) && ! $this->checkNotificationSlackPackage()) {
+                $this->components->warn('Please install Slack notifications via composer:');
+                $this->components->warn('composer require laravel/slack-notification-channel');
+            }
 
             return self::SUCCESS;
         } catch (Exception $e) {

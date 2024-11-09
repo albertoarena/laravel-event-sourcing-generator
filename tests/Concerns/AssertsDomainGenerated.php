@@ -22,7 +22,9 @@ trait AssertsDomainGenerated
         string $namespace,
         bool $createAggregateRoot,
         bool $createReactor,
-        bool $createUnitTest
+        bool $createUnitTest,
+        bool $createFailedEvents,
+        array $notifications,
     ): array {
         $unexpectedFiles = [];
         $expectedFiles = [
@@ -62,9 +64,62 @@ trait AssertsDomainGenerated
             $unexpectedFiles["tests/$namespace/$domain/{$model}Test.php"] = 'test.stub';
         }
 
+        if ($createFailedEvents) {
+            $expectedFiles["$namespace/$domain/Events/{$model}CreationFailed.php"] = 'events.creation_failed.stub';
+            $expectedFiles["$namespace/$domain/Events/{$model}DeletionFailed.php"] = 'events.deletion_failed.stub';
+            $expectedFiles["$namespace/$domain/Events/{$model}UpdateFailed.php"] = 'events.update_failed.stub';
+        } else {
+            $unexpectedFiles["$namespace/$domain/Events/{$model}CreationFailed.php"] = 'events.creation_failed.stub';
+            $unexpectedFiles["$namespace/$domain/Events/{$model}DeletionFailed.php"] = 'events.deletion_failed.stub';
+            $unexpectedFiles["$namespace/$domain/Events/{$model}UpdateFailed.php"] = 'events.update_failed.stub';
+        }
+
+        if ($notifications) {
+            $expectedFiles["$namespace/$domain/Notifications/{$model}Created.php"] = 'notifications.created.stub';
+            $expectedFiles["$namespace/$domain/Notifications/{$model}Deleted.php"] = 'notifications.deleted.stub';
+            $expectedFiles["$namespace/$domain/Notifications/{$model}Updated.php"] = 'notifications.updated.stub';
+        } else {
+            $unexpectedFiles["$namespace/$domain/Notifications/{$model}Created.php"] = 'notifications.created.stub';
+            $unexpectedFiles["$namespace/$domain/Notifications/{$model}Deleted.php"] = 'notifications.deleted.stub';
+            $unexpectedFiles["$namespace/$domain/Notifications/{$model}Updated.php"] = 'notifications.updated.stub';
+        }
+
         return [
             $expectedFiles,
             $unexpectedFiles,
+        ];
+    }
+
+    protected function getProjectorFailedEventMatches(string $namespace, string $domain, string $model): array
+    {
+        return [
+            "use App\\$namespace\\$domain\\Events\\{$model}CreationFailed",
+            "use App\\$namespace\\$domain\\Events\\{$model}DeletionFailed",
+            "use App\\$namespace\\$domain\\Events\\{$model}UpdateFailed",
+            "event(new {$model}CreationFailed(",
+            "event(new {$model}DeletionFailed(",
+            "event(new {$model}UpdateFailed(",
+            "public function on{$model}CreationFailed({$model}CreationFailed \$event)",
+            "public function on{$model}DeletionFailed({$model}DeletionFailed \$event)",
+            "public function on{$model}UpdateFailed({$model}UpdateFailed \$event)",
+        ];
+    }
+
+    protected function getProjectorNotificationMatches(string $namespace, string $domain, string $model): array
+    {
+        return [
+            "use App\\$namespace\\$domain\\Notifications\\{$model}Created",
+            "use App\\$namespace\\$domain\\Notifications\\{$model}CreationFailed",
+            "use App\\$namespace\\$domain\\Notifications\\{$model}Deleted",
+            "use App\\$namespace\\$domain\\Notifications\\{$model}DeletionFailed",
+            "use App\\$namespace\\$domain\\Notifications\\{$model}UpdateFailed",
+            "use App\\$namespace\\$domain\\Notifications\\{$model}Updated",
+            "Notification::send(new AnonymousNotifiable, new {$model}CreatedNotification(",
+            "Notification::send(new AnonymousNotifiable, new {$model}CreationFailedNotification(",
+            "Notification::send(new AnonymousNotifiable, new {$model}DeletedNotification(",
+            "Notification::send(new AnonymousNotifiable, new {$model}DeletionFailedNotification(",
+            "Notification::send(new AnonymousNotifiable, new {$model}UpdateFailedNotification(",
+            "Notification::send(new AnonymousNotifiable, new {$model}UpdatedNotification(",
         ];
     }
 
@@ -79,6 +134,8 @@ trait AssertsDomainGenerated
         array $modelProperties = [],
         int $indentation = 4,
         bool $createUnitTest = false,
+        bool $createFailedEvents = false,
+        array $notifications = [],
     ): void {
         if (! $useUuid) {
             $createAggregateRoot = false;
@@ -91,6 +148,8 @@ trait AssertsDomainGenerated
             createAggregateRoot: $createAggregateRoot,
             createReactor: $createReactor,
             createUnitTest: $createUnitTest,
+            createFailedEvents: $createFailedEvents,
+            notifications: $notifications,
         );
 
         // Assert that the files were created
@@ -119,10 +178,12 @@ trait AssertsDomainGenerated
             createAggregateRoot: $createAggregateRoot,
             createReactor: $createReactor,
             indentation: $indentation,
+            notifications: $notifications,
             useUuid: $useUuid,
             nameAsPrefix: Str::lcfirst(Str::camel($model)),
             domainPath: '',
             createUnitTest: $createUnitTest,
+            createFailedEvents: $createFailedEvents,
         );
         $settings->modelProperties->import($modelProperties);
 
@@ -153,7 +214,8 @@ trait AssertsDomainGenerated
 
             // Assert namespace
             $baseNamespace = $isTest ? 'Tests' : 'App';
-            $this->assertStringContainsString('namespace '.$baseNamespace.'\\'.$stubReplacer->settings->namespace.'\\'.$stubReplacer->settings->domain, $generated);
+            $domain = $settings->domain;
+            $this->assertStringContainsString('namespace '.$baseNamespace.'\\'.$settings->namespace.'\\'.$settings->domain, $generated);
 
             // Assert specific expectations
             if ($stubFile === 'data-transfer-object.stub') {
@@ -189,17 +251,35 @@ trait AssertsDomainGenerated
                 }
             } elseif ($stubFile === 'projector.stub') {
                 if ($useUuid) {
-                    $this->assertMatchesRegularExpression("/'uuid' => \\\$event->{$stubReplacer->settings->nameAsPrefix}Uuid/", $generated);
+                    $this->assertMatchesRegularExpression("/'uuid' => \\\$event->{$settings->nameAsPrefix}Uuid/", $generated);
                 } else {
-                    $this->assertDoesNotMatchRegularExpression("/'id' => \\\$event->{$stubReplacer->settings->nameAsPrefix}Id/", $generated);
+                    $this->assertDoesNotMatchRegularExpression("/'id' => \\\$event->{$settings->nameAsPrefix}Id/", $generated);
                 }
                 // Assert that model properties are using camel format
                 foreach ($settings->modelProperties->toArray() as $item) {
                     $name = Str::camel($item->name);
-                    $this->assertMatchesRegularExpression("/'$item->name'\s=>\s\\\$event->{$stubReplacer->settings->nameAsPrefix}Data->$name/", $generated);
+                    $this->assertMatchesRegularExpression("/'$item->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
                 }
                 foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
-                    $this->assertDoesNotMatchRegularExpression("/'$method'\s=>\s\\\$event->{$stubReplacer->settings->nameAsPrefix}Data->$method/", $generated);
+                    $this->assertDoesNotMatchRegularExpression("/'$method'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$method/", $generated);
+                }
+
+                // Assert failed events
+                foreach ($this->getProjectorFailedEventMatches($namespace, $domain, $model) as $match) {
+                    if ($createFailedEvents) {
+                        $this->assertStringContainsString($match, $generated);
+                    } else {
+                        $this->assertStringNotContainsString($match, $generated);
+                    }
+                }
+
+                // Assert notifications
+                foreach ($this->getProjectorNotificationMatches($namespace, $domain, $model) as $match) {
+                    if ($notifications) {
+                        $this->assertStringContainsString($match, $generated);
+                    } else {
+                        $this->assertStringNotContainsString($match, $generated);
+                    }
                 }
             } elseif ($stubFile === 'test.stub') {
                 if ($createUnitTest) {
@@ -208,10 +288,19 @@ trait AssertsDomainGenerated
                     $this->assertMatchesRegularExpression("/public function can_create_{$modelLower}_model/", $generated);
                     $this->assertMatchesRegularExpression("/public function can_update_{$modelLower}_model/", $generated);
                     $this->assertMatchesRegularExpression("/public function can_delete_{$modelLower}_model/", $generated);
+
                     // Assert that model properties are using camel format
                     foreach ($settings->modelProperties->toArray() as $item) {
                         $this->assertMatchesRegularExpression('/\\$this->assertEquals\(\\$data->'.Str::camel($item->name).", \\\$record->$item->name\)/", $generated);
                         $this->assertMatchesRegularExpression('/\\$this->assertEquals\(\\$updateData->'.Str::camel($item->name).", \\\$updatedRecord->$item->name\)/", $generated);
+                    }
+
+                    if ($notifications) {
+                        $this->assertStringContainsString('Notification::fake()', $generated);
+                        $this->assertStringContainsString('Notification::assertSentTo', $generated);
+                        $this->assertStringContainsString($model.'CreatedNotification::class', $generated);
+                        $this->assertStringContainsString($model.'UpdatedNotification::class', $generated);
+                        $this->assertStringContainsString($model.'DeletedNotification::class', $generated);
                     }
                 }
             }

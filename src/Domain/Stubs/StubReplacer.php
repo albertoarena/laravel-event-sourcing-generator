@@ -57,7 +57,7 @@ class StubReplacer
         return Str::repeat('    ', $tabs);
     }
 
-    protected function replaceDomain(&$stub): self
+    protected function replaceDomain(string &$stub): self
     {
         $this->replaceWithClosure($stub, 'domain', fn () => $this->settings->domain);
         $this->replaceWithClosure($stub, 'namespace', fn () => $this->settings->namespace);
@@ -66,7 +66,7 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceConstructorProperties(&$stub): self
+    protected function replaceConstructorProperties(string &$stub): self
     {
         $indentSpace2 = $this->getIndentSpace(2);
 
@@ -94,7 +94,7 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceProjectionFillableProperties(&$stub): self
+    protected function replaceProjectionFillableProperties(string &$stub): self
     {
         $indentSpace2 = $this->getIndentSpace(2);
 
@@ -110,7 +110,7 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceProjectionCastProperties(&$stub): self
+    protected function replaceProjectionCastProperties(string &$stub): self
     {
         $indentSpace2 = $this->getIndentSpace(2);
 
@@ -131,7 +131,7 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceProjectionPhpDocProperties(&$stub): self
+    protected function replaceProjectionPhpDocProperties(string &$stub): self
     {
         $preparedProperties = Arr::map(
             $this->getModelProperties(),
@@ -149,7 +149,7 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceProjectorProperties(&$stub): self
+    protected function replaceProjectorProperties(string &$stub): self
     {
         $indentSpace4 = $this->getIndentSpace(4);
 
@@ -171,7 +171,7 @@ class StubReplacer
         return $this;
     }
 
-    protected function replacePrimaryKey(&$stub): self
+    protected function replacePrimaryKey(string &$stub): self
     {
         $primaryKey = $this->settings->primaryKey();
         $this->replaceWithClosure($stub, 'primary_key', fn () => $primaryKey);
@@ -185,23 +185,31 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceIfBlocks(&$stub): self
+    protected function replaceIfBlocks(string &$stub): self
     {
-        $ifBlockConditions = [
+        $ifBlockRemoveConditions = [
             '{% if uuid %}' => ! $this->settings->useUuid,
             '{% if !uuid %}' => $this->settings->useUuid,
             '{% if useCarbon %}' => ! $this->settings->useCarbon,
+            '{% if !failed_events %}' => $this->settings->createFailedEvents,
+            '{% if failed_events %}' => ! $this->settings->createFailedEvents,
+            '{% if notifications and failed_events %}' => ! ($this->settings->createFailedEvents && $this->settings->notifications),
+            '{% if notifications and !failed_events %}' => ! (! $this->settings->createFailedEvents && $this->settings->notifications),
+            '{% if notifications %}' => ! $this->settings->notifications,
+            '{% if notifications.mail %}' => ! in_array('mail', $this->settings->notifications),
+            '{% if notifications.slack %}' => ! in_array('slack', $this->settings->notifications),
+            '{% if notifications.teams %}' => ! in_array('teams', $this->settings->notifications),
             '{% endif %}' => false,
         ];
 
         $stub2 = explode("\n", $stub);
-        $isRemoving = false;
+        $isRemoving = [];
         foreach ($stub2 as $index => $line) {
             $removeThis = false;
             $line = trim($line);
 
-            if (isset($ifBlockConditions[$line])) {
-                $isRemoving = $ifBlockConditions[$line];
+            if (isset($ifBlockRemoveConditions[$line])) {
+                $isRemoving = $ifBlockRemoveConditions[$line];
                 $removeThis = true;
             }
             if ($isRemoving || $removeThis) {
@@ -213,15 +221,15 @@ class StubReplacer
 
         // Fix any remaining block
         $stub = Str::replaceMatches(
-            Arr::map(array_keys($ifBlockConditions), fn ($condition) => "/\s*\$condition/"),
-            ["\n", "\n", "\n", ''],
+            ['/\s*{%\s*if\s*.*%}/', '/\s*{%\s*endif\s*%}/'],
+            ["\n", ''],
             $stub
         );
 
         return $this;
     }
 
-    protected function replaceIndentation(&$stub): self
+    protected function replaceIndentation(string &$stub): self
     {
         $defaultIndentation = Str::repeat(' ', 4);
         $currentIndentation = $this->settings->indentSpace;
@@ -232,7 +240,7 @@ class StubReplacer
         return $this;
     }
 
-    protected function replaceUnitTest(&$stub): self
+    protected function replaceUnitTest(string &$stub): self
     {
         $indentSpace2 = $this->getIndentSpace(2);
         $indentSpace3 = $this->getIndentSpace(3);
@@ -263,7 +271,49 @@ class StubReplacer
         return $this;
     }
 
-    public function replace(&$stub): self
+    protected function fixUseNamespaceOrder(string &$stub): self
+    {
+        $search = '';
+        foreach (['class', 'trait', 'interface'] as $item) {
+            if (preg_match_all('/'.$item.' .*/', $stub)) {
+                $search = $item;
+                break;
+            }
+        }
+
+        if (! $search) {
+            return $this;
+        }
+
+        $beforeClass = Str::before($stub, $search.' ');
+
+        if (preg_match_all('/(use .*;)\n/', $beforeClass, $matches)) {
+            $use = $matches[1];
+            usort($use, function (string $a, string $b) {
+                $a = strtolower(preg_replace('/\sas\s.*;/', '', $a));
+                $b = strtolower(preg_replace('/\sas\s.*;/', '', $b));
+
+                return strnatcmp($a, $b);
+            });
+            $beforeClass = preg_replace('/(use .*;)\n/', '', $beforeClass);
+            $beforeClass = preg_replace('/(namespace .*;)\n/', "$1\n\n".implode("\n", $use), $beforeClass);
+
+            $stub = $beforeClass.$search.' '.Str::after($stub, $search.' ');
+        }
+
+        return $this;
+    }
+
+    protected function fixEmptyLines(string &$stub): self
+    {
+        $stub = preg_replace('/\n{3,}/', "\n\n", $stub);
+        $stub = preg_replace('/\s*\n(\s*})/', "\n$1", $stub);
+        $stub = preg_replace('/(} catch \(Exception \$e\) {\n)\s*\n/', '$1', $stub);
+
+        return $this;
+    }
+
+    public function replace(string &$stub): self
     {
         return $this->replaceDomain($stub)
             ->replaceConstructorProperties($stub)
@@ -275,6 +325,14 @@ class StubReplacer
             ->replaceIfBlocks($stub)
             ->replaceIndentation($stub)
             ->replaceUnitTest($stub);
+    }
+
+    public function afterReplacements(string &$stub): self
+    {
+        $this->fixUseNamespaceOrder($stub)
+            ->fixEmptyLines($stub);
+
+        return $this;
     }
 
     public function replaceWithClosureRegexp(&$stub, string $searchPattern, Closure $closure): self

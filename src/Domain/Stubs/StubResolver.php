@@ -28,8 +28,19 @@ class StubResolver
         CommandSettings $settings
     ): string {
         return Str::replace(
-            ['{{path}}', '{{name}}', '{{ path }}', '{{ name }}', '{{test_path}}', '{{ test_path }}', '//'],
-            [$settings->domainPath, $settings->model, $settings->domainPath, $settings->model, $settings->testDomainPath, $settings->testDomainPath, '/'],
+            [
+                '{{path}}', '{{ path }}',
+                '{{name}}', '{{ name }}',
+                '{{test_path}}', '{{ test_path }}',
+                '{{namespace}}', '{{ namespace }}',
+                '//',
+            ],
+            [
+                $settings->domainPath, $settings->domainPath,
+                $settings->model, $settings->model,
+                $settings->testDomainPath, $settings->testDomainPath,
+                $settings->namespacePath, $settings->namespacePath,
+                '/'],
             $this->resolverPattern
         );
     }

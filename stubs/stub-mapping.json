@@ -62,13 +62,90 @@
     "stub": "stubs/events.created",
     "output": "{{ path }}/Events/{{ name }}Created.php"
   },
+  "events.creation_failed": {
+    "stub": "stubs/events.creation_failed",
+    "output": "{{ path }}/Events/{{ name }}CreationFailed.php",
+    "context": {
+      "failed_event": true
+    }
+  },
   "events.deleted": {
     "stub": "stubs/events.deleted",
     "output": "{{ path }}/Events/{{ name }}Deleted.php"
   },
+  "events.deletion_failed": {
+    "stub": "stubs/events.deletion_failed",
+    "output": "{{ path }}/Events/{{ name }}DeletionFailed.php",
+    "context": {
+      "failed_event": true
+    }
+  },
+  "events.update_failed": {
+    "stub": "stubs/events.update_failed",
+    "output": "{{ path }}/Events/{{ name }}UpdateFailed.php",
+    "context": {
+      "failed_event": true
+    }
+  },
   "events.updated": {
     "stub": "stubs/events.updated",
     "output": "{{ path }}/Events/{{ name }}Updated.php"
+  },
+  "notifications.concerns.has_data_as_array": {
+    "stub": "stubs/notifications.concerns.has_data_as_array",
+    "output": "{{ path }}/Notifications/Concerns/HasDataAsArray.php",
+    "context": {
+      "notifications": true
+    }
+  },
+  "notifications.concerns.has_microsoft_teams_notifications": {
+    "stub": "stubs/notifications.concerns.has_microsoft_teams_notifications",
+    "output": "{{ path }}/Notifications/Concerns/HasMicrosoftTeamsNotification.php",
+    "context": {
+      "notifications": true
+    }
+  },
+  "notifications.created": {
+    "stub": "stubs/notifications.created",
+    "output": "{{ path }}/Notifications/{{ name }}Created.php",
+    "context": {
+      "notifications": true
+    }
+  },
+  "notifications.creation_failed": {
+    "stub": "stubs/notifications.creation_failed",
+    "output": "{{ path }}/Notifications/{{ name }}CreationFailed.php",
+    "context": {
+      "notifications": true
+    }
+  },
+  "notifications.deleted": {
+    "stub": "stubs/notifications.deleted",
+    "output": "{{ path }}/Notifications/{{ name }}Deleted.php",
+    "context": {
+      "notifications": true
+    }
+  },
+  "notifications.deletion_failed": {
+    "stub": "stubs/notifications.deletion_failed",
+    "output": "{{ path }}/Notifications/{{ name }}DeletionFailed.php",
+    "context": {
+      "notifications": true
+    }
+  },
+  "notifications.updated": {
+    "stub": "stubs/notifications.updated",
+    "output": "{{ path }}/Notifications/{{ name }}Updated.php",
+    "context": {
+      "notifications": true
+    }
+  },
+  "notifications.update_failed": {
+    "stub": "stubs/notifications.update_failed",
+    "output": "{{ path }}/Notifications/{{ name }}UpdateFailed.php",
+    "context": {
+      "notifications": true
+    }
   },
   "projection": {
     "stub": "stubs/projection",

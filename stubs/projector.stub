@@ -10,6 +10,23 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Spatie\EventSourcing\EventHandlers\Projectors\Projector;
 
+{% if failed_events %}
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}CreationFailed;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}DeletionFailed;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}UpdateFailed;
+{% endif %}
+
+{% if notifications %}
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}Created as {{ class }}CreatedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}Deleted as {{ class }}DeletedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}Updated as {{ class }}UpdatedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}CreationFailed as {{ class }}CreationFailedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}DeletionFailed as {{ class }}DeletionFailedNotification;
+use App\{{ namespace }}\{{ domain }}\Notifications\{{ class }}UpdateFailed as {{ class }}UpdateFailedNotification;
+use Illuminate\Notifications\AnonymousNotifiable;
+use Illuminate\Support\Facades\Notification;
+{% endif %}
+
 class {{ class }}Projector extends Projector
 {
     public function on{{ class }}Created({{ class }}Created $event): void
@@ -21,13 +38,55 @@ class {{ class }}Projector extends Projector
                 {% endif %}
                 {{ properties:projector }}
             ]);
+
+            {% if notifications %}
+            Notification::send(new AnonymousNotifiable, new {{ class }}CreatedNotification(
+                {{ id }}Data: $event->{{ id }}Data->toArray()
+            ));
+            {% endif %}
         } catch (Exception $e) {
+            {% if !failed_events %}
             Log::error('Unable to create {{ id }}', [
                 'error' => $e->getMessage(),
                 'event' => $event,
             ]);
+            {% endif %}
+
+            {% if failed_events %}
+            event(new {{ class }}CreationFailed(
+                {{ id }}Data: $event->{{ id }}Data,
+                failure: $e->getMessage(),
+                createdAt: now()
+            ));
+            {% endif %}
+
+            {% if notifications and !failed_events %}
+            Notification::send(new AnonymousNotifiable, new {{ class }}CreationFailedNotification(
+                {{ id }}Data: $event->{{ id }}Data->toArray(),
+                failure: $e->getMessage()
+            ));
+            {% endif %}
         }
     }
+
+    {% if failed_events %}
+    public function on{{ class }}CreationFailed({{ class }}CreationFailed $event): void
+    {
+        Log::error('Unable to create {{ id }}', [
+            'error' => $event->failure,
+            'data' => $event->{{ id }}Data,
+        ]);
+    {% endif %}
+
+        {% if notifications and failed_events %}
+        Notification::send(new AnonymousNotifiable, new {{ class }}CreationFailedNotification(
+            {{ id }}Data: $event->{{ id }}Data->toArray(),
+            failure: $event->failure
+        ));
+        {% endif %}
+    {% if failed_events %}
+    }
+    {% endif %}
 
     public function on{{ class }}Updated({{ class }}Updated $event): void
     {
@@ -37,13 +96,57 @@ class {{ class }}Projector extends Projector
             ${{ id }}->writeable()->update([
                 {{ properties:projector }}
             ]);
+
+            {% if notifications %}
+            Notification::send(new AnonymousNotifiable, new {{ class }}UpdatedNotification(
+                {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
+                {{ id }}Data: $event->{{ id }}Data->toArray()
+            ));
+            {% endif %}
         } catch (Exception $e) {
+            {% if !failed_events %}
             Log::error('Unable to update {{ id }}', [
                 'error' => $e->getMessage(),
                 'event' => $event,
             ]);
+            {% endif %}
+
+            {% if failed_events %}
+            event(new {{ class }}UpdateFailed(
+                {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
+                {{ id }}Data: $event->{{ id }}Data,
+                failure: $e->getMessage(),
+                createdAt: now()
+            ));
+            {% endif %}
+
+            {% if notifications and !failed_events %}
+            Notification::send(new AnonymousNotifiable, new {{ class }}UpdateFailedNotification(
+                {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
+                {{ id }}Data: $event->{{ id }}Data->toArray(),
+                failure: $e->getMessage()
+            ));
+            {% endif %}
         }
     }
+
+    {% if failed_events %}
+    public function on{{ class }}UpdateFailed({{ class }}UpdateFailed $event): void
+    {
+        Log::error('Unable to update {{ id }}', [
+            'error' => $event->failure,
+            'data' => $event->{{ id }}Data,
+        ]);
+
+        {% if notifications %}
+        Notification::send(new AnonymousNotifiable, new {{ class }}UpdateFailedNotification(
+            {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
+            {{ id }}Data: $event->{{ id }}Data->toArray(),
+            failure: $event->failure
+        ));
+        {% endif %}
+    }
+    {% endif %}
 
     public function on{{ class }}Deleted({{ class }}Deleted $event): void
     {
@@ -51,11 +154,50 @@ class {{ class }}Projector extends Projector
             ${{ id }} = {{ class }}::{{ primary_key }}($event->{{ id }}{{ primary_key:uppercase }});
 
             ${{ id }}->writeable()->delete();
+
+            {% if notifications %}
+            Notification::send(new AnonymousNotifiable, new {{ class }}DeletedNotification(
+                {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }}
+            ));
+            {% endif %}
         } catch (Exception $e) {
+            {% if !failed_events %}
             Log::error('Unable to delete {{ id }}', [
                 'error' => $e->getMessage(),
                 'event' => $event,
             ]);
+            {% endif %}
+
+            {% if failed_events %}
+            event(new {{ class }}DeletionFailed(
+                {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
+                failure: $e->getMessage(),
+                createdAt: now()
+            ));
+            {% endif %}
+
+            {% if notifications and !failed_events %}
+            Notification::send(new AnonymousNotifiable, new {{ class }}DeletionFailedNotification(
+                {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
+                failure: $e->getMessage()
+            ));
+            {% endif %}
         }
     }
+
+    {% if failed_events %}
+    public function on{{ class }}DeletionFailed({{ class }}DeletionFailed $event): void
+    {
+        Log::error('Unable to delete {{ id }}', [
+            'error' => $event->failure,
+        ]);
+
+        {% if notifications %}
+        Notification::send(new AnonymousNotifiable, new {{ class }}DeletionFailedNotification(
+            {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
+            failure: $event->failure
+        ));
+        {% endif %}
+    }
+    {% endif %}
 }

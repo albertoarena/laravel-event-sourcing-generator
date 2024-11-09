@@ -54,6 +54,24 @@ class Stubs
                     return false;
                 }
 
+                $notifications = $stubResolverData['context']['failed_event'] ?? null;
+                if (! is_null($notifications)) {
+                    if ($this->settings->createFailedEvents) {
+                        return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
+                    }
+
+                    return false;
+                }
+
+                $notifications = $stubResolverData['context']['notifications'] ?? null;
+                if (! is_null($notifications)) {
+                    if ($this->settings->notifications) {
+                        return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
+                    }
+
+                    return false;
+                }
+
                 $reactor = $stubResolverData['context']['reactor'] ?? null;
                 if (! is_null($reactor)) {
                     if ($this->settings->createReactor === $reactor) {

@@ -1,0 +1,25 @@
+<?php
+
+namespace App\{{ namespace }}\{{ domain }}\Notifications\Concerns;
+
+use Illuminate\Support\Arr;
+
+trait HasMicrosoftTeamsNotification
+{
+    use HasDataAsArray;
+
+    protected function getMicrosoftTeamsContent(string $message, ?string $primaryKeyId = null, string|int|null $primaryKeyValue = null): string
+    {
+        $data = [];
+        if ($primaryKeyId) {
+            $data[$primaryKeyId] = $primaryKeyValue;
+        }
+        $data = array_merge($data, $this->getDataAsArray());
+
+        return $message.'<br><br>'.
+            implode('<br>', Arr::map(
+                $data,
+                fn ($value, $key) => sprintf('_%s:_ %s', ucfirst($key), $value)
+            ));
+    }
+}

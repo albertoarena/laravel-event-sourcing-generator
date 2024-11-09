@@ -1,0 +1,101 @@
+<?php
+
+namespace App\{{ namespace }}\{{ domain }}\Notifications;
+
+use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
+use App\{{ namespace }}\{{ domain }}\Notifications\Concerns\HasDataAsArray;
+use Illuminate\Notifications\Notification;
+
+{% if notifications.mail %}
+use Illuminate\Support\Arr;
+use Illuminate\Notifications\Messages\MailMessage;
+{% endif %}
+
+{% if notifications.slack %}
+use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
+use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+use Illuminate\Notifications\Slack\BlockKit\Composites\ConfirmObject;
+use Illuminate\Notifications\Slack\SlackMessage;
+{% endif %}
+
+{% if notifications.teams %}
+use App\{{ namespace }}\{{ domain }}\Notifications\Concerns\HasMicrosoftTeamsNotification;
+use NotificationChannels\MicrosoftTeams\Exceptions\CouldNotSendNotification;
+use NotificationChannels\MicrosoftTeams\MicrosoftTeamsChannel;
+use NotificationChannels\MicrosoftTeams\MicrosoftTeamsMessage;
+{% endif %}
+
+class {{ class }}CreationFailed extends Notification
+{
+    use HasDataAsArray;
+    {% if notifications.teams %}
+    use HasMicrosoftTeamsNotification;
+    {% endif %}
+
+    public function __construct(
+        public {{ class }}Data|array ${{ id }}Data,
+        public string $failure,
+    ) {}
+
+    public function via($notifiable): array
+    {
+        return [
+            {% if notifications.mail %}
+            'mail',
+            {% endif %}
+            {% if notifications.teams %}
+            MicrosoftTeamsChannel::class,
+            {% endif %}
+            {% if notifications.slack %}
+            'slack',
+            {% endif %}
+        ];
+    }
+
+    {% if notifications.mail %}
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->from(config('mail.from.address'))
+            ->subject('{{ class }} creation failed')
+            ->greeting('Hello,')
+            ->line('{{ class }} creation failed')
+            ->lines(Arr::map($this->getDataAsArray(), function ($value, $key) {
+                return '- '.$key.': '.$value;
+            }));
+    }
+    {% endif %}
+
+    {% if notifications.teams %}
+    /**
+     * @throws CouldNotSendNotification
+     */
+    public function toMicrosoftTeams($notifiable): MicrosoftTeamsMessage
+    {
+        return MicrosoftTeamsMessage::create()
+            ->to(config('services.microsoft_teams.webhook_url'))
+            ->type('error')
+            ->title('{{ class }} creation failed')
+            ->content(
+                $this->getMicrosoftTeamsContent('{{ class }} creation failed')
+            );
+    }
+    {% endif %}
+
+    {% if notifications.slack %}
+    public function toSlack($notifiable): SlackMessage
+    {
+        return (new SlackMessage)
+            ->text('{{ class }} creation failed')
+            ->headerBlock('{{ class }} creation failed')
+            ->sectionBlock(function (SectionBlock $block) {
+                $block->text($this->failure);
+            })
+            ->sectionBlock(function (SectionBlock $block) {
+                foreach ($this->getDataAsArray() as $key => $value) {
+                    $block->field("*$key:* $value")->markdown();
+                }
+            });
+    }
+    {% endif %}
+}

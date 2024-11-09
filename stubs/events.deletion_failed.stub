@@ -6,11 +6,11 @@ use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
 use Carbon\Carbon;
 use Spatie\EventSourcing\StoredEvents\ShouldBeStored;
 
-class {{ class }}Updated extends ShouldBeStored
+class {{ class }}DeletionFailed extends ShouldBeStored
 {
     public function __construct(
         public {{ primary_key:type }} ${{ id }}{{ primary_key:uppercase }},
-        public {{ class }}Data ${{ id }}Data,
+        public string $failure,
         public Carbon $createdAt,
     ) {}
 }

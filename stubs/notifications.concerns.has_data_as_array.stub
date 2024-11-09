@@ -1,0 +1,13 @@
+<?php
+
+namespace App\{{ namespace }}\{{ domain }}\Notifications\Concerns;
+
+use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
+
+trait HasDataAsArray
+{
+    protected function getDataAsArray(): array
+    {
+        return $this->{{ id }}Data instanceof {{ class }}Data ? $this->{{ id }}Data->toArray() : $this->{{ id }}Data;
+    }
+}

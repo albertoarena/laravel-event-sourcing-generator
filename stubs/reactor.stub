@@ -5,6 +5,13 @@ namespace App\{{ namespace }}\{{ domain }}\Reactors;
 use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Created;
 use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Deleted;
 use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Updated;
+
+{% if failed_events %}
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}CreationFailed;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}DeletionFailed;
+use App\{{ namespace }}\{{ domain }}\Events\{{ class }}UpdateFailed;
+{% endif %}
+
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Spatie\EventSourcing\EventHandlers\Reactors\Reactor;
 
@@ -24,4 +31,21 @@ class {{ class }}Reactor extends Reactor implements ShouldQueue
     {
         // @todo Do something
     }
+
+    {% if failed_events %}
+    public function on{{ class }}CreationFailed({{ class }}CreationFailed $event)
+    {
+        // @todo Do something
+    }
+
+    public function on{{ class }}UpdateFailed({{ class }}UpdateFailed $event)
+    {
+        // @todo Do something
+    }
+
+    public function on{{ class }}DeletionFailed({{ class }}DeletionFailed $event)
+    {
+        // @todo Do something
+    }
+    {% endif %}
 }
