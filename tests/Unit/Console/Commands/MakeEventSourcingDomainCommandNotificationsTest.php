@@ -379,7 +379,7 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($model, createUnitTest: true, modelProperties: $properties, notifications: $notifications);
+        $this->assertDomainGenerated($model, modelProperties: $properties, createUnitTest: true, notifications: $notifications);
     }
 
     #[RunInSeparateProcess]
@@ -440,8 +440,8 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
         $this->assertDomainGenerated(
             $model,
             domain: $domain,
-            createUnitTest: true,
             modelProperties: $properties,
+            createUnitTest: true,
             notifications: $notifications
         );
     }

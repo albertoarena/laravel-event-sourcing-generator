@@ -2,7 +2,6 @@
 
 namespace App\{{ namespace }}\{{ domain }}\Notifications;
 
-use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
 use App\{{ namespace }}\{{ domain }}\Notifications\Concerns\HasDataAsArray;
 use Illuminate\Notifications\Notification;
 
@@ -11,9 +10,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 {% endif %}
 
 {% if notifications.slack %}
-use Illuminate\Notifications\Slack\BlockKit\Blocks\ContextBlock;
 use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
-use Illuminate\Notifications\Slack\BlockKit\Composites\ConfirmObject;
 use Illuminate\Notifications\Slack\SlackMessage;
 {% endif %}
 
