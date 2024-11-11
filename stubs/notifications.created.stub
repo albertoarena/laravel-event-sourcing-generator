@@ -12,7 +12,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 {% endif %}
 
 {% if notifications.slack %}
-use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+use App\{{ namespace }}\{{ domain }}\Notifications\Concerns\HasSlackNotification;
 use Illuminate\Notifications\Slack\SlackMessage;
 {% endif %}
 
@@ -28,6 +28,9 @@ class {{ class }}Created extends Notification
     use HasDataAsArray;
     {% if notifications.teams %}
     use HasMicrosoftTeamsNotification;
+    {% endif %}
+    {% if notifications.teams %}
+    use HasSlackNotification;
     {% endif %}
 
     public function __construct(
@@ -85,11 +88,7 @@ class {{ class }}Created extends Notification
         return (new SlackMessage)
             ->text('A new {{ class }} has been created')
             ->headerBlock('A new {{ class }} has been created')
-            ->sectionBlock(function (SectionBlock $block) {
-                foreach ($this->getDataAsArray() as $key => $value) {
-                    $block->field("*$key:* $value")->markdown();
-                }
-            });
+            ->sectionBlock($this->getSlackSectionBlock(fields: true));
     }
     {% endif %}
 }

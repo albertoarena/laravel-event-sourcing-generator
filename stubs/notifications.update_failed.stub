@@ -12,7 +12,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 {% endif %}
 
 {% if notifications.slack %}
-use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+use App\{{ namespace }}\{{ domain }}\Notifications\Concerns\HasSlackNotification;
 use Illuminate\Notifications\Slack\SlackMessage;
 {% endif %}
 
@@ -28,6 +28,9 @@ class {{ class }}UpdateFailed extends Notification
     use HasDataAsArray;
     {% if notifications.teams %}
     use HasMicrosoftTeamsNotification;
+    {% endif %}
+    {% if notifications.teams %}
+    use HasSlackNotification;
     {% endif %}
 
     public function __construct(
@@ -89,12 +92,7 @@ class {{ class }}UpdateFailed extends Notification
             ->sectionBlock(function (SectionBlock $block) {
                 $block->text($this->failure);
             })
-            ->sectionBlock(function (SectionBlock $block) {
-                $block->field("*{{ primary_key }}:* $this->{{ id }}{{ primary_key:uppercase }}")->markdown();
-                foreach ($this->getDataAsArray() as $key => $value) {
-                    $block->field("*$key:* $value")->markdown();
-                }
-            });
+            ->sectionBlock($this->getSlackSectionBlock(primaryKey: true, fields: true));
     }
     {% endif %}
 }

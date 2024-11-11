@@ -43,7 +43,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--p|primary-key= : Indicate which is the primary key (uuid, id)}
                             {--i|indentation=4 : Indentation spaces}
                             {--failed-events=0 : Indicate if failed events must be created (accepts 0 or 1)}
-                            {--notifications=no : Notifications, comma separated (accepts mail,no,slack,teams)}';
+                            {--notifications=no : Indicate if notifications must be created, comma separated (accepts mail,no,slack,teams)}';
 
     /**
      * @var string

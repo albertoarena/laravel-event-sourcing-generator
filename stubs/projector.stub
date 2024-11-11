@@ -137,14 +137,16 @@ class {{ class }}Projector extends Projector
             'error' => $event->failure,
             'data' => $event->{{ id }}Data,
         ]);
+    {% endif %}
 
-        {% if notifications %}
+        {% if notifications and failed_events %}
         Notification::send(new AnonymousNotifiable, new {{ class }}UpdateFailedNotification(
             {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
             {{ id }}Data: $event->{{ id }}Data->toArray(),
             failure: $event->failure
         ));
         {% endif %}
+    {% if failed_events %}
     }
     {% endif %}
 
@@ -191,13 +193,15 @@ class {{ class }}Projector extends Projector
         Log::error('Unable to delete {{ id }}', [
             'error' => $event->failure,
         ]);
+    {% endif %}
 
-        {% if notifications %}
+        {% if notifications and failed_events %}
         Notification::send(new AnonymousNotifiable, new {{ class }}DeletionFailedNotification(
             {{ id }}{{ primary_key:uppercase }}: $event->{{ id }}{{ primary_key:uppercase }},
             failure: $event->failure
         ));
         {% endif %}
+    {% if failed_events %}
     }
     {% endif %}
 }

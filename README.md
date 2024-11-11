@@ -41,14 +41,17 @@ composer require albertoarena/laravel-event-sourcing-generator
 ## Usage
 
 ```text
-php artisan make:event-sourcing-domain <model> [--domain=<domain>]
-  [--namespace=<namespace>]
-  [--migration=<existing_migration_filename>]
-  [--aggregate-root=<0|1>]
-  [--reactor=<0|1>]
-  [--unit-test]
-  [--primary-key=<uuid|id>]
-  [--indentation=<indent>]
+php artisan make:event-sourcing-domain <model>
+  [--domain=<domain>]                            # The name of the domain
+  [--namespace=<namespace>]                      # The namespace or root folder
+  [--migration=<existing_migration_filename>]    # Indicate any existing migration for the model, with or without timestamp prefix
+  [--aggregate-root=<0|1>]                       # Indicate if aggregate root must be created or not (accepts 0 or 1)
+  [--reactor=<0|1>]                              # Indicate if reactor must be created or not (accepts 0 or 1)
+  [--unit-test]                                  # Indicate if unit test must be created
+  [--primary-key=<uuid|id>]                      # Indicate which is the primary key (uuid, id)
+  [--indentation=<indent>]                       # Indentation spaces
+  [--failed-events=<0|1>]                        # Indicate if failed events must be created (accepts 0 or 1)
+  [--notifications=<mail,no,slack,teams>]        # Indicate if notifications must be created, comma separated (accepts mail,no,slack,teams)
 ```
 
 Generate a model with same name of domain
@@ -69,14 +72,28 @@ Generate a model with different domain and namespace
 
 ```shell
 # App/CustomDomain/Animal/Actions/CreateTiger
-php artisan make:event-sourcing-domain Tiger --domain=Animal --namespace=CustomDomain 
+php artisan make:event-sourcing-domain Tiger \
+  --domain=Animal \
+  --namespace=CustomDomain 
 ```
 
 Generate a model from existing migration with unit test
 
 ```shell
 # App/Domain/Animal/Actions/CreateAnimal
-php artisan make:event-sourcing-domain Animal --migration=create_animal_table --unit-test
+php artisan make:event-sourcing-domain Animal \
+  --migration=create_animal_table \
+  --unit-test
+```
+
+Generate a model from existing migration with failed events and mail / Slack notifications
+
+```shell
+# App/Domain/Animal/Actions/CreateAnimal
+php artisan make:event-sourcing-domain Animal \
+  --migration=create_animal_table \
+  --failed-events=1 \
+  --notifications=mail,slack
 ```
 
 Show help
@@ -140,8 +157,11 @@ Your choices:
 | Primary key                | uuid        |
 | Create AggregateRoot class | yes         |
 | Create Reactor class       | yes         |
+| Create unit tests          | no          |
+| Create failed events       | no          |
 | Model properties           | string name |
 |                            | int age     |
+| Notifications              | no          |
 
 Do you confirm the generation of the domain?
 > yes
@@ -192,14 +212,14 @@ use App\Domain\Animal\Projections\Animal;
 $animal = Animal::query()->where('name', 'tiger')->first();
 ```
 
-### Generate domain using existing migration
+### Generate domain using existing migration, failed events, notifications and unit tests
 
 Command can generate a full domain directory structure starting from an existing migration.
 
 **Important: the command can process _only_ "create" migrations. Other migrations that modify table structure will be
 skipped.**
 
-E.g. migration `2024_10_01_112344_create_animals_table.php`
+E.g. migration `2024_10_01_112344_create_tigers_table.php`
 
 ```php
 return new class extends Migration
@@ -209,7 +229,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('animals', function (Blueprint $table) {
+        Schema::create('tigers', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->index();
             $table->int('age');
@@ -228,41 +248,32 @@ It is possible to specify the migration interactively or, more efficiently, pass
 that the migration filename timestamp is not needed:
 
 ```shell
-php artisan make:event-sourcing-domain Animal --migration=create_animals_table
-```
-
-**Note:** migration will be asked interactively if not specified as command line option.
-
-```shell
-php artisan make:event-sourcing-domain Animal --migration=create_animals_table
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=create_tigers_table --notifications=slack --failed-events=1 --reactor=0
 ```
 
 ```
-Which is the name of the domain? [Animal]
-> Animal
-
-Do you want to create a Reactor class?
-> no
-
 Your choices:
 
 | Option                     | Choice                                     |
 |----------------------------|--------------------------------------------|
-| Model                      | Animal                                     |
+| Model                      | Tiger                                      |
 | Domain                     | Animal                                     |
 | Namespace                  | Domain                                     |
 | Use migration              | 2024_10_01_112344_create_animals_table.php |
 | Primary key                | id                                         |
 | Create AggregateRoot class | no                                         |
 | Create Reactor class       | no                                         |
+| Create unit tests          | yes                                        |
+| Create failed events       | yes                                        |
 | Model properties           | string name                                |
 |                            | int age                                    |
 |                            | array meta                                 |
+| Notifications              | yes                                        |
 
 Do you confirm the generation of the domain?
 > yes
 
-Domain [Animal] with model [Animal] created successfully.
+Domain [Animal] with model [Tiger] created successfully.
 ```
 
 Directory structure generated (using `id` as primary key)
@@ -272,38 +283,51 @@ app
 ├── Domain
 │   └── Animal
 │       ├── Actions
-│       │   ├── CreateAnimal
-│       │   ├── DeleteAnimal
-│       │   └── UpdateAnimal
+│       │   ├── CreateTiger
+│       │   ├── DeleteTiger
+│       │   └── UpdateTiger
 │       ├── DataTransferObjects
-│       │   └── AnimalData
+│       │   └── TigerData
 │       ├── Events
-│       │   ├── AnimalCreated
-│       │   ├── AnimalDeleted
-│       │   └── AnimalUpdated
+│       │   ├── TigerCreated
+│       │   ├── TigerCreationFailed
+│       │   ├── TigerDeleted
+│       │   ├── TigerDeletionFailed
+│       │   └── TigerUpdateFailed
+│       │   └── TigerUpdated
+│       ├── Notifications
+│       │   ├── Concerns
+│       │   │   ├── HasDataAsArray
+│       │   │   └── HasSlackNotification
+│       │   ├── TigerCreated
+│       │   ├── TigerCreationFailed
+│       │   ├── TigerDeleted
+│       │   ├── TigerDeletionFailed
+│       │   └── TigerUpdateFailed
+│       │   └── TigerUpdated
 │       ├── Projections
-│       │   └── Animal
+│       │   └── Tiger
 │       └── Projectors
-│           └── AnimalProjector
+│           └── TigerProjector
 └── etc.
 ```
 
 If Spatie event sourcing is configured to auto-discover projectors, that is immediately usable:
 
 ```php
-use App\Domain\Animal\Actions\CreateAnimal;
-use App\Domain\Animal\DataTransferObjects\AnimalData;
-use App\Domain\Animal\Projections\Animal;
+use App\Domain\Animal\Actions\CreateTiger;
+use App\Domain\Animal\DataTransferObjects\TigerData;
+use App\Domain\Animal\Projections\Tiger;
 
-# This will create a record in 'animal' table, using projector AnimalProjector
-(new CreateAnimal())(new AnimalData(
+# This will create a record in 'tigers' table, using projector TigerProjector
+(new CreateTiger())(new TigerData(
   name: 'tiger',
   age: 7,
   meta: []
 ));
 
 # Retrieve record
-$animal = Animal::query()->where('name', 'tiger')->first();
+$tiger = Tiger::query()->where('name', 'tiger')->first();
 ```
 
 ## Options

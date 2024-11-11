@@ -4,6 +4,7 @@ namespace Tests\Concerns;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Contracts\AcceptedNotificationInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
@@ -75,13 +76,38 @@ trait AssertsDomainGenerated
         }
 
         if ($notifications) {
+            $expectedFiles["$namespace/$domain/Notifications/Concerns/HasDataAsArray.php"] = 'notifications.concerns.has_data_as_array.stub';
             $expectedFiles["$namespace/$domain/Notifications/{$model}Created.php"] = 'notifications.created.stub';
             $expectedFiles["$namespace/$domain/Notifications/{$model}Deleted.php"] = 'notifications.deleted.stub';
             $expectedFiles["$namespace/$domain/Notifications/{$model}Updated.php"] = 'notifications.updated.stub';
+            if ($createFailedEvents) {
+                $expectedFiles["$namespace/$domain/Notifications/{$model}CreationFailed.php"] = 'notifications.creation_failed.stub';
+                $expectedFiles["$namespace/$domain/Notifications/{$model}DeletionFailed.php"] = 'notifications.deletion_failed.stub';
+                $expectedFiles["$namespace/$domain/Notifications/{$model}UpdateFailed.php"] = 'notifications.update_failed.stub';
+            } else {
+                $unexpectedFiles["$namespace/$domain/Notifications/{$model}CreationFailed.php"] = 'notifications.creation_failed.stub';
+                $unexpectedFiles["$namespace/$domain/Notifications/{$model}DeletionFailed.php"] = 'notifications.deletion_failed.stub';
+                $unexpectedFiles["$namespace/$domain/Notifications/{$model}UpdateFailed.php"] = 'notifications.update_failed.stub';
+            }
+
+            if (in_array(AcceptedNotificationInterface::TEAMS, $notifications)) {
+                $expectedFiles["$namespace/$domain/Notifications/Concerns/HasMicrosoftTeamsNotification.php"] = 'notifications.concerns.has_microsoft_teams_notification.stub';
+            } elseif (in_array(AcceptedNotificationInterface::SLACK, $notifications)) {
+                $expectedFiles["$namespace/$domain/Notifications/Concerns/HasSlackNotification.php"] = 'notifications.concerns.has_slack_notification.stub';
+            } else {
+                $unexpectedFiles["$namespace/$domain/Notifications/Concerns/HasMicrosoftTeamsNotification.php"] = 'notifications.concerns.has_microsoft_teams_notification.stub';
+                $unexpectedFiles["$namespace/$domain/Notifications/Concerns/HasSlackNotification.php"] = 'notifications.concerns.has_slack_notification.stub';
+            }
         } else {
+            $unexpectedFiles["$namespace/$domain/Notifications/Concerns/HasDataAsArray.php"] = 'notifications.concerns.has_data_as_array.stub';
+            $unexpectedFiles["$namespace/$domain/Notifications/Concerns/HasMicrosoftTeamsNotification.php"] = 'notifications.concerns.has_microsoft_teams_notification.stub';
+            $unexpectedFiles["$namespace/$domain/Notifications/Concerns/HasSlackNotification.php"] = 'notifications.concerns.has_slack_notification.stub';
             $unexpectedFiles["$namespace/$domain/Notifications/{$model}Created.php"] = 'notifications.created.stub';
             $unexpectedFiles["$namespace/$domain/Notifications/{$model}Deleted.php"] = 'notifications.deleted.stub';
             $unexpectedFiles["$namespace/$domain/Notifications/{$model}Updated.php"] = 'notifications.updated.stub';
+            $unexpectedFiles["$namespace/$domain/Notifications/{$model}CreationFailed.php"] = 'notifications.creation_failed.stub';
+            $unexpectedFiles["$namespace/$domain/Notifications/{$model}DeletionFailed.php"] = 'notifications.deletion_failed.stub';
+            $unexpectedFiles["$namespace/$domain/Notifications/{$model}UpdateFailed.php"] = 'notifications.update_failed.stub';
         }
 
         return [

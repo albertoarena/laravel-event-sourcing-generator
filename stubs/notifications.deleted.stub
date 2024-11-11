@@ -10,7 +10,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 {% endif %}
 
 {% if notifications.slack %}
-use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+use App\{{ namespace }}\{{ domain }}\Notifications\Concerns\HasSlackNotification;
 use Illuminate\Notifications\Slack\SlackMessage;
 {% endif %}
 
@@ -26,6 +26,9 @@ class {{ class }}Deleted extends Notification
     use HasDataAsArray;
     {% if notifications.teams %}
     use HasMicrosoftTeamsNotification;
+    {% endif %}
+    {% if notifications.teams %}
+    use HasSlackNotification;
     {% endif %}
 
     public function __construct(
@@ -81,9 +84,7 @@ class {{ class }}Deleted extends Notification
         return (new SlackMessage)
             ->text('A new {{ class }} has been deleted')
             ->headerBlock('A new {{ class }} has been deleted')
-            ->sectionBlock(function (SectionBlock $block) {
-                $block->field("*{{ primary_key }}:* $this->{{ id }}{{ primary_key:uppercase }}")->markdown();
-            });
+            ->sectionBlock($this->getSlackSectionBlock(primaryKey: true));
     }
     {% endif %}
 }

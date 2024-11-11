@@ -42,52 +42,42 @@ class Stubs
     {
         return array_filter(array_map(function ($stubResolverData) {
             $context = $stubResolverData['context'] ?? null;
-            if (! $context) {
-                return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
-            } else {
-                $test = $stubResolverData['context']['test'] ?? null;
-                if (! is_null($test)) {
-                    if ($this->settings->createUnitTest) {
-                        return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
-                    }
 
+            // Unit tests
+            $test = $context['unit-test'] ?? null;
+            if (! is_null($test) && ! $this->settings->createUnitTest) {
+                return false;
+            }
+
+            // Failed events
+            $failedEvent = $context['failed-events'] ?? null;
+            if (! is_null($failedEvent) && ! $this->settings->createFailedEvents) {
+                return false;
+            }
+
+            // Notifications
+            $notifications = $context['notifications'] ?? null;
+            if (! is_null($notifications)) {
+                if (! $this->settings->notifications) {
                     return false;
-                }
-
-                $notifications = $stubResolverData['context']['failed_event'] ?? null;
-                if (! is_null($notifications)) {
-                    if ($this->settings->createFailedEvents) {
-                        return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
-                    }
-
+                } elseif (is_array($notifications) && ! array_intersect($notifications, $this->settings->notifications)) {
                     return false;
-                }
-
-                $notifications = $stubResolverData['context']['notifications'] ?? null;
-                if (! is_null($notifications)) {
-                    if ($this->settings->notifications) {
-                        return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
-                    }
-
-                    return false;
-                }
-
-                $reactor = $stubResolverData['context']['reactor'] ?? null;
-                if (! is_null($reactor)) {
-                    if ($this->settings->createReactor === $reactor) {
-                        return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
-                    }
-
-                    return false;
-                }
-
-                $aggregateRoot = $stubResolverData['context']['aggregate_root'] ?? null;
-                if (is_null($aggregateRoot) || $this->settings->createAggregateRoot === $aggregateRoot) {
-                    return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
                 }
             }
 
-            return false;
+            // Reactor
+            $reactor = $context['reactor'] ?? null;
+            if (! is_null($reactor) && $this->settings->createReactor !== $reactor) {
+                return false;
+            }
+
+            // Aggregate root
+            $aggregateRoot = $context['aggregate-root'] ?? null;
+            if (! is_null($aggregateRoot) && $this->settings->createAggregateRoot !== $aggregateRoot) {
+                return false;
+            }
+
+            return new StubResolver($stubResolverData['stub'], $stubResolverData['output']);
         }, $this->getAvailableStubs()));
     }
 

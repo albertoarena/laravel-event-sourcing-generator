@@ -1,0 +1,25 @@
+<?php
+
+namespace App\{{ namespace }}\{{ domain }}\Notifications\Concerns;
+
+use Closure;
+use Illuminate\Notifications\Slack\BlockKit\Blocks\SectionBlock;
+
+trait HasSlackNotification
+{
+    use HasDataAsArray;
+
+    protected function getSlackSectionBlock(bool $primaryKey = false, bool $fields = false): Closure
+    {
+        return fn () => function (SectionBlock $block) use ($primaryKey, $fields) {
+            if ($primaryKey) {
+                $block->field("*uuid:* $this->animalUuid")->markdown();
+            }
+            if ($fields) {
+                foreach ($this->getDataAsArray() as $key => $value) {
+                    $block->field("*$key:* $value")->markdown();
+                }
+            }
+        };
+    }
+}
