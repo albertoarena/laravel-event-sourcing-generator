@@ -39,7 +39,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--m|migration= : Indicate any existing migration for the model, with or without timestamp prefix}
                             {--a|aggregate-root= : Indicate if aggregate root must be created or not (accepts 0 or 1)}
                             {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
-                            {--u|unit-test : Indicate if PHPUnit test must be created}
+                            {--u|unit-test : Indicate if PHPUnit tests must be created}
                             {--p|primary-key= : Indicate which is the primary key (uuid, id)}
                             {--i|indentation=4 : Indentation spaces}
                             {--failed-events=0 : Indicate if failed events must be created (accepts 0 or 1)}

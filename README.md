@@ -47,7 +47,7 @@ php artisan make:event-sourcing-domain <model>
   [--migration=<existing_migration_filename>]    # Indicate any existing migration for the model, with or without timestamp prefix
   [--aggregate-root=<0|1>]                       # Indicate if aggregate root must be created or not (accepts 0 or 1)
   [--reactor=<0|1>]                              # Indicate if reactor must be created or not (accepts 0 or 1)
-  [--unit-test]                                  # Indicate if unit test must be created
+  [--unit-test]                                  # Indicate if PHPUnit tests must be created
   [--primary-key=<uuid|id>]                      # Indicate which is the primary key (uuid, id)
   [--indentation=<indent>]                       # Indentation spaces
   [--failed-events=<0|1>]                        # Indicate if failed events must be created (accepts 0 or 1)
