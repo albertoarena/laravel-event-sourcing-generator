@@ -248,7 +248,7 @@ It is possible to specify the migration interactively or, more efficiently, pass
 that the migration filename timestamp is not needed:
 
 ```shell
-php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=create_tigers_table --notifications=slack --failed-events=1 --reactor=0
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=create_tigers_table --notifications=slack --failed-events=1 --reactor=0 --unit-test
 ```
 
 ```
@@ -293,7 +293,7 @@ app
 │       │   ├── TigerCreationFailed
 │       │   ├── TigerDeleted
 │       │   ├── TigerDeletionFailed
-│       │   └── TigerUpdateFailed
+│       │   ├── TigerUpdateFailed
 │       │   └── TigerUpdated
 │       ├── Notifications
 │       │   ├── Concerns
@@ -303,12 +303,19 @@ app
 │       │   ├── TigerCreationFailed
 │       │   ├── TigerDeleted
 │       │   ├── TigerDeletionFailed
-│       │   └── TigerUpdateFailed
+│       │   ├── TigerUpdateFailed
 │       │   └── TigerUpdated
 │       ├── Projections
 │       │   └── Tiger
 │       └── Projectors
 │           └── TigerProjector
+└── etc.
+
+tests
+├── Unit
+│   └── Domain
+│       └── Animal
+│           └── TigerTest.php
 └── etc.
 ```
 
@@ -414,11 +421,12 @@ php artisan make:event-sourcing-domain Animal --unit-test
 
 This setup will create a PHPUnit test, already working for create / update / delete events.
 
-```shell
+```
 tests
-├── Domain
-│   └── Animal
-│       └── AnimalTest.php
+├── Unit
+│   └── Domain
+│       └── Animal
+│           └── AnimalTest.php
 └── etc.
 ```
 
