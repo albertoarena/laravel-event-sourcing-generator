@@ -149,6 +149,141 @@ trait AssertsDomainGenerated
         ];
     }
 
+    protected function getReactorMatches(string $namespace, string $domain, string $model, bool $createFailedEvents): array
+    {
+        return [
+            "use App\\$namespace\\$domain\\Events\\{$model}Created" => true,
+            "use App\\$namespace\\$domain\\Events\\{$model}Deleted" => true,
+            "use App\\$namespace\\$domain\\Events\\{$model}Updated" => true,
+            "use App\\$namespace\\$domain\\Events\\{$model}CreationFailed" => $createFailedEvents,
+            "use App\\$namespace\\$domain\\Events\\{$model}DeletionFailed" => $createFailedEvents,
+            "use App\\$namespace\\$domain\\Events\\{$model}UpdateFailed" => $createFailedEvents,
+            "public function on{$model}Created({$model}Created \$event)" => true,
+            "public function on{$model}Deleted({$model}Deleted \$event)" => true,
+            "public function on{$model}Updated({$model}Updated \$event)" => true,
+            "public function on{$model}CreationFailed({$model}CreationFailed \$event)" => $createFailedEvents,
+            "public function on{$model}DeletionFailed({$model}DeletionFailed \$event)" => $createFailedEvents,
+            "public function on{$model}UpdateFailed({$model}UpdateFailed \$event)" => $createFailedEvents,
+        ];
+    }
+
+    protected function assertAggregateRoot(string $generated, CommandSettings $settings): void
+    {
+        if ($settings->useUuid) {
+            $this->assertMatchesRegularExpression("/{$settings->nameAsPrefix}Uuid: \\\$this->uuid\(\)/", $generated);
+        } else {
+            $this->assertMatchesRegularExpression("/{$settings->nameAsPrefix}Id: \\\$this->id\(\)/", $generated);
+        }
+    }
+
+    protected function assertDataTransferObject(string $generated, CommandSettings $settings): void
+    {
+        if (! count($settings->modelProperties->toArray())) {
+            $this->assertMatchesRegularExpression("/\/\/ Add here public properties, e.g.:/", $generated);
+        } else {
+            // Assert that model properties are using camel format
+            foreach ($settings->modelProperties->toArray() as $property) {
+                $name = Str::camel($property->name);
+
+                $type = $property->type->toNormalisedBuiltInType();
+                $nullable = $property->type->nullable ? '\\?' : '';
+
+                $this->assertMatchesRegularExpression("/public $nullable$type \\$$name/", $generated);
+            }
+            foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
+                $this->assertDoesNotMatchRegularExpression("/public .* \\\$$method;/", $generated);
+            }
+        }
+    }
+
+    protected function assertProjection(string $generated, CommandSettings $settings): void
+    {
+        if ($settings->useUuid) {
+            $this->assertMatchesRegularExpression("/'uuid' => 'string',/", $generated);
+        } else {
+            $this->assertMatchesRegularExpression("/'id' => 'int',/", $generated);
+        }
+        foreach ($settings->modelProperties->toArray() as $property) {
+            $type = $property->type->toProjection();
+
+            $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
+        }
+        foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
+            $this->assertDoesNotMatchRegularExpression("/'$method' => '.*'/", $generated);
+        }
+    }
+
+    protected function assertProjector(string $generated, CommandSettings $settings): void
+    {
+        if ($settings->useUuid) {
+            $this->assertMatchesRegularExpression("/'uuid' => \\\$event->{$settings->nameAsPrefix}Uuid/", $generated);
+        } else {
+            $this->assertDoesNotMatchRegularExpression("/'id' => \\\$event->{$settings->nameAsPrefix}Id/", $generated);
+        }
+        // Assert that model properties are using camel format
+        foreach ($settings->modelProperties->toArray() as $item) {
+            $name = Str::camel($item->name);
+            $this->assertMatchesRegularExpression("/'$item->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
+        }
+        foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
+            $this->assertDoesNotMatchRegularExpression("/'$method'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$method/", $generated);
+        }
+
+        // Assert failed events
+        foreach ($this->getProjectorFailedEventMatches($settings->namespace, $settings->domain, $settings->model) as $match) {
+            if ($settings->createFailedEvents) {
+                $this->assertStringContainsString($match, $generated);
+            } else {
+                $this->assertStringNotContainsString($match, $generated);
+            }
+        }
+
+        // Assert notifications
+        foreach ($this->getProjectorNotificationMatches($settings->namespace, $settings->domain, $settings->model) as $match) {
+            if ($settings->notifications) {
+                $this->assertStringContainsString($match, $generated);
+            } else {
+                $this->assertStringNotContainsString($match, $generated);
+            }
+        }
+    }
+
+    protected function assertReactor(string $generated, CommandSettings $settings): void
+    {
+        foreach ($this->getReactorMatches($settings->namespace, $settings->domain, $settings->model, $settings->createFailedEvents) as $match => $expected) {
+            if ($expected) {
+                $this->assertStringContainsString($match, $generated);
+            } else {
+                $this->assertStringNotContainsString($match, $generated);
+            }
+        }
+    }
+
+    protected function assertTest(string $generated, CommandSettings $settings): void
+    {
+        if ($settings->createUnitTest) {
+            $modelLower = Str::lower($settings->model);
+            $this->assertMatchesRegularExpression("/protected function fakeData\(\): {$settings->model}Data/", $generated);
+            $this->assertMatchesRegularExpression("/public function can_create_{$modelLower}_model/", $generated);
+            $this->assertMatchesRegularExpression("/public function can_update_{$modelLower}_model/", $generated);
+            $this->assertMatchesRegularExpression("/public function can_delete_{$modelLower}_model/", $generated);
+
+            // Assert that model properties are using camel format
+            foreach ($settings->modelProperties->toArray() as $item) {
+                $this->assertMatchesRegularExpression('/\\$this->assertEquals\(\\$data->'.Str::camel($item->name).", \\\$record->$item->name\)/", $generated);
+                $this->assertMatchesRegularExpression('/\\$this->assertEquals\(\\$updateData->'.Str::camel($item->name).", \\\$updatedRecord->$item->name\)/", $generated);
+            }
+
+            if ($settings->notifications) {
+                $this->assertStringContainsString('Notification::fake()', $generated);
+                $this->assertStringContainsString('Notification::assertSentTo', $generated);
+                $this->assertStringContainsString($settings->model.'CreatedNotification::class', $generated);
+                $this->assertStringContainsString($settings->model.'UpdatedNotification::class', $generated);
+                $this->assertStringContainsString($settings->model.'DeletedNotification::class', $generated);
+            }
+        }
+    }
+
     protected function assertDomainGenerated(
         string $model,
         ?string $domain = null,
@@ -240,95 +375,30 @@ trait AssertsDomainGenerated
 
             // Assert namespace
             $baseNamespace = $isTest ? 'Tests' : 'App';
-            $domain = $settings->domain;
             $this->assertStringContainsString('namespace '.$baseNamespace.'\\'.$settings->namespace.'\\'.$settings->domain, $generated);
 
             // Assert specific expectations
-            if ($stubFile === 'data-transfer-object.stub') {
-                if (! $modelProperties) {
-                    $this->assertMatchesRegularExpression("/\/\/ Add here public properties, e.g.:/", $generated);
-                } else {
-                    // Assert that model properties are using camel format
-                    foreach ($settings->modelProperties->toArray() as $property) {
-                        $name = Str::camel($property->name);
-
-                        $type = $property->type->toNormalisedBuiltInType();
-                        $nullable = $property->type->nullable ? '\\?' : '';
-
-                        $this->assertMatchesRegularExpression("/public $nullable$type \\$$name/", $generated);
-                    }
-                    foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
-                        $this->assertDoesNotMatchRegularExpression("/public .* \\\$$method;/", $generated);
-                    }
-                }
-            } elseif ($stubFile === 'projection.stub') {
-                if ($useUuid) {
-                    $this->assertMatchesRegularExpression("/'uuid' => 'string',/", $generated);
-                } else {
-                    $this->assertMatchesRegularExpression("/'id' => 'int',/", $generated);
-                }
-                foreach ($settings->modelProperties->toArray() as $property) {
-                    $type = $property->type->toProjection();
-
-                    $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
-                }
-                foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
-                    $this->assertDoesNotMatchRegularExpression("/'$method' => '.*'/", $generated);
-                }
-            } elseif ($stubFile === 'projector.stub') {
-                if ($useUuid) {
-                    $this->assertMatchesRegularExpression("/'uuid' => \\\$event->{$settings->nameAsPrefix}Uuid/", $generated);
-                } else {
-                    $this->assertDoesNotMatchRegularExpression("/'id' => \\\$event->{$settings->nameAsPrefix}Id/", $generated);
-                }
-                // Assert that model properties are using camel format
-                foreach ($settings->modelProperties->toArray() as $item) {
-                    $name = Str::camel($item->name);
-                    $this->assertMatchesRegularExpression("/'$item->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
-                }
-                foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
-                    $this->assertDoesNotMatchRegularExpression("/'$method'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$method/", $generated);
-                }
-
-                // Assert failed events
-                foreach ($this->getProjectorFailedEventMatches($namespace, $domain, $model) as $match) {
-                    if ($createFailedEvents) {
-                        $this->assertStringContainsString($match, $generated);
-                    } else {
-                        $this->assertStringNotContainsString($match, $generated);
-                    }
-                }
-
-                // Assert notifications
-                foreach ($this->getProjectorNotificationMatches($namespace, $domain, $model) as $match) {
-                    if ($notifications) {
-                        $this->assertStringContainsString($match, $generated);
-                    } else {
-                        $this->assertStringNotContainsString($match, $generated);
-                    }
-                }
-            } elseif ($stubFile === 'test.stub') {
-                if ($createUnitTest) {
-                    $modelLower = Str::lower($settings->model);
-                    $this->assertMatchesRegularExpression("/protected function fakeData\(\): {$settings->model}Data/", $generated);
-                    $this->assertMatchesRegularExpression("/public function can_create_{$modelLower}_model/", $generated);
-                    $this->assertMatchesRegularExpression("/public function can_update_{$modelLower}_model/", $generated);
-                    $this->assertMatchesRegularExpression("/public function can_delete_{$modelLower}_model/", $generated);
-
-                    // Assert that model properties are using camel format
-                    foreach ($settings->modelProperties->toArray() as $item) {
-                        $this->assertMatchesRegularExpression('/\\$this->assertEquals\(\\$data->'.Str::camel($item->name).", \\\$record->$item->name\)/", $generated);
-                        $this->assertMatchesRegularExpression('/\\$this->assertEquals\(\\$updateData->'.Str::camel($item->name).", \\\$updatedRecord->$item->name\)/", $generated);
-                    }
-
-                    if ($notifications) {
-                        $this->assertStringContainsString('Notification::fake()', $generated);
-                        $this->assertStringContainsString('Notification::assertSentTo', $generated);
-                        $this->assertStringContainsString($model.'CreatedNotification::class', $generated);
-                        $this->assertStringContainsString($model.'UpdatedNotification::class', $generated);
-                        $this->assertStringContainsString($model.'DeletedNotification::class', $generated);
-                    }
-                }
+            switch ($stubFile) {
+                case 'aggregate-root.stub':
+                    $this->assertAggregateRoot($generated, $settings);
+                    break;
+                case 'data-transfer-object.stub':
+                    $this->assertDataTransferObject($generated, $settings);
+                    break;
+                case 'projection.stub':
+                    $this->assertProjection($generated, $settings);
+                    break;
+                case 'projector.stub':
+                    $this->assertProjector($generated, $settings);
+                    break;
+                case 'reactor.stub':
+                    $this->assertReactor($generated, $settings);
+                    break;
+                case 'test.stub':
+                    $this->assertTest($generated, $settings);
+                    break;
+                default:
+                    break;
             }
         }
 
