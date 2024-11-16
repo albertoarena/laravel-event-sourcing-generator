@@ -77,7 +77,7 @@ php artisan make:event-sourcing-domain Tiger \
   --namespace=CustomDomain 
 ```
 
-Generate a model from existing migration with unit test
+Generate a model from existing migration with PHPUnit tests
 
 ```shell
 # App/Domain/Animal/Actions/CreateAnimal
@@ -157,7 +157,7 @@ Your choices:
 | Primary key                | uuid        |
 | Create AggregateRoot class | yes         |
 | Create Reactor class       | yes         |
-| Create unit tests          | no          |
+| Create PHPUnit tests       | no          |
 | Create failed events       | no          |
 | Model properties           | string name |
 |                            | int age     |
@@ -212,7 +212,7 @@ use App\Domain\Animal\Projections\Animal;
 $animal = Animal::query()->where('name', 'tiger')->first();
 ```
 
-### Generate domain using existing migration, failed events, notifications and unit tests
+### Generate domain using existing migration, failed events, notifications and PHPUnit tests
 
 Command can generate a full domain directory structure starting from an existing migration.
 
@@ -263,7 +263,7 @@ Your choices:
 | Primary key                | id                                         |
 | Create AggregateRoot class | no                                         |
 | Create Reactor class       | no                                         |
-| Create unit tests          | yes                                        |
+| Create PHPUnit tests       | yes                                        |
 | Create failed events       | yes                                        |
 | Model properties           | string name                                |
 |                            | int age                                    |
@@ -406,13 +406,13 @@ app
 ```
 
 
-### Create unit test
+### Create PHPUnit test
 
 ```shell
 php artisan make:event-sourcing-domain Animal --unit-test
 ```
 
-This setup will create a unit test, already working for create / update / event events.
+This setup will create a PHPUnit test, already working for create / update / delete events.
 
 ```shell
 tests

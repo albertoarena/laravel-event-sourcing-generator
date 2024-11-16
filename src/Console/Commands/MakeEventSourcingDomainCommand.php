@@ -336,7 +336,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 ['Primary key', $this->settings->primaryKey()],
                 ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
                 ['Create Reactor class', $this->settings->createReactor ? 'yes' : 'no'],
-                ['Create unit test', $this->settings->createUnitTest ? 'yes' : 'no'],
+                ['Create PHPUnit tests', $this->settings->createUnitTest ? 'yes' : 'no'],
                 ['Create failed events', $this->settings->createFailedEvents ? 'yes' : 'no'],
                 [
                     'Model properties',

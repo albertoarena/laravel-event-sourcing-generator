@@ -56,7 +56,7 @@ class MakeEventSourcingDomainCommandFailuresTest extends TestCase
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
                     ['Create Reactor class', 'yes'],
-                    ['Create unit test', 'no'],
+                    ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                     ['Notifications', 'no'],
