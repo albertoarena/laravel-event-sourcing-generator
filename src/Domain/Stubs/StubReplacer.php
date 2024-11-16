@@ -6,9 +6,12 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlue
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintFake;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
+use Aldemeery\Onion\Interfaces\Invokable;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+
+use function Aldemeery\Onion\onion;
 
 class StubReplacer
 {
@@ -18,10 +21,13 @@ class StubReplacer
     /** @var MigrationCreateProperty[] */
     protected array $modelProperties;
 
+    protected array $queue;
+
     public function __construct(
         public CommandSettings &$settings,
     ) {
         $this->modelProperties = [];
+        $this->queue = [];
     }
 
     protected function getModelProperties(): array
@@ -314,9 +320,9 @@ class StubReplacer
         return $this;
     }
 
-    public function replace(string &$stub): self
+    public function replace(string &$stub): string
     {
-        return $this->replaceDomain($stub)
+        $this->replaceDomain($stub)
             ->replaceConstructorProperties($stub)
             ->replaceProjectionFillableProperties($stub)
             ->replaceProjectionCastProperties($stub)
@@ -326,14 +332,16 @@ class StubReplacer
             ->replaceIfBlocks($stub)
             ->replaceIndentation($stub)
             ->replaceUnitTest($stub);
+
+        return $stub;
     }
 
-    public function afterReplacements(string &$stub): self
+    public function afterReplacements(string &$stub): string
     {
         $this->fixUseNamespaceOrder($stub)
             ->fixEmptyLines($stub);
 
-        return $this;
+        return $stub;
     }
 
     public function replaceWithClosureRegexp(&$stub, string $searchPattern, Closure $closure): self
@@ -350,5 +358,21 @@ class StubReplacer
         }
 
         return $this;
+    }
+
+    public function queue(array|Closure|Invokable $layers): self
+    {
+        $this->queue = array_merge($this->queue, $layers);
+
+        return $this;
+    }
+
+    public function run(&$stub): void
+    {
+        $stub = onion([
+            fn ($stub) => $this->replace($stub),
+            ...$this->queue,
+            fn ($stub) => $this->afterReplacements($stub),
+        ])->peel($stub);
     }
 }

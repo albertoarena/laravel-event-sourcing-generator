@@ -126,12 +126,12 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
         $stub = $this->files->get($stubPath);
 
-        $this->stubReplacer->replace($stub);
-
-        $stub = $this->replaceNamespace($stub, $this->settings->domain)
-            ->replaceClass($stub, $this->settings->model);
-
-        $this->stubReplacer->afterReplacements($stub);
+        $this->stubReplacer
+            ->queue([
+                fn ($stub) => $this->replaceNamespace($stub, $this->settings->domain)
+                    ->replaceClass($stub, $this->settings->model),
+            ])
+            ->run($stub);
 
         $this->files->put($outputPath, $stub);
     }

@@ -386,6 +386,9 @@ trait AssertsDomainGenerated
             $baseNamespace = $isTest ? 'Tests' : 'App';
             $this->assertStringContainsString('namespace '.$baseNamespace.'\\'.$settings->namespace.'\\'.$settings->domain, $generated);
 
+            // Assert if-blocks have been removed
+            $this->assertStringNotContainsString('{%', $generated);
+
             // Assert specific expectations
             switch ($stubFile) {
                 case 'aggregate-root.stub':
