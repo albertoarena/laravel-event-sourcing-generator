@@ -280,6 +280,15 @@ trait AssertsDomainGenerated
                 $this->assertStringContainsString($settings->model.'CreatedNotification::class', $generated);
                 $this->assertStringContainsString($settings->model.'UpdatedNotification::class', $generated);
                 $this->assertStringContainsString($settings->model.'DeletedNotification::class', $generated);
+                if ($settings->createFailedEvents) {
+                    $this->assertStringContainsString($settings->model.'CreationFailedNotification::class', $generated);
+                    $this->assertStringContainsString($settings->model.'UpdateFailedNotification::class', $generated);
+                    $this->assertStringContainsString($settings->model.'DeletionFailedNotification::class', $generated);
+                } else {
+                    $this->assertStringNotContainsString($settings->model.'CreationFailedNotification::class', $generated);
+                    $this->assertStringNotContainsString($settings->model.'UpdateFailedNotification::class', $generated);
+                    $this->assertStringNotContainsString($settings->model.'DeletionFailedNotification::class', $generated);
+                }
             }
         }
     }
