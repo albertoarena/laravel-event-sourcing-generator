@@ -101,7 +101,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
     {
         $name = Str::replaceFirst($this->rootNamespace(), '', $name);
 
-        return $this->laravel->basePath('tests/').$this->settings->namespace.'/'.str_replace('\\', '/', $name).'/';
+        return $this->laravel->basePath('tests/Unit/').$this->settings->namespace.'/'.str_replace('\\', '/', $name).'/';
     }
 
     protected function alreadyExistsModel(): bool

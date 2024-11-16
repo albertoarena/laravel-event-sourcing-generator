@@ -60,9 +60,9 @@ trait AssertsDomainGenerated
 
         if ($createUnitTest) {
             // tests/Domain/World/HelloTest.php
-            $expectedFiles["tests/$namespace/$domain/{$model}Test.php"] = 'test.stub';
+            $expectedFiles["tests/Unit/$namespace/$domain/{$model}Test.php"] = 'test.stub';
         } else {
-            $unexpectedFiles["tests/$namespace/$domain/{$model}Test.php"] = 'test.stub';
+            $unexpectedFiles["tests/Unit/$namespace/$domain/{$model}Test.php"] = 'test.stub';
         }
 
         if ($createFailedEvents) {
