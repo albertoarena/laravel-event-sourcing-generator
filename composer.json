@@ -45,7 +45,7 @@
         "laravel/pint": "^1.1",
         "orchestra/testbench": "^9.0",
         "php-mock/php-mock-mockery": "^1.4",
-        "phpstan/phpstan": "^1.8",
+        "phpstan/phpstan": "^1.12",
         "phpunit/phpunit": "^11.4"
     },
     "scripts": {
