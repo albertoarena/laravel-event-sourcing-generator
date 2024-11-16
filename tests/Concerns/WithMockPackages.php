@@ -3,6 +3,7 @@
 namespace Tests\Concerns;
 
 use phpmock\mockery\PHPMockery;
+use PHPUnit\Framework\TestCase;
 use Spatie\EventSourcing\EventSourcingServiceProvider;
 
 trait WithMockPackages
@@ -44,6 +45,14 @@ trait WithMockPackages
         PHPMockery::mock('Albertoarena\LaravelEventSourcingGenerator\Console\Commands', 'class_exists')
             ->andReturnUsing(function ($class) {
                 return ! ($class === 'Illuminate\Notifications\Slack\SlackMessage') && class_exists($class);
+            });
+    }
+
+    protected function hidePhpunitPackage(): void
+    {
+        PHPMockery::mock('Albertoarena\LaravelEventSourcingGenerator\Console\Commands', 'class_exists')
+            ->andReturnUsing(function ($class) {
+                return ! ($class === TestCase::class) && class_exists($class);
             });
     }
 }

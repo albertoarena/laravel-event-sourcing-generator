@@ -68,6 +68,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
             ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('WARN  PHPUnit package has not been installed. Run what follows:')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
@@ -212,5 +213,64 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
             modelProperties: $properties,
             createUnitTest: true
         );
+    }
+
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_unit_tests_without_phpunit_package()
+    {
+        $this->hidePhpunitPackage();
+
+        $model = 'Tiger';
+        $domain = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+            'number_of_bones' => '?int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain, '--primary-key' => 'uuid', '--unit-test' => true])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', '?int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $domain],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$domain.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create unit test', 'yes'],
+                    ['Create failed events', 'no'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                    ['Notifications', 'no'],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('WARN  PHPUnit package has not been installed. Run what follows:')
+            ->expectsOutputToContain('WARN  composer require phpunit/phpunit --dev')
+            ->expectsOutputToContain('INFO  Domain ['.$domain.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated($model, domain: $domain, modelProperties: $properties, createUnitTest: true);
     }
 }

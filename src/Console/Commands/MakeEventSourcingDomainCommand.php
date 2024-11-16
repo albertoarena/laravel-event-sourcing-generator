@@ -39,7 +39,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--m|migration= : Indicate any existing migration for the model, with or without timestamp prefix}
                             {--a|aggregate-root= : Indicate if aggregate root must be created or not (accepts 0 or 1)}
                             {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
-                            {--u|unit-test : Indicate if unit test must be created}
+                            {--u|unit-test : Indicate if PHPUnit test must be created}
                             {--p|primary-key= : Indicate which is the primary key (uuid, id)}
                             {--i|indentation=4 : Indentation spaces}
                             {--failed-events=0 : Indicate if failed events must be created (accepts 0 or 1)}
@@ -193,6 +193,11 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         return class_exists('Illuminate\Notifications\Slack\SlackMessage');
     }
 
+    protected function checkPhpunit(): bool
+    {
+        return class_exists('PHPUnit\Framework\TestCase');
+    }
+
     protected function getModelInput(): string
     {
         return Str::ucfirst(trim($this->argument('model')));
@@ -275,6 +280,12 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             $this->components->error('Model already exists.');
 
             return false;
+        }
+
+        // Check if phpunit has been installed
+        if ($this->settings->createUnitTest && ! $this->checkPhpunit()) {
+            $this->components->warn('PHPUnit package has not been installed. Run what follows:');
+            $this->components->warn('composer require phpunit/phpunit --dev');
         }
 
         // Get other options
