@@ -18,7 +18,6 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
     use HasBlueprintColumnType;
     use WithMockPackages;
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_mail_notifications()
     {
@@ -344,7 +343,6 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_all_notifications_and_unit_tests()
     {
@@ -407,7 +405,6 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_all_notifications_and_failed_events_and_unit_tests()
     {
@@ -471,7 +468,6 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_all_notifications_and_unit_tests_with_different_domain()
     {

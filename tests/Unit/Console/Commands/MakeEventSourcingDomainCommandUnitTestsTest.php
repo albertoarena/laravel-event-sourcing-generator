@@ -19,7 +19,6 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
     use HasBlueprintColumnType;
     use WithMockPackages;
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_unit_tests()
     {
@@ -75,7 +74,6 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
         $this->assertDomainGenerated($model, domain: $domain, modelProperties: $properties, createUnitTest: true);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_unit_tests_using_id_as_primary_key()
     {
@@ -132,7 +130,6 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_migration_argument_using_all_blueprint_column_types_and_unit_test()
     {

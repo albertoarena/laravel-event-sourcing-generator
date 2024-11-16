@@ -7,7 +7,6 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Concerns\AssertsDomainGenerated;
 use Tests\Concerns\CreatesMockMigration;
@@ -21,7 +20,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
     use HasBlueprintColumnType;
     use WithMockPackages;
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_show_help_for_artisan_command()
     {
@@ -44,7 +42,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertMatchesRegularExpression('/\s*--notifications\[=NOTIFICATIONS]\s*Indicate if notifications must be created, comma separated \(accepts mail,no,slack,teams\) \[default: "no"]/', $output);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain()
     {
@@ -100,7 +97,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated($model, modelProperties: $properties);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_different_domain()
     {
@@ -160,7 +156,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_multiple_models_for_same_domain()
     {
@@ -276,7 +271,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_nullable_properties()
     {
@@ -329,7 +323,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated($model, modelProperties: $properties);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_uuid_as_primary_key_argument()
     {
@@ -381,7 +374,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated($model, modelProperties: $properties);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_using_id_as_primary_key()
     {
@@ -433,7 +425,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated($model, useUuid: false, modelProperties: $properties);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_id_as_primary_key_argument()
     {
@@ -484,7 +475,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated($model, useUuid: false, modelProperties: $properties);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_without_properties()
     {
@@ -527,11 +517,10 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated($model);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_different_namespace()
     {
-        $modelspace = 'Domains';
+        $namespace = 'Domains';
         $domain = 'Animal';
         $model = 'Tiger';
 
@@ -540,7 +529,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['model' => $model, '-d' => $domain, '--namespace' => $modelspace])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '-d' => $domain, '--namespace' => $namespace])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
             ->expectsQuestion('Do you want to specify model properties?', true)
@@ -560,8 +549,8 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                 [
                     ['Model', $model],
                     ['Domain', $domain],
-                    ['Namespace', $modelspace],
-                    ['Path', $modelspace.'/'.$domain.'/'.$model],
+                    ['Namespace', $namespace],
+                    ['Path', $namespace.'/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
                     ['Create AggregateRoot class', 'yes'],
@@ -581,12 +570,11 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated(
             model: $model,
             domain: $domain,
-            namespace: $modelspace,
+            namespace: $namespace,
             modelProperties: $properties
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_different_lowercase_namespace()
     {
@@ -646,7 +634,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_indentation_argument()
     {
@@ -702,7 +689,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated($model, modelProperties: $properties, indentation: 2);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_not_specified_domain()
     {
@@ -744,7 +730,6 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated($modelExpected);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_lowercase_inputs()
     {
@@ -787,7 +772,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated(model: $modelExpected, domain: $domainExpected);
     }
 
-    #[RunInSeparateProcess] #[Test]
+    #[Test]
     public function it_can_partially_create_a_model_without_overwriting_already_existing_files()
     {
         $model = 'Animal';
@@ -831,7 +816,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->assertSuccessful();
     }
 
-    #[RunInSeparateProcess] #[Test]
+    #[Test]
     public function it_can_create_a_model_even_if_the_domain_already_exists()
     {
         $model = 'Tiger';

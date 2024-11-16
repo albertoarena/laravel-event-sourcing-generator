@@ -6,7 +6,6 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlue
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Concerns\AssertsDomainGenerated;
 use Tests\Concerns\CreatesMockMigration;
@@ -24,7 +23,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_migration_using_uuid_as_primary_key()
     {
@@ -83,7 +81,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_migration_using_id_as_primary_key()
     {
@@ -143,7 +140,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_migration_argument()
     {
@@ -193,7 +189,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_migration_argument_using_all_blueprint_column_types()
     {
@@ -281,7 +276,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_migration_argument_using_unsupported_blueprint_column_types()
     {
@@ -350,7 +344,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_migration_argument_ignoring_indexes_foreign_keys_and_soft_deletes()
     {
@@ -407,7 +400,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_cannot_create_a_model_and_domain_with_update_migration()
     {
@@ -425,7 +417,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_cannot_create_a_model_and_domain_with_damaged_migration()
     {
@@ -443,7 +434,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
             ->assertFailed();
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_cannot_create_a_model_and_domain_with_non_existing_migration()
     {
@@ -457,7 +447,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
     /**
      * @throws Exception
      */
-    #[RunInSeparateProcess]
     #[Test]
     public function it_cannot_create_a_model_and_domain_with_migration_using_uuid_as_primary_key_with_id_field_name()
     {

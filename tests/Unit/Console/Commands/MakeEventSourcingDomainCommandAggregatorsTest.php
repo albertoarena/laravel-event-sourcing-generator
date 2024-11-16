@@ -4,7 +4,6 @@ namespace Tests\Unit\Console\Commands;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Illuminate\Support\Arr;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Concerns\AssertsDomainGenerated;
 use Tests\Concerns\CreatesMockMigration;
@@ -18,7 +17,6 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
     use HasBlueprintColumnType;
     use WithMockPackages;
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_aggregate_root_argument()
     {
@@ -70,7 +68,6 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
         $this->assertDomainGenerated($model, modelProperties: $properties);
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_without_aggregate_root()
     {

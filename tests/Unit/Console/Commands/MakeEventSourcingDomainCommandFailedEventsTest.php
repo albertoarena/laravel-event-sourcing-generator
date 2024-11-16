@@ -4,7 +4,6 @@ namespace Tests\Unit\Console\Commands;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Illuminate\Support\Arr;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Concerns\AssertsDomainGenerated;
 use Tests\Concerns\CreatesMockMigration;
@@ -18,7 +17,6 @@ class MakeEventSourcingDomainCommandFailedEventsTest extends TestCase
     use HasBlueprintColumnType;
     use WithMockPackages;
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_failed_events()
     {
@@ -78,7 +76,6 @@ class MakeEventSourcingDomainCommandFailedEventsTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_failed_events_and_mail_notifications()
     {
@@ -141,7 +138,6 @@ class MakeEventSourcingDomainCommandFailedEventsTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_can_create_a_model_and_domain_with_failed_events_and_teams_notifications()
     {

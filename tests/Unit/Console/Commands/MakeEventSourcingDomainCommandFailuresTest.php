@@ -19,7 +19,6 @@ class MakeEventSourcingDomainCommandFailuresTest extends TestCase
     use HasBlueprintColumnType;
     use WithMockPackages;
 
-    #[RunInSeparateProcess]
     #[Test]
     public function it_cannot_create_a_model_and_domain_if_choices_are_not_confirmed()
     {
@@ -69,7 +68,8 @@ class MakeEventSourcingDomainCommandFailuresTest extends TestCase
             ->assertFailed();
     }
 
-    #[RunInSeparateProcess] #[Test]
+    #[RunInSeparateProcess]
+    #[Test]
     public function it_cannot_create_a_model_and_domain_without_spatie_event_sourcing_installed()
     {
         $this->hideSpatiePackage();
@@ -86,7 +86,7 @@ class MakeEventSourcingDomainCommandFailuresTest extends TestCase
         );
     }
 
-    #[RunInSeparateProcess] #[Test]
+    #[Test]
     public function it_cannot_create_a_model_if_already_exists()
     {
         $model = 'Animal';
@@ -102,7 +102,7 @@ class MakeEventSourcingDomainCommandFailuresTest extends TestCase
             ->assertFailed();
     }
 
-    #[RunInSeparateProcess] #[Test]
+    #[Test]
     public function it_cannot_create_a_model_with_reserved_name()
     {
         $model = 'Array';
@@ -113,7 +113,7 @@ class MakeEventSourcingDomainCommandFailuresTest extends TestCase
             ->assertFailed();
     }
 
-    #[RunInSeparateProcess] #[Test]
+    #[Test]
     public function it_cannot_create_a_domain_with_reserved_name()
     {
         $model = 'Animal';
@@ -124,7 +124,7 @@ class MakeEventSourcingDomainCommandFailuresTest extends TestCase
             ->assertFailed();
     }
 
-    #[RunInSeparateProcess] #[Test]
+    #[Test]
     public function it_cannot_create_a_domain_with_invalid_primary_key()
     {
         $model = 'Animal';
