@@ -452,7 +452,6 @@ The following column types are not yet supported:
 - `foreignUlid`
 - `geography`
 - `geometry`
-- `jsonb`
 - `morphs`
 - `nullableMorphs`
 - `nullableUlidMorphs`
