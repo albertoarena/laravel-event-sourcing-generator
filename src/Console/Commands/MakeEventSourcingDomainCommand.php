@@ -151,9 +151,16 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                     if ($property->type->type === 'Carbon') {
                         $this->settings->useCarbon = true;
                     }
+                    if ($property->type->warning) {
+                        $this->components->warn($property->type->warning);
+                    }
                 }
 
                 $this->settings->useUuid = $migration->primary() === 'uuid';
+
+                foreach ($migration->ignored() as $ignored) {
+                    $this->components->warn('Type '.$ignored->type->type.' is not supported for column '.$ignored->name);
+                }
             } catch (Exception $e) {
                 throw new Exception($e->getMessage());
             }

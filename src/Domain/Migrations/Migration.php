@@ -17,6 +17,8 @@ class Migration
 
     protected MigrationCreateProperties $properties;
 
+    protected MigrationCreateProperties $ignored;
+
     /**
      * @throws Exception
      */
@@ -25,6 +27,7 @@ class Migration
     ) {
         $this->primary = null;
         $this->properties = new MigrationCreateProperties;
+        $this->ignored = new MigrationCreateProperties;
         $this->parse();
     }
 
@@ -54,7 +57,9 @@ class Migration
      */
     protected function parse(): void
     {
-        $this->properties->import((new MigrationParser($this->getMigration()))->parse()->getProperties());
+        $parser = (new MigrationParser($this->getMigration()))->parse();
+        $this->properties->import($parser->getProperties());
+        $this->ignored->import($parser->getIgnored());
         $this->primary = $this->properties->primary()->name;
     }
 
@@ -69,5 +74,13 @@ class Migration
     public function properties(): array
     {
         return $this->properties->toArray();
+    }
+
+    /**
+     * @return MigrationCreateProperty[]
+     */
+    public function ignored(): array
+    {
+        return $this->ignored->toArray();
     }
 }

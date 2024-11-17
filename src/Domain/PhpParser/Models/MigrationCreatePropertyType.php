@@ -19,6 +19,7 @@ class MigrationCreatePropertyType
         public string $type,
         bool $nullable = false,
         bool $isIgnored = false,
+        public readonly ?string $warning = null,
     ) {
         $this->nullable = false;
         if ($nullable) {

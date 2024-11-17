@@ -90,7 +90,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
             'number_of_bones' => '?int',
         ];
 
-        $migrationPath = basename($this->createMockCreateMigration('animal', $properties, [':primary' => 'id']));
+        $migrationPath = basename($this->createMockCreateMigration('animal', $properties, [MigrationOptionInterface::PRIMARY_KEY => 'id']));
         $model = 'Animal';
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model])
@@ -277,7 +277,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
      * @throws Exception
      */
     #[Test]
-    public function it_can_create_a_model_and_domain_with_migration_argument_using_unsupported_blueprint_column_types()
+    public function it_can_create_a_model_and_domain_with_migration_argument_ignoring_unsupported_blueprint_column_types()
     {
         $validProperties = [
             'name' => 'string',
@@ -301,9 +301,13 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
             ]
         );
 
+        $options = [
+            MigrationOptionInterface::PRIMARY_KEY => ['primary' => [['id', 'parent_id']]],
+        ];
+
         $expectedPrintedProperties = array_values(Arr::map($validProperties, fn ($type, $model) => "$type $model"));
 
-        $this->createMockCreateMigration('animal', $properties);
+        $this->createMockCreateMigration('animal', $properties, $options);
         $model = 'Animal';
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--migration' => 'create_animals_table', '--aggregate-root' => 0, '--reactor' => 0])
@@ -317,7 +321,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                     ['Namespace', 'Domain'],
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
-                    ['Primary key', 'uuid'],
+                    ['Primary key', 'id'],
                     ['Create AggregateRoot class', 'no'],
                     ['Create Reactor class', 'no'],
                     ['Create PHPUnit tests', 'no'],
@@ -329,12 +333,26 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
             ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
             // Result
             ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->expectsOutputToContain('WARN  Composite keys are not supported for primary key.')
+            ->expectsOutputToContain('WARN  Type binary is not supported for column binary_field.')
+            ->expectsOutputToContain('WARN  Type foreignIdFor is not supported for column foreign_id_for_field.')
+            ->expectsOutputToContain('WARN  Type foreignUlid is not supported for column foreign_ulid_field.')
+            ->expectsOutputToContain('WARN  Type geography is not supported for column geography_field.')
+            ->expectsOutputToContain('WARN  Type geometry is not supported for column geometry_field.')
+            ->expectsOutputToContain('WARN  Type jsonb is not supported for column jsonb_field.')
+            ->expectsOutputToContain('WARN  Type nullableMorphs is not supported for column nullable_morphs_field.')
+            ->expectsOutputToContain('WARN  Type nullableUuidMorphs is not supported for column nullable_uuid_morphs_field.')
+            ->expectsOutputToContain('WARN  Type set is not supported for column set_field.')
+            ->expectsOutputToContain('WARN  Type ulidMorphs is not supported for column ulid_morphs_field.')
+            ->expectsOutputToContain('WARN  Type uuidMorphs is not supported for column uuid_morphs_field.')
+            ->expectsOutputToContain('WARN  Type ulid is not supported for column ulid_field.')
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
         $this->assertDomainGenerated(
             $model,
             migration: 'create_animals_table',
+            useUuid: false,
             createAggregateRoot: false,
             createReactor: false,
             modelProperties: $validProperties

@@ -184,10 +184,21 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
                         $firstStatement->expr->name->name = $primaryKey;
                         if ($primaryKeyArgs) {
                             foreach ($primaryKeyArgs as $primaryKeyArg) {
-                                $newArg = new Node\Arg(
-                                    new Node\Scalar\String_($primaryKeyArg),
-                                );
+                                if (is_array($primaryKeyArg)) {
+                                    // Primary composite keys
+                                    $newArg = new Node\Arg(
+                                        new Node\Expr\Array_(Arr::map($primaryKeyArg, function ($arg) {
+                                            return new Node\ArrayItem(
+                                                new Node\Scalar\String_($arg)
+                                            );
+                                        }))
+                                    );
+                                } else {
+                                    $newArg = new Node\Arg(
+                                        new Node\Scalar\String_($primaryKeyArg),
+                                    );
 
+                                }
                                 $firstStatement->expr->args[] = $newArg;
                             }
                         }

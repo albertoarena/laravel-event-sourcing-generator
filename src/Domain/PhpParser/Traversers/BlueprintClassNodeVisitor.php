@@ -15,12 +15,12 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
     use HasSchemaUpNode;
 
     public function __construct(
-        protected array &$properties
+        protected array &$properties,
+        protected array &$ignored,
     ) {}
 
     /**
      * @throws MigrationInvalidPrimaryKeyException
-     * @throws UpdateMigrationIsNotSupportedException
      */
     public function enterNode(Node $node): ?Node
     {
@@ -43,6 +43,8 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
                             $property = MigrationCreateProperty::createFromExprMethodCall($node->expr);
                             if (! $property->type->isIgnored) {
                                 $this->properties[$property->name] = $property;
+                            } else {
+                                $this->ignored[$property->name] = $property;
                             }
                         }
                     }

@@ -12,17 +12,20 @@ class MigrationParser
 {
     protected array $properties;
 
+    protected array $ignored;
+
     public function __construct(
         protected ?string $migrationContent,
     ) {
         $this->properties = [];
+        $this->ignored = [];
     }
 
     protected function getTraverser(): NodeTraverser
     {
         $traverser = new NodeTraverser;
         $traverser->addVisitor(
-            new BlueprintClassNodeVisitor($this->properties)
+            new BlueprintClassNodeVisitor($this->properties, $this->ignored)
         );
 
         return $traverser;
@@ -54,5 +57,10 @@ class MigrationParser
     public function getProperties(): array
     {
         return array_values($this->properties);
+    }
+
+    public function getIgnored(): array
+    {
+        return array_values($this->ignored);
     }
 }

@@ -5,6 +5,7 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationInvalidPrimaryKeyException;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationUnmanageablePrimaryKeyException;
 use Illuminate\Support\Arr;
 use PhpParser\Node;
 
@@ -38,16 +39,17 @@ class MigrationCreateProperty
         }
 
         $type = $expr->name->name;
-        $args = Arr::map($expr->args ?? [], fn (Node\Arg $arg) => $arg->value instanceof Node\Scalar\String_ ? $arg->value->value : null);
+        $args = array_filter(Arr::map($expr->args ?? [], fn (Node\Arg $arg) => $arg->value instanceof Node\Scalar\String_ ? $arg->value->value : null));
 
         return [$type, $args, $nullable];
     }
 
     /**
-     * @throws MigrationInvalidPrimaryKeyException
+     * @throws MigrationInvalidPrimaryKeyException|MigrationUnmanageablePrimaryKeyException
      */
     public static function createFromExprMethodCall(Node\Expr\MethodCall $expr): self
     {
+        $warning = null;
         [$type, $args, $nullable] = self::exprMethodCallToTypeArgs($expr);
 
         if (! $args) {
@@ -60,6 +62,16 @@ class MigrationCreateProperty
         if ($type === 'uuid' && $name === 'id') {
             // Bad setup, cannot parse migration
             throw new MigrationInvalidPrimaryKeyException;
+        } elseif ($type === 'primary') {
+            // Auto-adjust primary but store warning
+            $name = 'id';
+            $type = 'integer';
+            $first = Arr::first($expr->args);
+            if ($first && $first->value instanceof Node\Expr\Array_) {
+                $warning = 'Composite keys are not supported for primary key';
+            } else {
+                $warning = 'Type not supported for primary key';
+            }
         }
 
         return new self(
@@ -67,7 +79,8 @@ class MigrationCreateProperty
             new MigrationCreatePropertyType(
                 type: $type,
                 nullable: $nullable,
-                isIgnored: in_array($name, BlueprintUnsupportedInterface::IGNORED)
+                isIgnored: in_array($name, BlueprintUnsupportedInterface::IGNORED),
+                warning: $warning,
             ),
         );
     }
