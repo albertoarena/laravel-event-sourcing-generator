@@ -35,7 +35,6 @@ interface BlueprintUnsupportedInterface
         'foreignUlid',
         'geography',
         'geometry',
-        'jsonb',
         'morphs',
         'nullableMorphs',
         'nullableUlidMorphs',

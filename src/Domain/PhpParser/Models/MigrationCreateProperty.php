@@ -5,7 +5,6 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationInvalidPrimaryKeyException;
-use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationUnmanageablePrimaryKeyException;
 use Illuminate\Support\Arr;
 use PhpParser\Node;
 
@@ -45,7 +44,7 @@ class MigrationCreateProperty
     }
 
     /**
-     * @throws MigrationInvalidPrimaryKeyException|MigrationUnmanageablePrimaryKeyException
+     * @throws MigrationInvalidPrimaryKeyException
      */
     public static function createFromExprMethodCall(Node\Expr\MethodCall $expr): self
     {

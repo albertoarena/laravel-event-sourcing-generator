@@ -10,7 +10,7 @@ trait HasBlueprintColumnType
             'boolean' => 'bool',
             'bigIncrements', 'bigInteger', 'foreignId', 'id', 'increments', 'integer', 'mediumIncrements', 'mediumInteger', 'smallIncrements', 'smallInteger', 'tinyIncrements', 'tinyInteger', 'unsignedBigInteger', 'unsignedInteger', 'unsignedMediumInteger', 'unsignedSmallInteger', 'unsignedTinyInteger', 'year' => 'int',
             'decimal', 'double' => 'float',
-            'json' => 'array',
+            'json', 'jsonb' => 'array',
             'dateTimeTz', 'dateTime', 'softDeletesTz', 'softDeletes', 'timestampTz', 'timestamp', 'timestampsTz', 'timestamps' => 'Carbon',
             'nullableTimestamps' => '?Carbon',
             'date' => 'Carbon:Y-m-d',

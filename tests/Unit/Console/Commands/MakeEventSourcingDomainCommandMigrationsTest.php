@@ -202,6 +202,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
             'small_integer_field' => 'smallInteger',
             'tiny_integer_field' => 'tinyInteger',
             'json_field' => 'json',
+            'jsonb_field' => 'jsonb',
             'string_field' => 'string',
             'datetime_tz_field' => 'dateTimeTz',
             'datetime_field' => 'dateTime',
@@ -290,7 +291,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                 'foreign_ulid_field' => 'foreignUlid',
                 'geography_field' => 'geography',
                 'geometry_field' => 'geometry',
-                'jsonb_field' => 'jsonb',
                 'nullable_morphs_field' => 'nullableMorphs',
                 'nullable_ulid_morphs_field' => 'nullableUlidMorphs',
                 'nullable_uuid_morphs_field' => 'nullableUuidMorphs',
@@ -339,7 +339,6 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
             ->expectsOutputToContain('WARN  Type foreignUlid is not supported for column foreign_ulid_field.')
             ->expectsOutputToContain('WARN  Type geography is not supported for column geography_field.')
             ->expectsOutputToContain('WARN  Type geometry is not supported for column geometry_field.')
-            ->expectsOutputToContain('WARN  Type jsonb is not supported for column jsonb_field.')
             ->expectsOutputToContain('WARN  Type nullableMorphs is not supported for column nullable_morphs_field.')
             ->expectsOutputToContain('WARN  Type nullableUuidMorphs is not supported for column nullable_uuid_morphs_field.')
             ->expectsOutputToContain('WARN  Type set is not supported for column set_field.')
@@ -352,9 +351,9 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         $this->assertDomainGenerated(
             $model,
             migration: 'create_animals_table',
-            useUuid: false,
             createAggregateRoot: false,
             createReactor: false,
+            useUuid: false,
             modelProperties: $validProperties
         );
     }
