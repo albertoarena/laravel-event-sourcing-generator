@@ -2,6 +2,7 @@
 
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Illuminate\Support\Collection;
 
 class MigrationCreateProperties
@@ -12,9 +13,12 @@ class MigrationCreateProperties
 
     protected Collection $collection;
 
+    protected Collection $rejected;
+
     public function __construct(array|Collection|null $collection = null)
     {
         $this->collection = new Collection;
+        $this->rejected = new Collection;
 
         // Import existing collection
         if ($collection) {
@@ -61,6 +65,11 @@ class MigrationCreateProperties
     public function withoutReservedFields(): self
     {
         return new self($this->collection->except(self::RESERVED_FIELDS));
+    }
+
+    public function withoutSkippedMethods(): self
+    {
+        return new self($this->collection->except(BlueprintUnsupportedInterface::SKIPPED_METHODS));
     }
 
     /**

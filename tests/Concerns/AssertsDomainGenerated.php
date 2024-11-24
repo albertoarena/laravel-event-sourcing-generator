@@ -190,6 +190,12 @@ trait AssertsDomainGenerated
 
                 $this->assertMatchesRegularExpression("/public $nullable$type \\$$name/", $generated);
             }
+            foreach ($settings->ignoredProperties->toArray() as $property) {
+                $name = Str::camel($property->name);
+
+                $this->assertMatchesRegularExpression("/\/\/ @todo public {$property->type->type} \\$$name, column type is not yet supported/", $generated);
+            }
+
             foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
                 $this->assertDoesNotMatchRegularExpression("/public .* \\\$$method;/", $generated);
             }
@@ -205,8 +211,12 @@ trait AssertsDomainGenerated
         }
         foreach ($settings->modelProperties->toArray() as $property) {
             $type = $property->type->toProjection();
-
+            $this->assertMatchesRegularExpression("/\s*'$property->name',\n/", $generated);
             $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
+        }
+        foreach ($settings->ignoredProperties->toArray() as $property) {
+            $this->assertMatchesRegularExpression("/\/\/ @todo '$property->name', column type '{$property->type->type}' is not yet supported/", $generated);
+            $this->assertMatchesRegularExpression("/\/\/ @todo '$property->name' => '{$property->type->type}', column type is not yet supported/", $generated);
         }
         foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
             $this->assertDoesNotMatchRegularExpression("/'$method' => '.*'/", $generated);
@@ -221,9 +231,13 @@ trait AssertsDomainGenerated
             $this->assertDoesNotMatchRegularExpression("/'id' => \\\$event->{$settings->nameAsPrefix}Id/", $generated);
         }
         // Assert that model properties are using camel format
-        foreach ($settings->modelProperties->toArray() as $item) {
-            $name = Str::camel($item->name);
-            $this->assertMatchesRegularExpression("/'$item->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
+        foreach ($settings->modelProperties->toArray() as $property) {
+            $name = Str::camel($property->name);
+            $this->assertMatchesRegularExpression("/'$property->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
+        }
+        foreach ($settings->ignoredProperties->toArray() as $property) {
+            $name = Str::camel($property->name);
+            $this->assertMatchesRegularExpression("/\/\/ @todo '$property->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name, column type '{$property->type->type}' is not yet supported/", $generated);
         }
         foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
             $this->assertDoesNotMatchRegularExpression("/'$method'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$method/", $generated);
@@ -302,6 +316,7 @@ trait AssertsDomainGenerated
         bool $createReactor = true,
         bool $useUuid = true,
         array $modelProperties = [],
+        array $ignoredProperties = [],
         int $indentation = 4,
         bool $createUnitTest = false,
         bool $createFailedEvents = false,
@@ -356,6 +371,7 @@ trait AssertsDomainGenerated
             createFailedEvents: $createFailedEvents,
         );
         $settings->modelProperties->import($modelProperties);
+        $settings->ignoredProperties->import($ignoredProperties);
 
         // Create stub replacer
         $stubReplacer = new StubReplacer($settings);

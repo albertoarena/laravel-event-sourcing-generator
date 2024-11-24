@@ -81,6 +81,6 @@ class Migration
      */
     public function ignored(): array
     {
-        return $this->ignored->toArray();
+        return $this->ignored->withoutSkippedMethods()->toArray();
     }
 }

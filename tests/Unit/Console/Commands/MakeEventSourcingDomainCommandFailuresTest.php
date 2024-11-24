@@ -125,6 +125,17 @@ class MakeEventSourcingDomainCommandFailuresTest extends TestCase
     }
 
     #[Test]
+    public function it_cannot_create_a_domain_with_reserved_namespace()
+    {
+        $model = 'Animal';
+        $namespace = 'Array';
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--namespace' => $namespace])
+            ->expectsOutputToContain('The namespace "'.$namespace.'" is reserved by PHP.')
+            ->assertFailed();
+    }
+
+    #[Test]
     public function it_cannot_create_a_domain_with_invalid_primary_key()
     {
         $model = 'Animal';

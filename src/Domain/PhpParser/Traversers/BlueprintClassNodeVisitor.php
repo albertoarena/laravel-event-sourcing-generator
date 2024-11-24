@@ -21,6 +21,7 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
 
     /**
      * @throws MigrationInvalidPrimaryKeyException
+     * @throws UpdateMigrationIsNotSupportedException
      */
     public function enterNode(Node $node): ?Node
     {

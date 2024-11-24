@@ -11,7 +11,7 @@ class CommandSettings
 
     public MigrationCreateProperties $modelProperties;
 
-    protected MigrationCreateProperties $properties;
+    public MigrationCreateProperties $ignoredProperties;
 
     public function __construct(
         public readonly string $model,
@@ -33,6 +33,7 @@ class CommandSettings
     ) {
         $this->indentSpace = Str::repeat(' ', $this->indentation);
         $this->modelProperties = new MigrationCreateProperties;
+        $this->ignoredProperties = new MigrationCreateProperties;
     }
 
     public function primaryKey(): string

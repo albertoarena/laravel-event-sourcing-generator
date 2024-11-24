@@ -21,12 +21,16 @@ class StubReplacer
     /** @var MigrationCreateProperty[] */
     protected array $modelProperties;
 
+    /** @var MigrationCreateProperty[] */
+    protected array $ignoreProperties;
+
     protected array $queue;
 
     public function __construct(
         public CommandSettings &$settings,
     ) {
         $this->modelProperties = [];
+        $this->ignoreProperties = [];
         $this->queue = [];
     }
 
@@ -39,6 +43,17 @@ class StubReplacer
         }
 
         return $this->modelProperties;
+    }
+
+    protected function getIgnoreProperties(): array
+    {
+        if (! $this->ignoreProperties) {
+            foreach ($this->settings->ignoredProperties->toArray() as $property) {
+                $this->ignoreProperties[$property->name] = $property;
+            }
+        }
+
+        return $this->ignoreProperties;
     }
 
     protected function getSearch(...$patterns): array
@@ -86,6 +101,21 @@ class StubReplacer
                 return "public $nullable$type \$$name";
             }
         );
+
+        // Ignored properties
+        $ignoredProperties = Arr::mapWithKeys(
+            $this->getIgnoreProperties(),
+            function (MigrationCreateProperty $property) {
+                $name = Str::camel($property->name);
+
+                return [
+                    "ignored_$name" => "// @todo public {$property->type->type} \$$name, column type is not yet supported",
+                ];
+            }
+        );
+
+        $preparedProperties = array_merge($preparedProperties, $ignoredProperties);
+
         $preparedProperties = implode(",\n$indentSpace2", $preparedProperties);
         $this->replaceWithClosure($stub, 'properties:data-transfer-object:constructor', fn () => $preparedProperties);
 
@@ -108,9 +138,19 @@ class StubReplacer
         $properties = $this->getModelProperties();
         array_unshift($properties, new MigrationCreateProperty($this->settings->primaryKey(), 'string'));
 
+        // Prepare valid properties
         $preparedProperties = Arr::map($properties, fn (MigrationCreateProperty $property) => "'$property->name',");
-        $preparedProperties = implode("\n$indentSpace2", $preparedProperties);
 
+        // Inject ignored properties
+        $rejectedProperties = Arr::mapWithKeys(
+            $this->getIgnoreProperties(),
+            fn (MigrationCreateProperty $property) => [
+                "ignored_$property->name" => "// @todo '$property->name', column type '{$property->type->type}' is not yet supported",
+            ]
+        );
+        $preparedProperties = array_merge($preparedProperties, $rejectedProperties);
+
+        $preparedProperties = implode("\n$indentSpace2", $preparedProperties);
         $this->replaceWithClosure($stub, 'properties:projection:fillable', fn () => $preparedProperties);
 
         return $this;
@@ -128,7 +168,13 @@ class StubReplacer
                     $type = $property->type->toProjection();
 
                     return "'$property->name' => '$type',";
-                })
+                }),
+            Arr::mapWithKeys(
+                $this->getIgnoreProperties(),
+                fn (MigrationCreateProperty $property) => [
+                    "ignored_$property->name" => "// @todo '$property->name' => '{$property->type->type}', column type is not yet supported",
+                ]
+            )
         );
         $preparedProperties = implode("\n$indentSpace2", $preparedProperties);
 
@@ -165,6 +211,16 @@ class StubReplacer
             $this->getModelProperties(),
             fn (MigrationCreateProperty $property) => "'$property->name' => \$event->{$domainId}Data->".Str::camel($property->name).','
         );
+
+        // Inject ignored properties
+        $ignoredProperties = Arr::mapWithKeys(
+            $this->getIgnoreProperties(),
+            fn (MigrationCreateProperty $property) => [
+                "ignored_$property->name" => "// @todo '$property->name' => \$event->{$domainId}Data->".Str::camel($property->name).", column type '{$property->type->type}' is not yet supported",
+            ]
+        );
+
+        $preparedProperties = array_merge($preparedProperties, $ignoredProperties);
 
         foreach ($this->getSearch(patterns: 'properties:projector') as $search) {
             $stub = str_replace(

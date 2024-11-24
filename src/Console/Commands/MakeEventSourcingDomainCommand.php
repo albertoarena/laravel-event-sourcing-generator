@@ -148,7 +148,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 $migration = (new Migration($this->settings->migration));
                 foreach ($migration->properties() as $property) {
                     $this->settings->modelProperties->add($property);
-                    if ($property->type->type === 'Carbon') {
+                    if ($property->type->type === 'Carbon' && $property->name !== 'timestamps') {
                         $this->settings->useCarbon = true;
                     }
                     if ($property->type->warning) {
@@ -159,6 +159,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 $this->settings->useUuid = $migration->primary() === 'uuid';
 
                 foreach ($migration->ignored() as $ignored) {
+                    $this->settings->ignoredProperties->add($ignored);
                     $this->components->warn('Type '.$ignored->type->type.' is not supported for column '.$ignored->name);
                 }
             } catch (Exception $e) {
@@ -243,7 +244,6 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         }
 
         $model = $this->getModelInput();
-
         $this->settings = new CommandSettings(
             model: $model,
             domain: $this->getDomainInput($model),
@@ -257,8 +257,6 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             createUnitTest: (bool) $this->option('unit-test'),
             createFailedEvents: (bool) $this->option('failed-events'),
         );
-
-        $this->stubReplacer = new StubReplacer($this->settings);
 
         // Check if Spatie event-sourcing package has been installed
         if (! $this->checkSpatieEventSourcing()) {
@@ -282,6 +280,13 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             return false;
         }
 
+        // Check if the given namespace is a reserved word within PHP language
+        if ($this->isReservedName($this->settings->namespace)) {
+            $this->components->error('The namespace "'.$this->settings->namespace.'" is reserved by PHP.');
+
+            return false;
+        }
+
         // Check if the domain already exists
         if ($this->alreadyExistsModel()) {
             $this->components->error('Model already exists.');
@@ -301,6 +306,8 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 $this->settings->migration = $this->choice('Select database migration', $this->getDatabaseMigrations());
             }
         }
+
+        $this->stubReplacer = new StubReplacer($this->settings);
 
         // Load properties, from migration file or manually
         $this->loadProperties();

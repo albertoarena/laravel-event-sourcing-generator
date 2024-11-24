@@ -284,22 +284,22 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
             'name' => 'string',
         ];
 
-        $properties = array_merge(
-            $validProperties, [
-                'binary_field' => 'binary',
-                'foreign_id_for_field' => 'foreignIdFor',
-                'foreign_ulid_field' => 'foreignUlid',
-                'geography_field' => 'geography',
-                'geometry_field' => 'geometry',
-                'nullable_morphs_field' => 'nullableMorphs',
-                'nullable_ulid_morphs_field' => 'nullableUlidMorphs',
-                'nullable_uuid_morphs_field' => 'nullableUuidMorphs',
-                'set_field' => 'set',
-                'ulid_morphs_field' => 'ulidMorphs',
-                'uuid_morphs_field' => 'uuidMorphs',
-                'ulid_field' => 'ulid',
-            ]
-        );
+        $ignoredProperties = [
+            'binary_field' => 'binary',
+            'foreign_id_for_field' => 'foreignIdFor',
+            'foreign_ulid_field' => 'foreignUlid',
+            'geography_field' => 'geography',
+            'geometry_field' => 'geometry',
+            'nullable_morphs_field' => 'nullableMorphs',
+            'nullable_ulid_morphs_field' => 'nullableUlidMorphs',
+            'nullable_uuid_morphs_field' => 'nullableUuidMorphs',
+            'set_field' => 'set',
+            'ulid_morphs_field' => 'ulidMorphs',
+            'uuid_morphs_field' => 'uuidMorphs',
+            'ulid_field' => 'ulid',
+        ];
+
+        $properties = array_merge($validProperties, $ignoredProperties);
 
         $options = [
             MigrationOptionInterface::PRIMARY_KEY => ['primary' => [['id', 'parent_id']]],
@@ -354,7 +354,8 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
             createAggregateRoot: false,
             createReactor: false,
             useUuid: false,
-            modelProperties: $validProperties
+            modelProperties: $validProperties,
+            ignoredProperties: $ignoredProperties,
         );
     }
 
