@@ -38,6 +38,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertMatchesRegularExpression('/\s*-u, --unit-test\s*Indicate if PHPUnit tests must be created/', $output);
         $this->assertMatchesRegularExpression('/\s*-p, --primary-key\[=PRIMARY-KEY]\s*Indicate which is the primary key \(uuid, id\)/', $output);
         $this->assertMatchesRegularExpression('/\s*-i, --indentation\[=INDENTATION]\s*Indentation spaces \[default: "4"]/', $output);
+        $this->assertMatchesRegularExpression('/\s*--root\[=ROOT]\s*The name of the root folder \[default: "app"]/', $output);
         $this->assertMatchesRegularExpression('/\s*--failed-events\[=FAILED-EVENTS]\s*Indicate if failed events must be created \(accepts 0 or 1\) \[default: "0"]/', $output);
         $this->assertMatchesRegularExpression('/\s*--notifications\[=NOTIFICATIONS]\s*Indicate if notifications must be created, comma separated \(accepts mail,no,slack,teams\) \[default: "no"]/', $output);
     }
@@ -153,6 +154,69 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             model: $model,
             domain: $domain,
             modelProperties: $properties
+        );
+    }
+
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_different_root()
+    {
+        $model = 'Tiger';
+        $rootFolder = 'src';
+
+        // Create root folder
+        File::makeDirectory(base_path($rootFolder));
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+            'number_of_bones' => 'int',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--root' => $rootFolder])
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', true)
+            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Root folder', $rootFolder],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create PHPUnit tests', 'no'],
+                    ['Create failed events', 'no'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                    ['Notifications', 'no'],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            model: $model,
+            modelProperties: $properties,
+            rootFolder: $rootFolder
         );
     }
 

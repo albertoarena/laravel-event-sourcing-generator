@@ -5,6 +5,7 @@ namespace Tests\Concerns;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Contracts\AcceptedNotificationInterface;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Contracts\DefaultSettingsInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
@@ -321,6 +322,7 @@ trait AssertsDomainGenerated
         bool $createUnitTest = false,
         bool $createFailedEvents = false,
         array $notifications = [],
+        string $rootFolder = DefaultSettingsInterface::APP,
     ): void {
         if (! $useUuid) {
             $createAggregateRoot = false;
@@ -342,7 +344,7 @@ trait AssertsDomainGenerated
             if (Str::startsWith($generatedFile, 'tests')) {
                 $this->assertTrue(File::exists(base_path($generatedFile)));
             } else {
-                $this->assertTrue(File::exists(app_path($generatedFile)));
+                $this->assertTrue(File::exists(base_path($rootFolder.'/'.$generatedFile)));
             }
         }
 
@@ -364,6 +366,7 @@ trait AssertsDomainGenerated
             createReactor: $createReactor,
             indentation: $indentation,
             notifications: $notifications,
+            rootFolder: $rootFolder,
             useUuid: $useUuid,
             nameAsPrefix: Str::lcfirst(Str::camel($model)),
             domainPath: '',
@@ -395,7 +398,7 @@ trait AssertsDomainGenerated
             // Load generated file
             $generated = File::get($isTest ?
                 base_path($generatedFile) :
-                app_path($generatedFile)
+                base_path($settings->rootFolder.'/'.$generatedFile)
             );
 
             // Assert namespace

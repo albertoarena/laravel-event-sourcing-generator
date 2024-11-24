@@ -22,6 +22,7 @@ class CommandSettings
         public ?bool $createReactor,
         public readonly int $indentation,
         public array $notifications,
+        public string $rootFolder,
         public ?bool $useUuid = null,
         public string $nameAsPrefix = '',
         public string $namespacePath = '',

@@ -5,6 +5,7 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Console\Commands;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Concerns\CanCreateDirectories;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Contracts\AcceptedNotificationInterface;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Contracts\DefaultSettingsInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
@@ -43,7 +44,8 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--p|primary-key= : Indicate which is the primary key (uuid, id)}
                             {--i|indentation=4 : Indentation spaces}
                             {--failed-events=0 : Indicate if failed events must be created (accepts 0 or 1)}
-                            {--notifications=no : Indicate if notifications must be created, comma separated (accepts mail,no,slack,teams)}';
+                            {--notifications=no : Indicate if notifications must be created, comma separated (accepts mail,no,slack,teams)}
+                            {--root=app : The name of the root folder}';
 
     /**
      * @var string
@@ -253,10 +255,16 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             createReactor: ! is_null($this->option('reactor')) ? (bool) $this->option('reactor') : null,
             indentation: (int) $this->option('indentation'),
             notifications: $this->getNotifications(),
+            rootFolder: ! is_null($this->option('root')) ? $this->option('root') : DefaultSettingsInterface::APP,
             useUuid: ! is_null($primaryKey) ? $primaryKey === 'uuid' : null,
             createUnitTest: (bool) $this->option('unit-test'),
             createFailedEvents: (bool) $this->option('failed-events'),
         );
+
+        // Set root folder
+        if ($this->settings->rootFolder !== DefaultSettingsInterface::APP) {
+            $this->laravel['path'] = Str::replaceLast('/app', '/'.$this->settings->rootFolder, $this->laravel['path']);
+        }
 
         // Check if Spatie event-sourcing package has been installed
         if (! $this->checkSpatieEventSourcing()) {
@@ -337,37 +345,39 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
     protected function confirmChoices(): bool
     {
         $modelProperties = $this->settings->modelProperties->withoutReservedFields()->toArray();
+        $currentChoices = array_filter([
+            ['Model', $this->settings->model],
+            ['Domain', $this->settings->domain],
+            $this->settings->rootFolder !== DefaultSettingsInterface::APP ? ['Root folder', $this->settings->rootFolder] : false,
+            ['Namespace', $this->settings->namespace],
+            ['Path', $this->settings->namespace.'/'.$this->settings->domain.'/'.$this->settings->model],
+            ['Use migration', basename($this->settings->migration) ?: 'no'],
+            ['Primary key', $this->settings->primaryKey()],
+            ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
+            ['Create Reactor class', $this->settings->createReactor ? 'yes' : 'no'],
+            ['Create PHPUnit tests', $this->settings->createUnitTest ? 'yes' : 'no'],
+            ['Create failed events', $this->settings->createFailedEvents ? 'yes' : 'no'],
+            [
+                'Model properties',
+                $modelProperties ?
+                    implode("\n", Arr::map(
+                        $modelProperties,
+                        function (MigrationCreateProperty $property) {
+                            $type = $property->type->toBuiltInType();
+                            $nullable = $property->type->nullable ? '?' : '';
+
+                            return "$nullable$type $property->name";
+                        })
+                    ) :
+                    'none',
+            ],
+            ['Notifications', $this->settings->notifications ? implode(',', $this->settings->notifications) : 'no'],
+        ]);
 
         $this->line('Your choices:');
         $this->table(
             ['Option', 'Choice'],
-            [
-                ['Model', $this->settings->model],
-                ['Domain', $this->settings->domain],
-                ['Namespace', $this->settings->namespace],
-                ['Path', $this->settings->namespace.'/'.$this->settings->domain.'/'.$this->settings->model],
-                ['Use migration', basename($this->settings->migration) ?: 'no'],
-                ['Primary key', $this->settings->primaryKey()],
-                ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
-                ['Create Reactor class', $this->settings->createReactor ? 'yes' : 'no'],
-                ['Create PHPUnit tests', $this->settings->createUnitTest ? 'yes' : 'no'],
-                ['Create failed events', $this->settings->createFailedEvents ? 'yes' : 'no'],
-                [
-                    'Model properties',
-                    $modelProperties ?
-                        implode("\n", Arr::map(
-                            $modelProperties,
-                            function (MigrationCreateProperty $property) {
-                                $type = $property->type->toBuiltInType();
-                                $nullable = $property->type->nullable ? '?' : '';
-
-                                return "$nullable$type $property->name";
-                            })
-                        ) :
-                        'none',
-                ],
-                ['Notifications', $this->settings->notifications ? implode(',', $this->settings->notifications) : 'no'],
-            ]
+            $currentChoices
         );
 
         return $this->confirm('Do you confirm the generation of the domain?', true);
