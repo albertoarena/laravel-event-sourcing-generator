@@ -10,7 +10,6 @@ for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
 
 - [Installation](#installation)
     - [Compatibility](#compatibility)
-    - [Composer setup](#composer-setup)
     - [Install](#install)
 - [Usage](#usage)
     - [Show help](#show-help)
@@ -52,17 +51,6 @@ for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
 | [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x             |
 
 > (*) Package has been tested in Laravel 10, even it is not officially released for that version.
-
-### Composer setup
-
-[⬆️ Go to TOC](#table-of-contents)
-
-> **Important:** this package is not yet available as a stable version. Until that happens, you need to
-> change your composer settings to accept unstable packages:
-
-```bash
-composer config prefer-stable false
-```
 
 ### Install
 
