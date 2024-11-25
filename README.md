@@ -1,17 +1,49 @@
 # Laravel event sourcing generator
 
 ![build-test](coverage.svg)
+[![License](https://img.shields.io/badge/license-MIT-red.svg?style=flat-square)](LICENSE)
 
-## About
-
-Laravel event sourcing generator adds a new command that can generate a full domain directory structure
+Laravel event sourcing generator adds a new Artisan command that can generate a full domain directory structure
 for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
 
-```shell
-php artisan make:event-sourcing-domain
-```
+## Table of Contents
+
+- [Installation](#installation)
+    - [Compatibility](#compatibility)
+    - [Composer setup](#composer-setup)
+    - [Install](#install)
+- [Usage](#usage)
+    - [Show help](#show-help)
+    - [Basic usage](#basic-usage)
+        - [Generate a model with same name of the domain](#generate-a-model-with-same-name-of-the-domain)
+        - [Generate a model with different domain](#generate-a-model-with-different-domain)
+        - [Generate a model with different domain and namespace](#generate-a-model-with-different-domain-and-namespace)
+        - [Generate a model from existing migration](#generate-a-model-from-existing-migration)
+        - [Generate a model from existing migration with PHPUnit tests](#generate-a-model-from-existing-migration-with-phpunit-tests)
+        - [Generate a model from existing migration with failed events and mail / Slack notifications](#generate-a-model-from-existing-migration-with-failed-events-and-mail--slack-notifications)
+    - [Domain and namespace](#domain-and-namespace)
+        - [Directory structure](#directory-structure)
+        - [Specify the name of the domain](#specify-the-name-of-the-domain)
+        - [Specify the namespace](#specify-the-namespace)
+    - [Advanced usage](#advanced-usage)
+        - [Set primary key](#set-primary-key)
+        - [Generate aggregate root class](#generate-aggregate-root-class)
+        - [Generate reactor](#generate-reactor)
+        - [Generate PHPUnit tests](#generate-phpunit-tests)
+        - [Generate failed events](#generate-failed-events)
+        - [Generate notifications](#generate-notifications)
+    - [Advanced options](#advanced-options)
+        - [Specify indentation](#specify-indentation)
+        - [Specify the path of root folder](#specify-the-path-of-root-folder)
+- [Limitations and future enhancements](#limitations-and-future-enhancements)
+
+## Installation
+
+[⬆️ Go to TOC](#table-of-contents)
 
 ## Compatibility
+
+[⬆️ Go to TOC](#table-of-contents)
 
 | What                                                                        | Version         |
 |-----------------------------------------------------------------------------|-----------------|
@@ -21,9 +53,9 @@ php artisan make:event-sourcing-domain
 
 > (*) Package has been tested in Laravel 10, even it is not officially released for that version.
 
-## Installation
-
 ### Composer setup
+
+[⬆️ Go to TOC](#table-of-contents)
 
 > **Important:** this package is not yet available as a stable version. Until that happens, you need to
 > change your composer settings to accept unstable packages:
@@ -34,16 +66,20 @@ composer config prefer-stable false
 
 ### Install
 
+[⬆️ Go to TOC](#table-of-contents)
+
 ```shell
 composer require albertoarena/laravel-event-sourcing-generator
 ```
 
 ## Usage
 
+[⬆️ Go to TOC](#table-of-contents)
+
 ```text
 php artisan make:event-sourcing-domain <model>
   [--domain=<domain>]                            # The name of the domain
-  [--namespace=<namespace>]                      # The namespace or root folder
+  [--namespace=<namespace>]                      # The namespace or root folder (default: "Domain")
   [--migration=<existing_migration_filename>]    # Indicate any existing migration for the model, with or without timestamp prefix
   [--aggregate-root=<0|1>]                       # Indicate if aggregate root must be created or not (accepts 0 or 1)
   [--reactor=<0|1>]                              # Indicate if reactor must be created or not (accepts 0 or 1)
@@ -52,420 +88,236 @@ php artisan make:event-sourcing-domain <model>
   [--indentation=<indent>]                       # Indentation spaces
   [--failed-events=<0|1>]                        # Indicate if failed events must be created (accepts 0 or 1)
   [--notifications=<mail,no,slack,teams>]        # Indicate if notifications must be created, comma separated (accepts mail,no,slack,teams)
+  [--root=<root>                                 # The name of the root folder (default: "app")
 ```
 
-Generate a model with same name of domain
+### Show help
+
+[⬆️ Go to TOC](#table-of-contents)
 
 ```shell
-# App/Domain/Animal/Actions/CreateAnimal
-php artisan make:event-sourcing-domain Animal
+php artisan help make:event-sourcing-domain
 ```
 
-Generate a model with different domain
+### Basic usage
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Documentation about basic usage](./docs/basic-usage.md)
+
+#### Generate a model with same name of the domain
+
+[⬆️ Go to TOC](#table-of-contents)
 
 ```shell
-# App/Domain/Animal/Actions/CreateTiger
-php artisan make:event-sourcing-domain Tiger --domain=Animal
+php artisan make:event-sourcing-domain Animal \
+  --domain=Animal
 ```
 
-Generate a model with different domain and namespace 
+#### Generate a model with different domain
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Read documentation with examples](./docs/domain-and-namespace.md#choosing-the-name-of-the-domain)
 
 ```shell
-# App/CustomDomain/Animal/Actions/CreateTiger
+php artisan make:event-sourcing-domain Tiger \
+  --domain=Animal
+```
+
+#### Generate a model with different domain and namespace
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Read documentation with examples](./docs/domain-and-namespace.md#choosing-the-namespace)
+
+```shell
 php artisan make:event-sourcing-domain Tiger \
   --domain=Animal \
   --namespace=CustomDomain 
 ```
 
-Generate a model from existing migration with PHPUnit tests
+#### Generate a model from existing migration
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Read documentation with examples](./docs/migrations.md)
 
 ```shell
-# App/Domain/Animal/Actions/CreateAnimal
 php artisan make:event-sourcing-domain Animal \
   --migration=create_animal_table \
   --unit-test
 ```
 
-Generate a model from existing migration with failed events and mail / Slack notifications
+#### Generate a model from existing migration with PHPUnit tests
+
+[⬆️ Go to TOC](#table-of-contents)
 
 ```shell
-# App/Domain/Animal/Actions/CreateAnimal
+php artisan make:event-sourcing-domain Animal \
+  --migration=create_animal_table \
+  --unit-test
+```
+
+#### Generate a model from existing migration with failed events and mail / Slack notifications
+
+[⬆️ Go to TOC](#table-of-contents)
+
+```shell
 php artisan make:event-sourcing-domain Animal \
   --migration=create_animal_table \
   --failed-events=1 \
   --notifications=mail,slack
 ```
 
-Show help
+### Domain and namespace
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Read documentation about directory structure](./docs/domain-and-namespace.md#directory-structure)
+
+#### Specify the name of the domain
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Read documentation with examples](./docs/domain-and-namespace.md#specify-the-name-of-the-domain)
 
 ```shell
-php artisan help make:event-sourcing-domain
+php artisan make:event-sourcing-domain Animal --domain=Tiger
+php artisan make:event-sourcing-domain Animal --domain=Lion
 ```
 
-### Generate domain structure using interactive command line
+#### Specify the namespace
 
-Default mode is based on interactive command line.
+[⬆️ Go to TOC](#table-of-contents)
 
-In this example, `uuid` will be used as primary key with an aggregate root class.
+[Read documentation with examples](./docs/domain-and-namespace.md#specify-the-namespace)
 
 ```shell
-php artisan make:event-sourcing-domain Animal
+php artisan make:event-sourcing-domain Tiger --namespace=MyDomain --domain=Animal
 ```
 
-```
-Which is the name of the domain? [Animal]
-> Animal
+### Advanced usage
 
-Do you want to import properties from existing database migration?
-> no
+[⬆️ Go to TOC](#table-of-contents)
 
-Do you want to specify model properties?
-> yes
+#### Set primary key
 
-Property name (exit to quit)?
-> name
+[⬆️ Go to TOC](#table-of-contents)
 
-Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)
-> string
+Default primary key is `uuid`. That will work with Aggregate Root class.
 
-Property name (exit to quit)?
-> age
-
-Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)
-> int
-
-Property name (exit to quit)?
-> exit
-
-Do you want to use uuid as model primary key?
-> yes
-
-Do you want to create an AggregateRoot class?
-> yes
-
-Do you want to create a Reactor class?
-> yes
-
-Your choices:
-
-| Option                     | Choice      |
-|----------------------------|-------------|
-| Model                      | Animal      |
-| Domain                     | Animal      |
-| Namespace                  | Domain      |
-| Use migration              | no          |
-| Primary key                | uuid        |
-| Create AggregateRoot class | yes         |
-| Create Reactor class       | yes         |
-| Create PHPUnit tests       | no          |
-| Create failed events       | no          |
-| Model properties           | string name |
-|                            | int age     |
-| Notifications              | no          |
-
-Do you confirm the generation of the domain?
-> yes
-
-Domain [Animal] with model [Animal] created successfully.
-```
-
-Directory structure generated (using `uuid` as primary key)
-
-```
-app
-├── Domain
-│   └── Animal
-│       ├── Actions
-│       │   ├── CreateAnimal
-│       │   ├── DeleteAnimal
-│       │   └── UpdateAnimal
-│       ├── DataTransferObjects
-│       │   └── AnimalData
-│       ├── Events
-│       │   ├── AnimalCreated
-│       │   ├── AnimalDeleted
-│       │   └── AnimalUpdated
-│       ├── Projections
-│       │   └── Animal
-│       ├── Projectors
-│       │   └── AnimalProjector
-│       ├── Reactors
-│       │   └── AnimalReactor
-│       └── AnimalAggregateRoot
-└── etc.
-```
-
-If Spatie event sourcing is configured to auto-discover projectors, that is immediately usable:
-
-```php
-use App\Domain\Animal\Actions\CreateAnimal;
-use App\Domain\Animal\DataTransferObjects\AnimalData;
-use App\Domain\Animal\Projections\Animal;
-
-# This will create a record in 'animal' table, using projector AnimalProjector
-(new CreateAnimal())(new AnimalData(
-  name: 'tiger',
-  age: 7
-));
-
-# Retrieve record
-$animal = Animal::query()->where('name', 'tiger')->first();
-```
-
-### Generate domain using existing migration, failed events, notifications and PHPUnit tests
-
-Command can generate a full domain directory structure starting from an existing migration.
-
-**Important: the command can process _only_ "create" migrations. Other migrations that modify table structure will be
-skipped.**
-
-E.g. migration `2024_10_01_112344_create_tigers_table.php`
-
-```php
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
-    {
-        Schema::create('tigers', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->string('name')->index();
-            $table->int('age');
-            $table->json('meta');
-            $table->timestamps();
-        });
-    }
-    
-    // etc.
-};
-```
-
-In this example, `id` will be used as primary key. No aggregate root will be available.
-
-It is possible to specify the migration interactively or, more efficiently, passing it to command options. Please notice
-that the migration filename timestamp is not needed:
+It is possible to use `id` as primary key:
 
 ```shell
-php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=create_tigers_table --notifications=slack --failed-events=1 --reactor=0 --unit-test
+php artisan make:event-sourcing-domain Animal --primary-key=id
 ```
 
-```
-Your choices:
+When importing migrations, primary key will be automatically loaded from file.
 
-| Option                     | Choice                                     |
-|----------------------------|--------------------------------------------|
-| Model                      | Tiger                                      |
-| Domain                     | Animal                                     |
-| Namespace                  | Domain                                     |
-| Use migration              | 2024_10_01_112344_create_animals_table.php |
-| Primary key                | id                                         |
-| Create AggregateRoot class | no                                         |
-| Create Reactor class       | no                                         |
-| Create PHPUnit tests       | yes                                        |
-| Create failed events       | yes                                        |
-| Model properties           | string name                                |
-|                            | int age                                    |
-|                            | array meta                                 |
-| Notifications              | yes                                        |
+#### Generate aggregate root class
 
-Do you confirm the generation of the domain?
-> yes
+[⬆️ Go to TOC](#table-of-contents)
 
-Domain [Animal] with model [Tiger] created successfully.
-```
-
-Directory structure generated (using `id` as primary key)
-
-```
-app
-├── Domain
-│   └── Animal
-│       ├── Actions
-│       │   ├── CreateTiger
-│       │   ├── DeleteTiger
-│       │   └── UpdateTiger
-│       ├── DataTransferObjects
-│       │   └── TigerData
-│       ├── Events
-│       │   ├── TigerCreated
-│       │   ├── TigerCreationFailed
-│       │   ├── TigerDeleted
-│       │   ├── TigerDeletionFailed
-│       │   ├── TigerUpdateFailed
-│       │   └── TigerUpdated
-│       ├── Notifications
-│       │   ├── Concerns
-│       │   │   ├── HasDataAsArray
-│       │   │   └── HasSlackNotification
-│       │   ├── TigerCreated
-│       │   ├── TigerCreationFailed
-│       │   ├── TigerDeleted
-│       │   ├── TigerDeletionFailed
-│       │   ├── TigerUpdateFailed
-│       │   └── TigerUpdated
-│       ├── Projections
-│       │   └── Tiger
-│       └── Projectors
-│           └── TigerProjector
-└── etc.
-
-tests
-├── Unit
-│   └── Domain
-│       └── Animal
-│           └── TigerTest.php
-└── etc.
-```
-
-If Spatie event sourcing is configured to auto-discover projectors, that is immediately usable:
-
-```php
-use App\Domain\Animal\Actions\CreateTiger;
-use App\Domain\Animal\DataTransferObjects\TigerData;
-use App\Domain\Animal\Projections\Tiger;
-
-# This will create a record in 'tigers' table, using projector TigerProjector
-(new CreateTiger())(new TigerData(
-  name: 'tiger',
-  age: 7,
-  meta: []
-));
-
-# Retrieve record
-$tiger = Tiger::query()->where('name', 'tiger')->first();
-```
-
-## Options
-
-### Specify domain
+Generate aggregate root class
 
 ```shell
-php artisan make:event-sourcing-domain Tiger --domain=Animal
-php artisan make:event-sourcing-domain Lion --domain=Animal
+php artisan make:event-sourcing-domain Animal --aggregate-root=1
 ```
 
-This will create multiple models in the same domain
+This is available only for models using `uuid` as primary key.
 
-```
-app
-├── Domain
-│   └── Animal
-│       ├── Actions
-│       │   ├── CreateLion
-│       │   ├── CreateTiger
-│       │   ├── DeleteLion
-│       │   ├── DeleteTiger
-│       │   ├── UpdateLion
-│       │   └── UpdateTiger
-│       ├── DataTransferObjects
-│       │   ├── LionData
-│       │   └── TigerData
-│       ├── Events
-│       │   ├── LionCreated
-│       │   ├── TigerCreated
-│       │   ├── LionDeleted
-│       │   ├── TigerDeleted
-│       │   ├── LionDeleted
-│       │   └── TigerUpdated
-│       ├── Projections
-│       │   ├── Lion
-│       │   └── Tiger
-│       ├── Projectors
-│       │   ├── LionProjector
-│       │   └── TigerProjector
-│       ├── LionAggregateRoot
-│       └── TigerAggregateRoot
-└── etc.
-```
+#### Generate reactor
 
+[⬆️ Go to TOC](#table-of-contents)
 
-### Specify namespace
+Generate reactors for all events
 
 ```shell
-php artisan make:event-sourcing-domain Animal --namespace=CustomDomain
+php artisan make:event-sourcing-domain Animal --reactor=1
 ```
 
-This setup will use `CustomDomain` as the namespace
+#### Generate PHPUnit tests
 
-```
-app
-├── CustomDomain
-│   └── Animal
-│       ├── Actions
-│       │   ├── CreateAnimal
-│       │   ├── DeleteAnimal
-│       │   └── UpdateAnimal
-│       ├── DataTransferObjects
-│       │   └── AnimalData
-│       ├── Events
-│       │   ├── AnimalCreated
-│       │   ├── AnimalDeleted
-│       │   └── AnimalUpdated
-│       ├── Projections
-│       │   └── Animal
-│       └── Projectors
-│       │   └── AnimalProjector
-│       └── Reactors
-│           └── AnimalReactor
-└── etc.
-```
+[⬆️ Go to TOC](#table-of-contents)
 
+[Read documentation with examples](./docs/unit-tests.md)
 
-### Create PHPUnit test
+#### Generate failed events
+
+[⬆️ Go to TOC](#table-of-contents)
+
+The command can generate create / update / delete failed events.
 
 ```shell
-php artisan make:event-sourcing-domain Animal --unit-test
+php artisan make:event-sourcing-domain Animal --failed-events=1
 ```
 
-This setup will create a PHPUnit test, already working for create / update / delete events.
+#### Generate notifications
 
-```
-tests
-├── Unit
-│   └── Domain
-│       └── Animal
-│           └── AnimalTest.php
-└── etc.
-```
+[⬆️ Go to TOC](#table-of-contents)
 
-### Specify indentation
+Command supports 3 types of notifications:
 
-Default indentation of generated files is 4 space.
+- mail
+- Slack
+- Teams
+
+Generate automatically Teams notifications
 
 ```shell
-php artisan make:event-sourcing-domain DOMAIN --indentation=2
+php artisan make:event-sourcing-domain Animal --notifications=teams
 ```
 
-This setup will use 2 space as indentation.
+Generate automatically mail and Slack notifications
+
+```shell
+php artisan make:event-sourcing-domain Animal --notifications=mail,slack
+```
+
+### Advanced options
+
+[⬆️ Go to TOC](#table-of-contents)
+
+#### Specify indentation
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Read documentation with examples](./docs/advanced-options.md#specify-the-indentation)
+
+```shell
+php artisan make:event-sourcing-domain Animal --indentation=2
+```
+
+#### Specify the path of root folder
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Read documentation with examples](./docs/advanced-options.md#specify-the-path-of-root-folder)
+
+```shell
+php artisan make:event-sourcing-domain Animal --root=src
+```
 
 ## Limitations and future enhancements
 
+[⬆️ Go to TOC](#table-of-contents)
+
 ### Blueprint column types
 
-The following column types are not yet supported:
+[⬆️ Go to TOC](#table-of-contents)
 
-- primary composite keys e.g. `$table->primary(['id', 'parent_id']);`
-- `binary`
-- `foreignIdFor`
-- `foreignUlid`
-- `geography`
-- `geometry`
-- `morphs`
-- `nullableMorphs`
-- `nullableUlidMorphs`
-- `nullableUuidMorphs`
-- `set`
-- `ulidMorphs`
-- `uuidMorphs`
-- `ulid`
+[Read documentation](./docs/migrations.md#unsupported-column-types)
 
 ### Future enhancements
 
-- support migrations that update table
+[⬆️ Go to TOC](#table-of-contents)
+
+- support migrations that update table ([see documentation](./docs/migrations.md#update-migrations))
 - support PHP 8.3
 
 ## Develop
+
+[⬆️ Go to TOC](#table-of-contents)
 
 Feel free to fork, improve and create a pull request!
