@@ -63,4 +63,9 @@ class MigrationCreatePropertyType
             fn ($type) => Str::replaceFirst('?', '', $type),
         ]))->peel($this->type);
     }
+
+    public function isCarbon(): bool
+    {
+        return Str::startsWith('Carbon', $this->columnTypeToBuiltInType($this->type));
+    }
 }

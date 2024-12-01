@@ -150,14 +150,11 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                 $migration = (new Migration($this->settings->migration));
                 foreach ($migration->properties() as $property) {
                     $this->settings->modelProperties->add($property);
-                    if ($property->type->type === 'Carbon' && $property->name !== 'timestamps') {
-                        $this->settings->useCarbon = true;
-                    }
                     if ($property->type->warning) {
                         $this->components->warn($property->type->warning);
                     }
                 }
-
+                $this->settings->inferUseCarbon();
                 $this->settings->useUuid = $migration->primary() === 'uuid';
 
                 foreach ($migration->ignored() as $ignored) {

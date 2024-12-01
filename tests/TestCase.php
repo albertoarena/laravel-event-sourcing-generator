@@ -19,7 +19,7 @@ abstract class TestCase extends BaseTestCase
         ];
     }
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -35,7 +35,7 @@ abstract class TestCase extends BaseTestCase
         });
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
 

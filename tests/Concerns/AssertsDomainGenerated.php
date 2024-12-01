@@ -200,6 +200,11 @@ trait AssertsDomainGenerated
             foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
                 $this->assertDoesNotMatchRegularExpression("/public .* \\\$$method;/", $generated);
             }
+            if ($settings->useCarbon) {
+                $this->assertStringContainsString('use Illuminate\Support\Carbon;', $generated);
+            } else {
+                $this->assertStringNotContainsString('use Illuminate\Support\Carbon;', $generated);
+            }
         }
     }
 
@@ -221,6 +226,11 @@ trait AssertsDomainGenerated
         }
         foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
             $this->assertDoesNotMatchRegularExpression("/'$method' => '.*'/", $generated);
+        }
+        if ($settings->useCarbon) {
+            $this->assertStringContainsString('use Illuminate\Support\Carbon;', $generated);
+        } else {
+            $this->assertStringNotContainsString('use Illuminate\Support\Carbon;', $generated);
         }
     }
 
@@ -372,9 +382,9 @@ trait AssertsDomainGenerated
             domainPath: '',
             createUnitTest: $createUnitTest,
             createFailedEvents: $createFailedEvents,
+            modelProperties: $modelProperties,
+            ignoredProperties: $ignoredProperties,
         );
-        $settings->modelProperties->import($modelProperties);
-        $settings->ignoredProperties->import($ignoredProperties);
 
         // Create stub replacer
         $stubReplacer = new StubReplacer($settings);

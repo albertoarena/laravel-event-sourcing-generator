@@ -31,14 +31,27 @@ class CommandSettings
         public bool $useCarbon = false,
         public bool $createUnitTest = false,
         public bool $createFailedEvents = false,
+        array $modelProperties = [],
+        array $ignoredProperties = [],
     ) {
         $this->indentSpace = Str::repeat(' ', $this->indentation);
-        $this->modelProperties = new MigrationCreateProperties;
-        $this->ignoredProperties = new MigrationCreateProperties;
+        $this->modelProperties = new MigrationCreateProperties($modelProperties);
+        $this->ignoredProperties = new MigrationCreateProperties($ignoredProperties);
+        $this->inferUseCarbon();
     }
 
     public function primaryKey(): string
     {
         return $this->useUuid ? 'uuid' : 'id';
+    }
+
+    public function inferUseCarbon(): void
+    {
+        foreach ($this->modelProperties->toArray() as $property) {
+            if ($property->type->isCarbon() && $property->name !== 'timestamps') {
+                $this->useCarbon = true;
+                break;
+            }
+        }
     }
 }
