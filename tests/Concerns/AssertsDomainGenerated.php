@@ -412,7 +412,7 @@ trait AssertsDomainGenerated
             );
 
             // Assert namespace
-            $baseNamespace = $isTest ? 'Tests' : 'App';
+            $baseNamespace = $isTest ? 'Tests\\Unit' : 'App';
             $this->assertStringContainsString('namespace '.$baseNamespace.'\\'.$settings->namespace.'\\'.$settings->domain, $generated);
 
             // Assert if-blocks have been removed
