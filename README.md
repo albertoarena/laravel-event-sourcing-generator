@@ -26,12 +26,12 @@ for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
         - [Specify the namespace](#specify-the-namespace)
     - [Advanced usage](#advanced-usage)
         - [Set primary key](#set-primary-key)
-        - [Generate aggregate class](#generate-aggregate-class)
-        - [Generate reactor](#generate-reactor)
         - [Generate PHPUnit tests](#generate-phpunit-tests)
+    - [Advanced options](#advanced-options)
+        - [Generate aggregates](#generate-aggregates)
+        - [Generate reactors](#generate-reactors)
         - [Generate failed events](#generate-failed-events)
         - [Generate notifications](#generate-notifications)
-    - [Advanced options](#advanced-options)
         - [Specify indentation](#specify-indentation)
         - [Specify the path of root folder](#specify-the-path-of-root-folder)
 - [Limitations and future enhancements](#limitations-and-future-enhancements)
@@ -203,11 +203,21 @@ php artisan make:event-sourcing-domain Animal --primary-key=id
 
 When importing migrations, primary key will be automatically loaded from file.
 
+#### Generate PHPUnit tests
+
+[⬆️ Go to TOC](#table-of-contents)
+
+[Read documentation with examples](./docs/unit-tests.md)
+
+### Advanced options
+
+[⬆️ Go to TOC](#table-of-contents)
+
 #### Generate aggregates
 
 [⬆️ Go to TOC](#table-of-contents)
 
-Generate aggregate (see [Spatie documentation](https://spatie.be/docs/laravel-event-sourcing/v7/using-aggregates/writing-your-first-aggregate))
+[Read documentation with examples](./docs/advanced-options.md#generate-aggregates)
 
 ```shell
 php artisan make:event-sourcing-domain Animal --aggregate=1
@@ -215,27 +225,21 @@ php artisan make:event-sourcing-domain Animal --aggregate=1
 
 This is available only for models using `uuid` as primary key.
 
-#### Generate reactor
+#### Generate reactors
 
 [⬆️ Go to TOC](#table-of-contents)
 
-Generate reactors for all events (see [Spatie documentation](https://spatie.be/docs/laravel-event-sourcing/v7/using-reactors/writing-your-first-reactor))
+[Read documentation with examples](./docs/advanced-options.md#generate-reactors)
 
 ```shell
 php artisan make:event-sourcing-domain Animal --reactor=1
 ```
 
-#### Generate PHPUnit tests
-
-[⬆️ Go to TOC](#table-of-contents)
-
-[Read documentation with examples](./docs/unit-tests.md)
-
 #### Generate failed events
 
 [⬆️ Go to TOC](#table-of-contents)
 
-The command can generate create / update / delete failed events.
+[Read documentation with examples](./docs/advanced-options.md#generate-failed-events)
 
 ```shell
 php artisan make:event-sourcing-domain Animal --failed-events=1
@@ -245,27 +249,11 @@ php artisan make:event-sourcing-domain Animal --failed-events=1
 
 [⬆️ Go to TOC](#table-of-contents)
 
-Command supports 3 types of notifications:
-
-- mail
-- Slack
-- Teams
-
-Generate automatically Teams notifications
+[Read documentation with examples](./docs/advanced-options.md#generate-notifications)
 
 ```shell
-php artisan make:event-sourcing-domain Animal --notifications=teams
+php artisan make:event-sourcing-domain Animal --notifications=<NOTIFICATIONS>
 ```
-
-Generate automatically mail and Slack notifications
-
-```shell
-php artisan make:event-sourcing-domain Animal --notifications=mail,slack
-```
-
-### Advanced options
-
-[⬆️ Go to TOC](#table-of-contents)
 
 #### Specify indentation
 
