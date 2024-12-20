@@ -42,26 +42,27 @@ php artisan make:event-sourcing-domain Animal --root=src
 Directory structure
 
 ```
-src
-├── Domain
-│   └── Animal
-│       ├── Actions
+src/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
 │       │   ├── CreateAnimal
 │       │   ├── DeleteAnimal
 │       │   └── UpdateAnimal
-│       ├── DataTransferObjects
+│       ├── Aggregates/
+│       │   └── AnimalAggregate
+│       ├── DataTransferObjects/
 │       │   └── AnimalData
-│       ├── Events
+│       ├── Events/
 │       │   ├── AnimalCreated
 │       │   ├── AnimalDeleted
 │       │   └── AnimalUpdated
-│       ├── Projections
+│       ├── Projections/
 │       │   └── Animal
-│       ├── Projectors
+│       ├── Projectors/
 │       │   └── AnimalProjector
-│       ├── Reactors
-│       │   └── AnimalReactor
-│       └── AnimalAggregateRoot
+│       └── Reactors/
+│           └── AnimalReactor
 └── etc.
 ```
 
@@ -76,27 +77,28 @@ php artisan make:event-sourcing-domain Animal --root=tests/Unit
 Directory structure
 
 ```
-tests
-└── Unit
-    ├── Domain
-    │   └── Animal
-    │       ├── Actions
+tests/
+└── Unit/
+    ├── Domain/
+    │   └── Animal/
+    │       ├── Actions/
     │       │   ├── CreateAnimal
     │       │   ├── DeleteAnimal
     │       │   └── UpdateAnimal
-    │       ├── DataTransferObjects
+    │       ├── Aggregates/
+    │       │   └── AnimalAggregate
+    │       ├── DataTransferObjects/
     │       │   └── AnimalData
-    │       ├── Events
+    │       ├── Events/
     │       │   ├── AnimalCreated
     │       │   ├── AnimalDeleted
     │       │   └── AnimalUpdated
-    │       ├── Projections
+    │       ├── Projections/
     │       │   └── Animal
-    │       ├── Projectors
+    │       ├── Projectors/
     │       │   └── AnimalProjector
-    │       ├── Reactors
-    │       │   └── AnimalReactor
-    │       └── AnimalAggregateRoot
+    │       └── Reactors/
+    │           └── AnimalReactor
     └── etc.
 ```
 

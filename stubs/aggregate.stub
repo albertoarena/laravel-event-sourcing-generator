@@ -1,6 +1,6 @@
 <?php
 
-namespace App\{{ namespace }}\{{ domain }};
+namespace App\{{ namespace }}\{{ domain }}\Aggregates;
 
 use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
 use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Created;
@@ -8,7 +8,7 @@ use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Deleted;
 use App\{{ namespace }}\{{ domain }}\Events\{{ class }}Updated;
 use Spatie\EventSourcing\AggregateRoots\AggregateRoot;
 
-class {{ class }}AggregateRoot extends AggregateRoot
+class {{ class }}Aggregate extends AggregateRoot
 {
     public function create({{ class }}Data ${{ id }}Data): self
     {

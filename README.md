@@ -26,7 +26,7 @@ for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
         - [Specify the namespace](#specify-the-namespace)
     - [Advanced usage](#advanced-usage)
         - [Set primary key](#set-primary-key)
-        - [Generate aggregate root class](#generate-aggregate-root-class)
+        - [Generate aggregate class](#generate-aggregate-class)
         - [Generate reactor](#generate-reactor)
         - [Generate PHPUnit tests](#generate-phpunit-tests)
         - [Generate failed events](#generate-failed-events)
@@ -69,7 +69,7 @@ php artisan make:event-sourcing-domain <model>
   [--domain=<domain>]                            # The name of the domain
   [--namespace=<namespace>]                      # The namespace or root folder (default: "Domain")
   [--migration=<existing_migration_filename>]    # Indicate any existing migration for the model, with or without timestamp prefix
-  [--aggregate-root=<0|1>]                       # Indicate if aggregate root must be created or not (accepts 0 or 1)
+  [--aggregate=<0|1>]                            # Indicate if aggregate must be created or not (accepts 0 or 1)
   [--reactor=<0|1>]                              # Indicate if reactor must be created or not (accepts 0 or 1)
   [--unit-test]                                  # Indicate if PHPUnit tests must be created
   [--primary-key=<uuid|id>]                      # Indicate which is the primary key (uuid, id)
@@ -193,7 +193,7 @@ php artisan make:event-sourcing-domain Tiger --namespace=MyDomain --domain=Anima
 
 [⬆️ Go to TOC](#table-of-contents)
 
-Default primary key is `uuid`. That will work with Aggregate Root class.
+Default primary key is `uuid`. That will work with Aggregate class.
 
 It is possible to use `id` as primary key:
 
@@ -203,14 +203,14 @@ php artisan make:event-sourcing-domain Animal --primary-key=id
 
 When importing migrations, primary key will be automatically loaded from file.
 
-#### Generate aggregate root class
+#### Generate aggregates
 
 [⬆️ Go to TOC](#table-of-contents)
 
-Generate aggregate root class
+Generate aggregate (see [Spatie documentation](https://spatie.be/docs/laravel-event-sourcing/v7/using-aggregates/writing-your-first-aggregate))
 
 ```shell
-php artisan make:event-sourcing-domain Animal --aggregate-root=1
+php artisan make:event-sourcing-domain Animal --aggregate=1
 ```
 
 This is available only for models using `uuid` as primary key.
@@ -219,7 +219,7 @@ This is available only for models using `uuid` as primary key.
 
 [⬆️ Go to TOC](#table-of-contents)
 
-Generate reactors for all events
+Generate reactors for all events (see [Spatie documentation](https://spatie.be/docs/laravel-event-sourcing/v7/using-reactors/writing-your-first-reactor))
 
 ```shell
 php artisan make:event-sourcing-domain Animal --reactor=1

@@ -15,6 +15,10 @@ trait CanCreateDirectories
         $this->makeDirectory($this->settings->domainPath.'Projections/*');
         $this->makeDirectory($this->settings->domainPath.'Projectors/*');
 
+        if ($this->settings->createAggregate) {
+            $this->makeDirectory($this->settings->domainPath.'Aggregates/*');
+        }
+
         if ($this->settings->createReactor) {
             $this->makeDirectory($this->settings->domainPath.'Reactors/*');
         }

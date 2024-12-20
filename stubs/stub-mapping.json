@@ -1,54 +1,54 @@
 {
-  "actions.create.with-aggregate-root": {
-    "stub": "stubs/actions.create.with-aggregate-root",
+  "actions.create.with-aggregate": {
+    "stub": "stubs/actions.create.with-aggregate",
     "output": "{{ path }}/Actions/Create{{ name }}.php",
     "context": {
-      "aggregate-root": true
+      "aggregate": true
     }
   },
-  "actions.create.without-aggregate-root": {
-    "stub": "stubs/actions.create.without-aggregate-root",
+  "actions.create.without-aggregate": {
+    "stub": "stubs/actions.create.without-aggregate",
     "output": "{{ path }}/Actions/Create{{ name }}.php",
     "context": {
-      "aggregate-root": false,
+      "aggregate": false,
       "properties": true
     }
   },
-  "actions.delete.with-aggregate-root": {
-    "stub": "stubs/actions.delete.with-aggregate-root",
+  "actions.delete.with-aggregate": {
+    "stub": "stubs/actions.delete.with-aggregate",
     "output": "{{ path }}/Actions/Delete{{ name }}.php",
     "context": {
-      "aggregate-root": true
+      "aggregate": true
     }
   },
-  "actions.delete.without-aggregate-root": {
-    "stub": "stubs/actions.delete.without-aggregate-root",
+  "actions.delete.without-aggregate": {
+    "stub": "stubs/actions.delete.without-aggregate",
     "output": "{{ path }}/Actions/Delete{{ name }}.php",
     "context": {
-      "aggregate-root": false,
+      "aggregate": false,
       "properties": true
     }
   },
-  "actions.update.with-aggregate-root": {
-    "stub": "stubs/actions.update.with-aggregate-root",
+  "actions.update.with-aggregate": {
+    "stub": "stubs/actions.update.with-aggregate",
     "output": "{{ path }}/Actions/Update{{ name }}.php",
     "context": {
-      "aggregate-root": true
+      "aggregate": true
     }
   },
-  "actions.update.without-aggregate-root": {
-    "stub": "stubs/actions.update.without-aggregate-root",
+  "actions.update.without-aggregate": {
+    "stub": "stubs/actions.update.without-aggregate",
     "output": "{{ path }}/Actions/Update{{ name }}.php",
     "context": {
-      "aggregate-root": false,
+      "aggregate": false,
       "properties": true
     }
   },
-  "aggregate-root": {
-    "stub": "stubs/aggregate-root",
-    "output": "{{ path }}/{{ name }}AggregateRoot.php",
+  "aggregate": {
+    "stub": "stubs/aggregate",
+    "output": "{{ path }}/Aggregates/{{ name }}Aggregate.php",
     "context": {
-      "aggregate-root": true
+      "aggregate": true
     }
   },
   "data-transfer-object": {

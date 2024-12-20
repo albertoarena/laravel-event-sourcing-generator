@@ -72,8 +72,8 @@ class Stubs
             }
 
             // Aggregate root
-            $aggregateRoot = $context['aggregate-root'] ?? null;
-            if (! is_null($aggregateRoot) && $this->settings->createAggregateRoot !== $aggregateRoot) {
+            $aggregate = $context['aggregate'] ?? null;
+            if (! is_null($aggregate) && $this->settings->createAggregate !== $aggregate) {
                 return false;
             }
 

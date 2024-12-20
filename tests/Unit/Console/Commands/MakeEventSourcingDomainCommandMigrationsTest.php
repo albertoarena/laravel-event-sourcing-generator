@@ -44,7 +44,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                 [$migrationPath],
             )
             // Options
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -57,7 +57,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', $migrationPath],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -114,7 +114,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', $migrationPath],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -131,7 +131,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         $this->assertDomainGenerated(
             $model,
             migration: 'create_animals_table',
-            createAggregateRoot: false,
+            createAggregate: false,
             useUuid: false,
             modelProperties: $properties
         );
@@ -155,7 +155,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--migration' => 'create_animals_table'])
             ->expectsQuestion('Which is the name of the domain?', $model)
             // Options
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -168,7 +168,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
                     ['Notifications', 'no'],
                 ]
@@ -251,7 +251,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Create Reactor class', 'no'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -268,7 +268,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         $this->assertDomainGenerated(
             $model,
             migration: 'create_animals_table',
-            createAggregateRoot: false,
+            createAggregate: false,
             createReactor: false,
             modelProperties: $properties
         );
@@ -310,7 +310,13 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         $this->createMockCreateMigration('animal', $properties, $options);
         $model = 'Animal';
 
-        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--migration' => 'create_animals_table', '--aggregate-root' => 0, '--reactor' => 0])
+        $this->artisan('make:event-sourcing-domain', [
+            'model' => $model,
+            '--domain' => $model,
+            '--migration' => 'create_animals_table',
+            '--aggregate' => 0,
+            '--reactor' => 0,
+        ])
             // Confirmation
             ->expectsOutput('Your choices:')
             ->expectsTable(
@@ -322,7 +328,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Create Reactor class', 'no'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -351,7 +357,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         $this->assertDomainGenerated(
             $model,
             migration: 'create_animals_table',
-            createAggregateRoot: false,
+            createAggregate: false,
             createReactor: false,
             useUuid: false,
             modelProperties: $validProperties,
@@ -398,7 +404,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Model properties', implode("\n", $expectedPrintedProperties)],
                     ['Notifications', 'no'],
                 ]
@@ -412,7 +418,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         $this->assertDomainGenerated(
             $model,
             migration: 'create_animals_table',
-            createAggregateRoot: false,
+            createAggregate: false,
             createReactor: false,
             modelProperties: $properties
         );

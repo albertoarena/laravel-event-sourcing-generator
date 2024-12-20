@@ -22,23 +22,18 @@ trait AssertsDomainGenerated
         string $model,
         string $domain,
         string $namespace,
-        bool $createAggregateRoot,
+        bool $createAggregate,
         bool $createReactor,
         bool $createUnitTest,
         bool $createFailedEvents,
         array $notifications,
     ): array {
         $unexpectedFiles = [];
+        $aggregateRootSuffix = $createAggregate ? 'with-aggregate' : 'without-aggregate';
         $expectedFiles = [
-            "$namespace/$domain/Actions/Create$model.php" => $createAggregateRoot ?
-                'actions.create.with-aggregate-root.stub' :
-                'actions.create.without-aggregate-root.stub',
-            "$namespace/$domain/Actions/Delete$model.php" => $createAggregateRoot ?
-                'actions.delete.with-aggregate-root.stub' :
-                'actions.delete.without-aggregate-root.stub',
-            "$namespace/$domain/Actions/Update$model.php" => $createAggregateRoot ?
-                'actions.update.with-aggregate-root.stub' :
-                'actions.update.without-aggregate-root.stub',
+            "$namespace/$domain/Actions/Create$model.php" => "actions.create.$aggregateRootSuffix.stub",
+            "$namespace/$domain/Actions/Delete$model.php" => "actions.delete.$aggregateRootSuffix.stub",
+            "$namespace/$domain/Actions/Update$model.php" => "actions.update.$aggregateRootSuffix.stub",
             "$namespace/$domain/DataTransferObjects/{$model}Data.php" => 'data-transfer-object.stub',
             "$namespace/$domain/Events/{$model}Created.php" => 'events.created.stub',
             "$namespace/$domain/Events/{$model}Deleted.php" => 'events.deleted.stub',
@@ -47,10 +42,10 @@ trait AssertsDomainGenerated
             "$namespace/$domain/Projectors/{$model}Projector.php" => 'projector.stub',
         ];
 
-        if ($createAggregateRoot) {
-            $expectedFiles["$namespace/$domain/{$model}AggregateRoot.php"] = 'aggregate-root.stub';
+        if ($createAggregate) {
+            $expectedFiles["$namespace/$domain/Aggregates/{$model}Aggregate.php"] = 'aggregate.stub';
         } else {
-            $unexpectedFiles["$namespace/$domain/{$model}AggregateRoot.php"] = 'aggregate-root.stub';
+            $unexpectedFiles["$namespace/$domain/Aggregates/{$model}Aggregate.php"] = 'aggregate.stub';
         }
 
         if ($createReactor) {
@@ -168,7 +163,7 @@ trait AssertsDomainGenerated
         ];
     }
 
-    protected function assertAggregateRoot(string $generated, CommandSettings $settings): void
+    protected function assertAggregate(string $generated, CommandSettings $settings): void
     {
         if ($settings->useUuid) {
             $this->assertMatchesRegularExpression("/{$settings->nameAsPrefix}Uuid: \\\$this->uuid\(\)/", $generated);
@@ -323,7 +318,7 @@ trait AssertsDomainGenerated
         ?string $domain = null,
         string $namespace = 'Domain',
         ?string $migration = null,
-        bool $createAggregateRoot = true,
+        bool $createAggregate = true,
         bool $createReactor = true,
         bool $useUuid = true,
         array $modelProperties = [],
@@ -335,14 +330,14 @@ trait AssertsDomainGenerated
         string $rootFolder = DefaultSettingsInterface::APP,
     ): void {
         if (! $useUuid) {
-            $createAggregateRoot = false;
+            $createAggregate = false;
         }
 
         [$expectedFiles, $unexpectedFiles] = $this->getExpectedFiles(
             model: $model,
             domain: $domain ?? $model,
             namespace: $namespace,
-            createAggregateRoot: $createAggregateRoot,
+            createAggregate: $createAggregate,
             createReactor: $createReactor,
             createUnitTest: $createUnitTest,
             createFailedEvents: $createFailedEvents,
@@ -372,7 +367,7 @@ trait AssertsDomainGenerated
             domain: $domain ?? $model,
             namespace: $namespace,
             migration: $migration,
-            createAggregateRoot: $createAggregateRoot,
+            createAggregate: $createAggregate,
             createReactor: $createReactor,
             indentation: $indentation,
             notifications: $notifications,
@@ -420,8 +415,8 @@ trait AssertsDomainGenerated
 
             // Assert specific expectations
             switch ($stubFile) {
-                case 'aggregate-root.stub':
-                    $this->assertAggregateRoot($generated, $settings);
+                case 'aggregate.stub':
+                    $this->assertAggregate($generated, $settings);
                     break;
                 case 'data-transfer-object.stub':
                     $this->assertDataTransferObject($generated, $settings);

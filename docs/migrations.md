@@ -51,7 +51,7 @@ return new class extends Migration
 };
 ```
 
-In this example, `id` will be used as primary key. No aggregate root will be available.
+In this example, `id` will be used as primary key. No aggregate will be available.
 
 It is possible to specify the migration interactively or, more efficiently, passing it to command options. Please notice
 that the migration filename timestamp is not needed:
@@ -70,7 +70,7 @@ Your choices:
 | Namespace                  | Domain                                     |
 | Use migration              | 2024_10_01_112344_create_animals_table.php |
 | Primary key                | id                                         |
-| Create AggregateRoot class | no                                         |
+| Create Aggregate class     | no                                         |
 | Create Reactor class       | no                                         |
 | Create PHPUnit tests       | yes                                        |
 | Create failed events       | yes                                        |
@@ -88,24 +88,24 @@ Domain [Animal] with model [Tiger] created successfully.
 Directory structure generated (using `id` as primary key)
 
 ```
-app
-├── Domain
-│   └── Animal
-│       ├── Actions
+app/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
 │       │   ├── CreateTiger
 │       │   ├── DeleteTiger
 │       │   └── UpdateTiger
-│       ├── DataTransferObjects
+│       ├── DataTransferObjects/
 │       │   └── TigerData
-│       ├── Events
+│       ├── Events/
 │       │   ├── TigerCreated
 │       │   ├── TigerCreationFailed
 │       │   ├── TigerDeleted
 │       │   ├── TigerDeletionFailed
 │       │   ├── TigerUpdateFailed
 │       │   └── TigerUpdated
-│       ├── Notifications
-│       │   ├── Concerns
+│       ├── Notifications/
+│       │   ├── Concerns/
 │       │   │   ├── HasDataAsArray
 │       │   │   └── HasSlackNotification
 │       │   ├── TigerCreated
@@ -114,16 +114,16 @@ app
 │       │   ├── TigerDeletionFailed
 │       │   ├── TigerUpdateFailed
 │       │   └── TigerUpdated
-│       ├── Projections
+│       ├── Projections/
 │       │   └── Tiger
-│       └── Projectors
+│       └── Projectors/
 │           └── TigerProjector
 └── etc.
 
-tests
-├── Unit
-│   └── Domain
-│       └── Animal
+tests/
+├── Unit/
+│   └── Domain/
+│       └── Animal/
 │           └── TigerTest.php
 └── etc.
 ```

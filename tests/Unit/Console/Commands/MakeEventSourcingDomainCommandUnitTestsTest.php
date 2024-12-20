@@ -43,7 +43,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', '?int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -56,7 +56,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
                     ['Path', 'Domain/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'yes'],
                     ['Create failed events', 'no'],
@@ -110,7 +110,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
                     ['Path', 'Domain/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'yes'],
                     ['Create failed events', 'no'],
@@ -191,7 +191,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'create_animals_table'],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Model properties', implode("\n", $expectedPrintedProperties)],
                     ['Notifications', 'no'],
                 ]
@@ -205,7 +205,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
         $this->assertDomainGenerated(
             $model,
             migration: 'create_animals_table',
-            createAggregateRoot: false,
+            createAggregate: false,
             createReactor: false,
             modelProperties: $properties,
             createUnitTest: true
@@ -239,7 +239,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', '?int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -252,7 +252,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
                     ['Path', 'Domain/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'yes'],
                     ['Create failed events', 'no'],

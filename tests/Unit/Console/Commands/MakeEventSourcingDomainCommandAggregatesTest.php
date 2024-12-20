@@ -10,7 +10,7 @@ use Tests\Concerns\CreatesMockMigration;
 use Tests\Concerns\WithMockPackages;
 use Tests\TestCase;
 
-class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
+class MakeEventSourcingDomainCommandAggregatesTest extends TestCase
 {
     use AssertsDomainGenerated;
     use CreatesMockMigration;
@@ -18,7 +18,7 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
     use WithMockPackages;
 
     #[Test]
-    public function it_can_create_a_model_and_domain_with_aggregate_root_argument()
+    public function it_can_create_a_model_and_domain_with_aggregate_argument()
     {
         $model = 'Animal';
 
@@ -27,7 +27,7 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
             'age' => 'int',
         ];
 
-        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--aggregate-root' => true])
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--aggregate' => true])
             ->expectsQuestion('Which is the name of the domain?', $model)
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)
             // Properties
@@ -51,7 +51,7 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -69,7 +69,7 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
     }
 
     #[Test]
-    public function it_can_create_a_model_and_domain_without_aggregate_root()
+    public function it_can_create_a_model_and_domain_without_aggregate()
     {
         $model = 'Animal';
 
@@ -90,7 +90,7 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', false)
+            ->expectsQuestion('Do you want to create an Aggregate class?', false)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -103,7 +103,7 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
@@ -116,6 +116,6 @@ class MakeEventSourcingDomainCommandAggregatorsTest extends TestCase
             ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
             ->assertSuccessful();
 
-        $this->assertDomainGenerated($model, createAggregateRoot: false, modelProperties: $properties);
+        $this->assertDomainGenerated($model, createAggregate: false, modelProperties: $properties);
     }
 }

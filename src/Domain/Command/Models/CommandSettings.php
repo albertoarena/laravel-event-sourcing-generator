@@ -18,7 +18,7 @@ class CommandSettings
         public readonly string $domain,
         public readonly string $namespace,
         public ?string $migration,
-        public ?bool $createAggregateRoot,
+        public ?bool $createAggregate,
         public ?bool $createReactor,
         public readonly int $indentation,
         public array $notifications,

@@ -38,7 +38,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--d|domain= : The name of the domain}
                             {--namespace=Domain : The namespace or root folder}
                             {--m|migration= : Indicate any existing migration for the model, with or without timestamp prefix}
-                            {--a|aggregate-root= : Indicate if aggregate root must be created or not (accepts 0 or 1)}
+                            {--a|aggregate= : Indicate if aggregate must be created or not (accepts 0 or 1)}
                             {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
                             {--u|unit-test : Indicate if PHPUnit tests must be created}
                             {--p|primary-key= : Indicate which is the primary key (uuid, id)}
@@ -248,7 +248,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             domain: $this->getDomainInput($model),
             namespace: Str::ucfirst($this->option('namespace')),
             migration: $this->option('migration'),
-            createAggregateRoot: ! is_null($this->option('aggregate-root')) ? (bool) $this->option('aggregate-root') : null,
+            createAggregate: ! is_null($this->option('aggregate')) ? (bool) $this->option('aggregate') : null,
             createReactor: ! is_null($this->option('reactor')) ? (bool) $this->option('reactor') : null,
             indentation: (int) $this->option('indentation'),
             notifications: $this->getNotifications(),
@@ -319,12 +319,12 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
         // If not using uuid as primary key, no Aggregate Root
         if ($this->settings->useUuid === false) {
-            $this->line('You are not using uuid as model primary key, therefore you cannot use an AggregateRoot class');
-            $this->settings->createAggregateRoot = false;
+            $this->line('You are not using uuid as model primary key, therefore you cannot use an Aggregate class');
+            $this->settings->createAggregate = false;
         }
 
-        if ($this->settings->useUuid && is_null($this->settings->createAggregateRoot)) {
-            $this->settings->createAggregateRoot = $this->confirm('Do you want to create an AggregateRoot class?', true);
+        if ($this->settings->useUuid && is_null($this->settings->createAggregate)) {
+            $this->settings->createAggregate = $this->confirm('Do you want to create an Aggregate class?', true);
         }
 
         if (is_null($this->settings->createReactor)) {
@@ -350,7 +350,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             ['Path', $this->settings->namespace.'/'.$this->settings->domain.'/'.$this->settings->model],
             ['Use migration', basename($this->settings->migration) ?: 'no'],
             ['Primary key', $this->settings->primaryKey()],
-            ['Create AggregateRoot class', $this->settings->createAggregateRoot ? 'yes' : 'no'],
+            ['Create Aggregate class', $this->settings->createAggregate ? 'yes' : 'no'],
             ['Create Reactor class', $this->settings->createReactor ? 'yes' : 'no'],
             ['Create PHPUnit tests', $this->settings->createUnitTest ? 'yes' : 'no'],
             ['Create failed events', $this->settings->createFailedEvents ? 'yes' : 'no'],

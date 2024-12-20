@@ -14,10 +14,10 @@
 The directory structure of a domain is as follows:
 
 ```
-app
-├── <Namespace>
-│   └── <Domain>
-│       ├── Actions
+app/
+├── <Namespace>/
+│   └── <Domain>/
+│       ├── Actions/
 │       │   ├── Create<Model>
 │       │   ├── Delete<Model>
 │       │   └── etc.
@@ -32,10 +32,10 @@ The name of the **domain** can be the same of the name of the **model**, or diff
 E.g., for model `Animal`:
 
 ```
-app
-├── Domain
-│   └── Animal
-│       ├── Actions
+app/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
 │       │   ├── CreateAnimal
 │       │   ├── DeleteAnimal
 │       │   └── etc.
@@ -88,10 +88,10 @@ If specified as option, the name of the domain will not be asked.
 Result of both approaches:
 
 ```
-app
-├── Domain
-│   └── Animal
-│       ├── Actions
+app/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
 │       │   ├── CreateLion
 │       │   ├── CreateTiger
 │       │   ├── DeleteLion
@@ -112,10 +112,10 @@ php artisan make:event-sourcing-domain Tiger --namespace=MyDomain --domain=Anima
 Result:
 
 ```
-app
-├── MyDomain
-│   └── Animal
-│       ├── Actions
+app/
+├── MyDomain/
+│   └── Animal/
+│       ├── Actions/
 │       │   ├── CreateTiger
 │       │   ├── DeleteTiger
 │       │   └── etc.

@@ -2,7 +2,7 @@
 
 namespace App\{{ namespace }}\{{ domain }}\Actions;
 
-use App\{{ namespace }}\{{ domain }}\{{ class }}AggregateRoot;
+use App\{{ namespace }}\{{ domain }}\Aggregates\{{ class }}Aggregate;
 use App\{{ namespace }}\{{ domain }}\DataTransferObjects\{{ class }}Data;
 {% if uuid %}
 use Ramsey\Uuid\Uuid;
@@ -15,7 +15,7 @@ class Create{{ class }}
         {% if uuid %}
         $uuid = Uuid::uuid4()->toString();
 
-        {{ class }}AggregateRoot::retrieve($uuid)
+        {{ class }}Aggregate::retrieve($uuid)
             ->create(${{ id }}Data)
             ->persist();
         {% endif %}

@@ -13,7 +13,7 @@
 
 Default mode is based on interactive command line.
 
-In this example, `uuid` will be used as primary key, with an aggregate root class.
+In this example, `uuid` will be used as primary key, with an aggregate class.
 
 ### Run command interactively
 
@@ -51,7 +51,7 @@ Property name (exit to quit)?
 Do you want to use uuid as model primary key?
 > yes
 
-Do you want to create an AggregateRoot class?
+Do you want to create an Aggregate class?
 > yes
 
 Do you want to create a Reactor class?
@@ -66,7 +66,7 @@ Your choices:
 | Namespace                  | Domain      |
 | Use migration              | no          |
 | Primary key                | uuid        |
-| Create AggregateRoot class | yes         |
+| Create Aggregate class     | yes         |
 | Create Reactor class       | yes         |
 | Create PHPUnit tests       | no          |
 | Create failed events       | no          |
@@ -87,26 +87,27 @@ Domain [Animal] with model [Animal] created successfully.
 Directory structure generated (using `uuid` as primary key)
 
 ```
-app
-├── Domain
-│   └── Animal
-│       ├── Actions
+app/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
 │       │   ├── CreateAnimal
 │       │   ├── DeleteAnimal
 │       │   └── UpdateAnimal
-│       ├── DataTransferObjects
+│       ├── Aggregates/
+│       │   └── AnimalAggregate
+│       ├── DataTransferObjects/
 │       │   └── AnimalData
-│       ├── Events
+│       ├── Events/
 │       │   ├── AnimalCreated
 │       │   ├── AnimalDeleted
 │       │   └── AnimalUpdated
-│       ├── Projections
+│       ├── Projections/
 │       │   └── Animal
-│       ├── Projectors
+│       ├── Projectors/
 │       │   └── AnimalProjector
-│       ├── Reactors
-│       │   └── AnimalReactor
-│       └── AnimalAggregateRoot
+│       └── Reactors/
+│           └── AnimalReactor
 └── etc.
 ```
 

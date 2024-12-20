@@ -33,7 +33,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertMatchesRegularExpression('/\s*-d, --domain\[=DOMAIN]\s*The name of the domain/', $output);
         $this->assertMatchesRegularExpression('/\s*--namespace\[=NAMESPACE]\s*The namespace or root folder \[default: "Domain"]/', $output);
         $this->assertMatchesRegularExpression('/\s*-m, --migration\[=MIGRATION]\s*Indicate any existing migration for the model, with or without timestamp prefix/', $output);
-        $this->assertMatchesRegularExpression('/\s*-a, --aggregate-root\[=AGGREGATE-ROOT]\s*Indicate if aggregate root must be created or not \(accepts 0 or 1\)/', $output);
+        $this->assertMatchesRegularExpression('/\s*-a, --aggregate\[=AGGREGATE]\s*Indicate if aggregate must be created or not \(accepts 0 or 1\)/', $output);
         $this->assertMatchesRegularExpression('/\s*-r, --reactor\[=REACTOR]\s*Indicate if reactor must be created or not \(accepts 0 or 1\)/', $output);
         $this->assertMatchesRegularExpression('/\s*-u, --unit-test\s*Indicate if PHPUnit tests must be created/', $output);
         $this->assertMatchesRegularExpression('/\s*-p, --primary-key\[=PRIMARY-KEY]\s*Indicate which is the primary key \(uuid, id\)/', $output);
@@ -68,7 +68,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -81,7 +81,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -123,7 +123,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -136,7 +136,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -185,7 +185,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -199,7 +199,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -252,7 +252,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -265,7 +265,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$domain.'/'.$model1],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -312,7 +312,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$domain.'/'.$model2],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -329,7 +329,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertDomainGenerated(
             model: $model2,
             domain: $domain,
-            createAggregateRoot: false,
+            createAggregate: false,
             useUuid: false,
             modelProperties: $properties2
         );
@@ -357,7 +357,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -370,7 +370,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -408,7 +408,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -421,7 +421,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -472,7 +472,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -522,7 +522,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'id'],
-                    ['Create AggregateRoot class', 'no'],
+                    ['Create Aggregate class', 'no'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -551,7 +551,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Do you want to specify model properties?', false)
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -564,7 +564,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -604,7 +604,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -617,7 +617,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', $namespace.'/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -663,7 +663,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -676,7 +676,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', $expectedNamespace.'/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -723,7 +723,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Property name? (exit to quit)', 'exit')
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -736,7 +736,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Create Reactor class', 'yes'],
                     ['Create PHPUnit tests', 'no'],
                     ['Create failed events', 'no'],
@@ -767,7 +767,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Do you want to specify model properties?', false)
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -780,7 +780,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$modelExpected.'/'.$modelExpected],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Model properties', 'none'],
                     ['Notifications', 'no'],
                 ]
@@ -809,7 +809,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Do you want to specify model properties?', false)
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -822,7 +822,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$domainExpected.'/'.$modelExpected],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Model properties', 'none'],
                     ['Notifications', 'no'],
                 ]
@@ -855,7 +855,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Do you want to specify model properties?', false)
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -868,7 +868,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$model.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Model properties', 'none'],
                     ['Notifications', 'no'],
                 ]
@@ -899,7 +899,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
             ->expectsQuestion('Do you want to specify model properties?', false)
             // Options
             ->expectsQuestion('Do you want to use uuid as model primary key?', true)
-            ->expectsQuestion('Do you want to create an AggregateRoot class?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
             ->expectsQuestion('Do you want to create a Reactor class?', true)
             // Confirmation
             ->expectsOutput('Your choices:')
@@ -912,7 +912,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
                     ['Path', 'Domain/'.$domain.'/'.$model],
                     ['Use migration', 'no'],
                     ['Primary key', 'uuid'],
-                    ['Create AggregateRoot class', 'yes'],
+                    ['Create Aggregate class', 'yes'],
                     ['Model properties', 'none'],
                     ['Notifications', 'no'],
                 ]
