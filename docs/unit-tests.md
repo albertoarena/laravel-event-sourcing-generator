@@ -6,10 +6,10 @@ The command can generate automatically PHPUnit test for the domain, that will co
 
 ## Table of Contents
 
-- [Basic sample](#basic-sample)
-- [Advanced sample: generate domain using existing migration, failed events, notifications and PHPUnit tests](#advanced-sample-generate-domain-using-existing-migration-failed-events-notifications-and-phpunit-tests)
+- [Basic example](#basic-example)
+- [Advanced example: generate domain using existing migration, failed events, notifications and PHPUnit tests](#advanced-example-generate-domain-using-existing-migration-failed-events-notifications-and-phpunit-tests-)
 
-## Basic sample
+## Basic example
 
 [⬆️ Go to TOC](#table-of-contents)
 
@@ -28,7 +28,7 @@ tests
 └── etc.
 ```
 
-## Advanced sample: generate domain using existing migration, failed events, notifications and PHPUnit tests
+## Advanced example: generate domain using existing migration, failed events, notifications and PHPUnit tests 
 
 [⬆️ Go to TOC](#table-of-contents)
 

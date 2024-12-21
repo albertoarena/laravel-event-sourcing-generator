@@ -11,6 +11,8 @@
 
 ## Directory structure
 
+[⬆️ Go to TOC](#table-of-contents)
+
 The directory structure of a domain is as follows:
 
 ```
@@ -44,6 +46,8 @@ app/
 ```
 
 ## Specify the name of the domain
+
+[⬆️ Go to TOC](#table-of-contents)
 
 It is possible to specify a different domain name by answering the interactive question, or by using the option
 `--domain`.
@@ -103,6 +107,8 @@ app/
 
 ## Specify the namespace
 
+[⬆️ Go to TOC](#table-of-contents)
+
 It is possible to specify a different namespace using option `--namespace`.
 
 ```shell
@@ -125,9 +131,13 @@ app/
 
 ## Notes and limitations
 
+[⬆️ Go to TOC](#table-of-contents)
+
 [Reserved PHP words](https://www.php.net/manual/en/reserved.keywords.php) cannot be used as namespace or domain.
 
-Namespace sample:
+### Examples
+
+Namespace example:
 
 ```shell
 php artisan make:event-sourcing-domain Tiger --namespace=Array --domain=Animal
@@ -137,7 +147,7 @@ php artisan make:event-sourcing-domain Tiger --namespace=Array --domain=Animal
 ERROR  The namespace Array is reserved by PHP.
 ```
 
-Domain sample:
+Domain example:
 
 ```shell
 php artisan make:event-sourcing-domain Tiger --domain=Echo

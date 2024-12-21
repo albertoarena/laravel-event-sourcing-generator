@@ -4,12 +4,12 @@
 
 ## Table of Contents
 
-- [Sample](#sample)
+- [Example](#example)
   - [Run command interactively](#run-command-interactively)
   - [Generated directory structure and files](#generated-directory-structure-and-files)
   - [Sample code](#sample-code)
 
-## Sample
+## Example
 
 Default mode is based on interactive command line.
 
