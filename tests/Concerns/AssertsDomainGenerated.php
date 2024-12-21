@@ -10,6 +10,7 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSett
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubResolver;
+use Closure;
 use Exception;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -112,12 +113,12 @@ trait AssertsDomainGenerated
         ];
     }
 
-    protected function getProjectorFailedEventMatches(string $namespace, string $domain, string $model): array
+    protected function getProjectorFailedEventMatches(string $namespace, string $domain, string $model, string $rootFolder): array
     {
         return [
-            "use App\\$namespace\\$domain\\Events\\{$model}CreationFailed",
-            "use App\\$namespace\\$domain\\Events\\{$model}DeletionFailed",
-            "use App\\$namespace\\$domain\\Events\\{$model}UpdateFailed",
+            "use $rootFolder\\$namespace\\$domain\\Events\\{$model}CreationFailed",
+            "use $rootFolder\\$namespace\\$domain\\Events\\{$model}DeletionFailed",
+            "use $rootFolder\\$namespace\\$domain\\Events\\{$model}UpdateFailed",
             "event(new {$model}CreationFailed(",
             "event(new {$model}DeletionFailed(",
             "event(new {$model}UpdateFailed(",
@@ -127,15 +128,15 @@ trait AssertsDomainGenerated
         ];
     }
 
-    protected function getProjectorNotificationMatches(string $namespace, string $domain, string $model): array
+    protected function getProjectorNotificationMatches(string $namespace, string $domain, string $model, string $rootFolder): array
     {
         return [
-            "use App\\$namespace\\$domain\\Notifications\\{$model}Created",
-            "use App\\$namespace\\$domain\\Notifications\\{$model}CreationFailed",
-            "use App\\$namespace\\$domain\\Notifications\\{$model}Deleted",
-            "use App\\$namespace\\$domain\\Notifications\\{$model}DeletionFailed",
-            "use App\\$namespace\\$domain\\Notifications\\{$model}UpdateFailed",
-            "use App\\$namespace\\$domain\\Notifications\\{$model}Updated",
+            "use $rootFolder\\$namespace\\$domain\\Notifications\\{$model}Created",
+            "use $rootFolder\\$namespace\\$domain\\Notifications\\{$model}CreationFailed",
+            "use $rootFolder\\$namespace\\$domain\\Notifications\\{$model}Deleted",
+            "use $rootFolder\\$namespace\\$domain\\Notifications\\{$model}DeletionFailed",
+            "use $rootFolder\\$namespace\\$domain\\Notifications\\{$model}UpdateFailed",
+            "use $rootFolder\\$namespace\\$domain\\Notifications\\{$model}Updated",
             "Notification::send(new AnonymousNotifiable, new {$model}CreatedNotification(",
             "Notification::send(new AnonymousNotifiable, new {$model}CreationFailedNotification(",
             "Notification::send(new AnonymousNotifiable, new {$model}DeletedNotification(",
@@ -161,6 +162,25 @@ trait AssertsDomainGenerated
             "public function on{$model}DeletionFailed({$model}DeletionFailed \$event)" => $createFailedEvents,
             "public function on{$model}UpdateFailed({$model}UpdateFailed \$event)" => $createFailedEvents,
         ];
+    }
+
+    protected function assertActions(string $generated, string $parameters, CommandSettings $settings): void
+    {
+        $parameters = explode('.', $parameters);
+        $nameAsPrefix = $settings->nameAsPrefix;
+        if ($parameters[0] === 'create') {
+            if ($settings->useUuid) {
+                if ($settings->createAggregate) {
+                    $this->assertStringContainsString('$uuid = Uuid::uuid4()->toString();', $generated);
+                    $this->assertMatchesRegularExpression("/\\\$uuid = Uuid::uuid4\(\)->toString\(\);/", $generated);
+                } else {
+                    $this->assertStringContainsString("{$nameAsPrefix}Uuid: Uuid::uuid4()->toString(),", $generated);
+                }
+            } else {
+                $this->assertDoesNotMatchRegularExpression("/\\\$uuid = Uuid::uuid4\(\)->toString\(\);/", $generated);
+                $this->assertStringNotContainsString("{$nameAsPrefix}Uuid: Uuid::uuid4()->toString(),", $generated);
+            }
+        }
     }
 
     protected function assertAggregate(string $generated, CommandSettings $settings): void
@@ -204,6 +224,47 @@ trait AssertsDomainGenerated
         }
     }
 
+    protected function assertEvents(string $generated, string $parameters, CommandSettings $settings): void
+    {
+        $parameters = explode('.', $parameters);
+        $nameAsPrefix = $settings->nameAsPrefix;
+        $primaryKey = $nameAsPrefix.($settings->useUuid ? 'Uuid' : 'Id');
+        $primaryType = $settings->useUuid ? 'string' : 'int';
+        if ($parameters[0] === 'created') {
+            if ($settings->useUuid) {
+                $this->assertMatchesRegularExpression("/public $primaryType \\\$$primaryKey,/", $generated);
+            }
+        } elseif (in_array($parameters[0], ['deleted', 'deletion_failed', 'updated', 'update_failed'])) {
+            $this->assertMatchesRegularExpression("/public $primaryType \\\$$primaryKey,/", $generated);
+        }
+    }
+
+    protected function assertNotifications(string $generated, string $parameters, CommandSettings $settings, string $rootFolder): void
+    {
+        $parameters = explode('.', $parameters);
+        if ($parameters[0] === 'concerns') {
+            if ($parameters[1] === 'has_slack_notification') {
+                $primaryKey = Str::ucfirst($settings->primaryKey());
+                $this->assertStringContainsString("\$block->field(\"*uuid:* \$this->$settings->nameAsPrefix$primaryKey\")->markdown();", $generated);
+            }
+        } else {
+            $this->assertStringContainsString("use $rootFolder\\{$settings->namespace}\\{$settings->domain}\\Notifications\\Concerns\\HasDataAsArray", $generated);
+            $this->assertMatchesRegularExpression('/use HasDataAsArray;/', $generated);
+            if (in_array('teams', $settings->notifications)) {
+                $this->assertStringContainsString("use $rootFolder\\{$settings->namespace}\\{$settings->domain}\\Notifications\\Concerns\\HasMicrosoftTeamsNotification", $generated);
+                $this->assertMatchesRegularExpression('/use HasMicrosoftTeamsNotification;/', $generated);
+            } else {
+                $this->assertStringNotContainsString("use $rootFolder\\{$settings->namespace}\\{$settings->domain}\\Notifications\\Concerns\\HasMicrosoftTeamsNotification", $generated);
+            }
+            if (in_array('slack', $settings->notifications)) {
+                $this->assertStringContainsString("use $rootFolder\\{$settings->namespace}\\{$settings->domain}\\Notifications\\Concerns\\HasSlackNotification", $generated);
+                $this->assertMatchesRegularExpression('/use HasSlackNotification;/', $generated);
+            } else {
+                $this->assertStringNotContainsString("use $rootFolder\\{$settings->namespace}\\{$settings->domain}\\Notifications\\Concerns\\HasSlackNotification", $generated);
+            }
+        }
+    }
+
     protected function assertProjection(string $generated, CommandSettings $settings): void
     {
         if ($settings->useUuid) {
@@ -232,7 +293,7 @@ trait AssertsDomainGenerated
         }
     }
 
-    protected function assertProjector(string $generated, CommandSettings $settings): void
+    protected function assertProjector(string $generated, CommandSettings $settings, string $rootFolder): void
     {
         if ($settings->useUuid) {
             $this->assertMatchesRegularExpression("/'uuid' => \\\$event->{$settings->nameAsPrefix}Uuid/", $generated);
@@ -254,7 +315,7 @@ trait AssertsDomainGenerated
         }
 
         // Assert failed events
-        foreach ($this->getProjectorFailedEventMatches($settings->namespace, $settings->domain, $settings->model) as $match) {
+        foreach ($this->getProjectorFailedEventMatches($settings->namespace, $settings->domain, $settings->model, $rootFolder) as $match) {
             if ($settings->createFailedEvents) {
                 $this->assertStringContainsString($match, $generated);
             } else {
@@ -263,7 +324,7 @@ trait AssertsDomainGenerated
         }
 
         // Assert notifications
-        foreach ($this->getProjectorNotificationMatches($settings->namespace, $settings->domain, $settings->model) as $match) {
+        foreach ($this->getProjectorNotificationMatches($settings->namespace, $settings->domain, $settings->model, $rootFolder) as $match) {
             if ($settings->notifications) {
                 $this->assertStringContainsString($match, $generated);
             } else {
@@ -315,6 +376,22 @@ trait AssertsDomainGenerated
                 }
             }
         }
+    }
+
+    protected function getAssertStub(string $stub, string $parameters, string $generated, CommandSettings $settings, string $rootFolder): ?Closure
+    {
+        return match ($stub) {
+            'actions' => fn () => $this->assertActions($generated, $parameters, $settings),
+            'aggregate' => fn () => $this->assertAggregate($generated, $settings),
+            'data-transfer-object' => fn () => $this->assertDataTransferObject($generated, $settings),
+            'events' => fn () => $this->assertEvents($generated, $parameters, $settings),
+            'notifications' => fn () => $this->assertNotifications($generated, $parameters, $settings, $rootFolder),
+            'projection' => fn () => $this->assertProjection($generated, $settings),
+            'projector' => fn () => $this->assertProjector($generated, $settings, $rootFolder),
+            'reactor' => fn () => $this->assertReactor($generated, $settings),
+            'test' => fn () => $this->assertTest($generated, $settings),
+            default => fn () => null,
+        };
     }
 
     protected function assertDomainGenerated(
@@ -384,6 +461,7 @@ trait AssertsDomainGenerated
             modelProperties: $modelProperties,
             ignoredProperties: $ignoredProperties,
         );
+        $rootFolder = Str::ucfirst($rootFolder);
 
         // Create stub replacer
         $stubReplacer = new StubReplacer($settings);
@@ -418,27 +496,12 @@ trait AssertsDomainGenerated
             $this->assertStringNotContainsString('{%', $generated);
 
             // Assert specific expectations
-            switch ($stubFile) {
-                case 'aggregate.stub':
-                    $this->assertAggregate($generated, $settings);
-                    break;
-                case 'data-transfer-object.stub':
-                    $this->assertDataTransferObject($generated, $settings);
-                    break;
-                case 'projection.stub':
-                    $this->assertProjection($generated, $settings);
-                    break;
-                case 'projector.stub':
-                    $this->assertProjector($generated, $settings);
-                    break;
-                case 'reactor.stub':
-                    $this->assertReactor($generated, $settings);
-                    break;
-                case 'test.stub':
-                    $this->assertTest($generated, $settings);
-                    break;
-                default:
-                    break;
+            if (preg_match('/^([\w\-]*)\.*(.*).stub/', $stubFile, $matches)) {
+                $match = $matches[1];
+                $closure = $this->getAssertStub($match, $matches[2], $generated, $settings, $rootFolder);
+                if ($closure) {
+                    $closure();
+                }
             }
         }
 
