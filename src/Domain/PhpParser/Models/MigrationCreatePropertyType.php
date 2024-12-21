@@ -15,6 +15,8 @@ class MigrationCreatePropertyType
 
     public readonly bool $isIgnored;
 
+    public readonly bool $isSkipped;
+
     public function __construct(
         public string $type,
         bool $nullable = false,
@@ -32,6 +34,7 @@ class MigrationCreatePropertyType
         }
 
         $this->isIgnored = $isIgnored || in_array($this->type, BlueprintUnsupportedInterface::IGNORED);
+        $this->isSkipped = $this->isIgnored && in_array($this->type, BlueprintUnsupportedInterface::SKIPPED_METHODS);
     }
 
     public function setAsBuiltInType(): void

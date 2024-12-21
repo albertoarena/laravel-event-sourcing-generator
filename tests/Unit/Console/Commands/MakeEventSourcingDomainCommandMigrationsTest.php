@@ -369,7 +369,7 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
      * @throws Exception
      */
     #[Test]
-    public function it_can_create_a_model_and_domain_with_migration_argument_ignoring_indexes_foreign_keys_and_soft_deletes()
+    public function it_can_create_a_model_and_domain_with_migration_argument_ignoring_skipped_blueprint_column_types()
     {
         $properties = [
             'name' => 'string',
@@ -379,6 +379,8 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
         $options = [
             MigrationOptionInterface::SOFT_DELETES => 'softDeletesTz',
             MigrationOptionInterface::INJECTS => [
+                ['unique' => 'name'],
+                ['fullText' => 'name'],
                 ['index' => 'name'],
                 ['rawIndex' => ['name', 'name']],
                 ['spatialIndex' => 'name'],

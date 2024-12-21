@@ -194,6 +194,7 @@ trait AssertsDomainGenerated
 
             foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
                 $this->assertDoesNotMatchRegularExpression("/public .* \\\$$method;/", $generated);
+                $this->assertDoesNotMatchRegularExpression("/\/\/ @todo public $method \\$\w*, column type is not yet supported/", $generated);
             }
             if ($settings->useCarbon) {
                 $this->assertStringContainsString('use Illuminate\Support\Carbon;', $generated);
@@ -221,6 +222,8 @@ trait AssertsDomainGenerated
         }
         foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
             $this->assertDoesNotMatchRegularExpression("/'$method' => '.*'/", $generated);
+            $this->assertDoesNotMatchRegularExpression("/\/\/ @todo '\w*', column type '$method' is not yet supported/", $generated);
+            $this->assertDoesNotMatchRegularExpression("/\/\/ @todo '\w*' => '$method', column type is not yet supported/", $generated);
         }
         if ($settings->useCarbon) {
             $this->assertStringContainsString('use Illuminate\Support\Carbon;', $generated);
@@ -247,6 +250,7 @@ trait AssertsDomainGenerated
         }
         foreach (BlueprintUnsupportedInterface::SKIPPED_METHODS as $method) {
             $this->assertDoesNotMatchRegularExpression("/'$method'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$method/", $generated);
+            $this->assertDoesNotMatchRegularExpression("/\/\/ @todo '\w*'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$method, column type '$method' is not yet supported/", $generated);
         }
 
         // Assert failed events

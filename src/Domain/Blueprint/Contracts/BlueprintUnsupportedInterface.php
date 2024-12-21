@@ -8,7 +8,6 @@ interface BlueprintUnsupportedInterface
         // Indexes
         'unique',
         'fullText',
-        'spatialIndex',
         // Foreign keys
         'foreign',
         'cascadeOnUpdate',

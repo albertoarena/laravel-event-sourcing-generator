@@ -44,7 +44,7 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
                             $property = MigrationCreateProperty::createFromExprMethodCall($node->expr);
                             if (! $property->type->isIgnored) {
                                 $this->properties[$property->name] = $property;
-                            } else {
+                            } elseif (! $property->type->isSkipped) {
                                 $this->ignored[$property->name] = $property;
                             }
                         }
