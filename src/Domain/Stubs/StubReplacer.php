@@ -369,7 +369,8 @@ class StubReplacer
     protected function fixEmptyLines(string &$stub): self
     {
         $stub = preg_replace('/\n{3,}/', "\n\n", $stub);
-        $stub = preg_replace('/\{\s*\n\n/', "{\n", $stub);
+        $stub = preg_replace('/\{\s*\n\s*\n/', "{\n", $stub);
+        $stub = preg_replace('/\(\s*\n\s*\n/', "(\n", $stub);
         $stub = preg_replace('/\s*\n(\s*})/', "\n$1", $stub);
         $stub = preg_replace('/(} catch \(Exception \$e\) {\n)\s*\n/', '$1', $stub);
 

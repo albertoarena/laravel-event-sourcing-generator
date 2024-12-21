@@ -42,7 +42,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
                             {--u|unit-test : Indicate if PHPUnit tests must be created}
                             {--p|primary-key= : Indicate which is the primary key (uuid, id)}
-                            {--i|indentation=4 : Indentation spaces}
+                            {--indentation=4 : Indentation spaces}
                             {--failed-events=0 : Indicate if failed events must be created (accepts 0 or 1)}
                             {--notifications=no : Indicate if notifications must be created, comma separated (accepts mail,no,slack,teams)}
                             {--root=app : The name of the root folder}';

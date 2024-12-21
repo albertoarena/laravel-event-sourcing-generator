@@ -37,7 +37,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertMatchesRegularExpression('/\s*-r, --reactor\[=REACTOR]\s*Indicate if reactor must be created or not \(accepts 0 or 1\)/', $output);
         $this->assertMatchesRegularExpression('/\s*-u, --unit-test\s*Indicate if PHPUnit tests must be created/', $output);
         $this->assertMatchesRegularExpression('/\s*-p, --primary-key\[=PRIMARY-KEY]\s*Indicate which is the primary key \(uuid, id\)/', $output);
-        $this->assertMatchesRegularExpression('/\s*-i, --indentation\[=INDENTATION]\s*Indentation spaces \[default: "4"]/', $output);
+        $this->assertMatchesRegularExpression('/\s*--indentation\[=INDENTATION]\s*Indentation spaces \[default: "4"]/', $output);
         $this->assertMatchesRegularExpression('/\s*--root\[=ROOT]\s*The name of the root folder \[default: "app"]/', $output);
         $this->assertMatchesRegularExpression('/\s*--failed-events\[=FAILED-EVENTS]\s*Indicate if failed events must be created \(accepts 0 or 1\) \[default: "0"]/', $output);
         $this->assertMatchesRegularExpression('/\s*--notifications\[=NOTIFICATIONS]\s*Indicate if notifications must be created, comma separated \(accepts mail,no,slack,teams\) \[default: "no"]/', $output);
