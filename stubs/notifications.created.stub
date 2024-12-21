@@ -29,7 +29,7 @@ class {{ class }}Created extends Notification
     {% if notifications.teams %}
     use HasMicrosoftTeamsNotification;
     {% endif %}
-    {% if notifications.teams %}
+    {% if notifications.slack %}
     use HasSlackNotification;
     {% endif %}
 

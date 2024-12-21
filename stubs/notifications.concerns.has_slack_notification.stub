@@ -13,7 +13,7 @@ trait HasSlackNotification
     {
         return fn () => function (SectionBlock $block) use ($primaryKey, $fields) {
             if ($primaryKey) {
-                $block->field("*uuid:* $this->animalUuid")->markdown();
+                $block->field("*uuid:* $this->{{ id }}{{ primary_key:uppercase }}")->markdown();
             }
             if ($fields) {
                 foreach ($this->getDataAsArray() as $key => $value) {
