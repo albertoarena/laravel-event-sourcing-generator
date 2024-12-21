@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## 1.0.5 - 2024-12-21
+
+### What's Changed
+
+* Fix: do not add comments for Blueprint skipped methods
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.4...v1.0.5
+
 ## 1.0.4 - 2024-12-21
 
 ### What's Changed
