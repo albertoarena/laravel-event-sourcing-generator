@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## 1.0.7 - 2024-12-31
+
+### What's Changed
+
+* Support PHP 8.3
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.6...v1.0.7
+
 ## 1.0.6 - 2024-12-21
 
 ### What's Changed
