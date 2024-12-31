@@ -52,7 +52,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 | What                                                                        | Version         |
 |-----------------------------------------------------------------------------|-----------------|
-| PHP                                                                         | 8.2             |
+| PHP                                                                         | 8.2 / 8.3       |
 | [Laravel](https://github.com/laravel/laravel)                               | 10.x / 11.x (*) |
 | [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x             |
 
@@ -258,4 +258,3 @@ php artisan make:event-sourcing-domain Animal --root=src
 ### Future enhancements
 
 - support migrations that update table ([see documentation](./docs/migrations.md#update-migrations))
-- support PHP 8.3
