@@ -6,7 +6,6 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Concerns\HasSche
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\EnterNode;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationInvalidPrimaryKeyException;
-use Albertoarena\LaravelEventSourcingGenerator\Exceptions\UpdateMigrationIsNotSupportedException;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 
@@ -21,7 +20,6 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
 
     /**
      * @throws MigrationInvalidPrimaryKeyException
-     * @throws UpdateMigrationIsNotSupportedException
      */
     public function enterNode(Node $node): ?Node
     {
@@ -29,13 +27,7 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
             $node,
             new EnterNode(
                 function (Node\Stmt\Expression $expression) {
-                    if ($expression->expr instanceof Node\Expr\StaticCall) {
-                        if ($expression->expr->class->name === 'Schema') {
-                            if ($expression->expr->name->name === 'table') {
-                                throw new UpdateMigrationIsNotSupportedException;
-                            }
-                        }
-                    }
+                    // Nope
                 },
                 function (Node $node) {
                     if ($node instanceof Node\Stmt\Expression) {

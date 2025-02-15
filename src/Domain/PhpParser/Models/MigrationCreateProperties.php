@@ -26,12 +26,13 @@ class MigrationCreateProperties
         }
     }
 
-    public function add($property): self
+    public function add($property, bool $overwriteIfExists = false): self
     {
         // Check if property type is correct and if it already exists
-        if ($property instanceof MigrationCreateProperty &&
-            ! $this->collection->offsetExists($property->name)
-        ) {
+        if ($property instanceof MigrationCreateProperty) {
+            if ($this->collection->offsetExists($property->name) && ! $overwriteIfExists) {
+                return $this;
+            }
             $this->collection->offsetSet($property->name, $property);
         }
 
@@ -45,17 +46,19 @@ class MigrationCreateProperties
         )[0] ?? $this->collection->first();
     }
 
-    public function import(array|Collection $modelProperties): self
+    public function import(array|Collection $modelProperties, bool $reset = true): self
     {
-        $this->collection = new Collection;
+        if ($reset) {
+            $this->collection = new Collection;
+        }
         foreach ($modelProperties as $name => $typeOrProperty) {
             if ($typeOrProperty instanceof MigrationCreateProperty) {
-                $this->add($typeOrProperty);
+                $this->add($typeOrProperty, true);
             } else {
                 $this->add(new MigrationCreateProperty(
                     name: $name,
                     type: $typeOrProperty,
-                ));
+                ), true);
             }
         }
 

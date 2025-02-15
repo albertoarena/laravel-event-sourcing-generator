@@ -8,6 +8,7 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Contracts\Accepted
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Contracts\DefaultSettingsInterface;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Migrations\Migration;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperties;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubReplacer;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Stubs\StubResolver;
 use Closure;
@@ -265,7 +266,7 @@ trait AssertsDomainGenerated
         }
     }
 
-    protected function assertProjection(string $generated, CommandSettings $settings): void
+    protected function assertProjection(string $generated, CommandSettings $settings, ?Migration $migrationModel): void
     {
         if ($settings->useUuid) {
             $this->assertMatchesRegularExpression("/'uuid' => 'string',/", $generated);
@@ -291,9 +292,21 @@ trait AssertsDomainGenerated
         } else {
             $this->assertStringNotContainsString('use Illuminate\Support\Carbon;', $generated);
         }
+
+        // Assert migrations
+        if ($migrationModel) {
+            foreach ($migrationModel->properties() as $property) {
+                if ($property->name === 'timestamps') {
+                    continue;
+                }
+                $type = $property->type->toProjection();
+                $this->assertMatchesRegularExpression("/\s*'$property->name',\n/", $generated);
+                $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
+            }
+        }
     }
 
-    protected function assertProjector(string $generated, CommandSettings $settings, string $rootFolder): void
+    protected function assertProjector(string $generated, CommandSettings $settings, string $rootFolder, ?Migration $migrationModel): void
     {
         if ($settings->useUuid) {
             $this->assertMatchesRegularExpression("/'uuid' => \\\$event->{$settings->nameAsPrefix}Uuid/", $generated);
@@ -329,6 +342,17 @@ trait AssertsDomainGenerated
                 $this->assertStringContainsString($match, $generated);
             } else {
                 $this->assertStringNotContainsString($match, $generated);
+            }
+        }
+
+        // Assert migrations
+        if ($migrationModel) {
+            foreach ($migrationModel->properties() as $property) {
+                if (in_array($property->name, MigrationCreateProperties::RESERVED_FIELDS)) {
+                    continue;
+                }
+                $name = Str::camel($property->name);
+                $this->assertMatchesRegularExpression("/'$property->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
             }
         }
     }
@@ -378,7 +402,7 @@ trait AssertsDomainGenerated
         }
     }
 
-    protected function getAssertStub(string $stub, string $parameters, string $generated, CommandSettings $settings, string $rootFolder): ?Closure
+    protected function getAssertStub(string $stub, string $parameters, string $generated, CommandSettings $settings, string $rootFolder, ?Migration $migrationModel): ?Closure
     {
         return match ($stub) {
             'actions' => fn () => $this->assertActions($generated, $parameters, $settings),
@@ -386,8 +410,8 @@ trait AssertsDomainGenerated
             'data-transfer-object' => fn () => $this->assertDataTransferObject($generated, $settings),
             'events' => fn () => $this->assertEvents($generated, $parameters, $settings),
             'notifications' => fn () => $this->assertNotifications($generated, $parameters, $settings, $rootFolder),
-            'projection' => fn () => $this->assertProjection($generated, $settings),
-            'projector' => fn () => $this->assertProjector($generated, $settings, $rootFolder),
+            'projection' => fn () => $this->assertProjection($generated, $settings, $migrationModel),
+            'projector' => fn () => $this->assertProjector($generated, $settings, $rootFolder, $migrationModel),
             'reactor' => fn () => $this->assertReactor($generated, $settings),
             'test' => fn () => $this->assertTest($generated, $settings),
             default => fn () => null,
@@ -435,10 +459,13 @@ trait AssertsDomainGenerated
         }
 
         // Load existing migration
+        $migrationModel = null;
         if ($migration) {
             try {
-                $useUuid = (new Migration($migration))->primary() === 'uuid';
+                $migrationModel = new Migration($migration);
+                $useUuid = $migrationModel->primary() === 'uuid';
             } catch (Exception) {
+                $this->fail('Migration cannot be loaded: '.$migration);
             }
         }
 
@@ -498,7 +525,7 @@ trait AssertsDomainGenerated
             // Assert specific expectations
             if (preg_match('/^([\w\-]*)\.*(.*).stub/', $stubFile, $matches)) {
                 $match = $matches[1];
-                $closure = $this->getAssertStub($match, $matches[2], $generated, $settings, $rootFolder);
+                $closure = $this->getAssertStub($match, $matches[2], $generated, $settings, $rootFolder, $migrationModel);
                 if ($closure) {
                     $closure();
                 }

@@ -72,7 +72,7 @@ composer require albertoarena/laravel-event-sourcing-generator
 php artisan make:event-sourcing-domain <model>
   [-d|--domain=<domain>]                         # The name of the domain
   [--namespace=<namespace>]                      # The namespace or root folder (default: "Domain")
-  [-m|--migration=<existing_migration_filename>] # Indicate any existing migration for the model, with or without timestamp prefix
+  [-m|--migration=<existing_migration_filename>] # Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient
   [-a|--aggregate=<0|1>]                         # Indicate if aggregate must be created or not (accepts 0 or 1)
   [-r|--reactor=<0|1>]                           # Indicate if reactor must be created or not (accepts 0 or 1)
   [-u|--unit-test]                               # Indicate if PHPUnit tests must be created
@@ -254,7 +254,3 @@ php artisan make:event-sourcing-domain Animal --root=src
 ### Blueprint column types
 
 [Read documentation](./docs/migrations.md#unsupported-column-types)
-
-### Future enhancements
-
-- support migrations that update table ([see documentation](./docs/migrations.md#update-migrations))

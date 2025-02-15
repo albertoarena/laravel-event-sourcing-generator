@@ -6,8 +6,8 @@
 
 - [Using migrations](#using-migrations)
 - [Generate a domain using existing migration](#generate-a-domain-using-existing-migration)
+- [Generate a domain using update migration](#generate-a-domain-using-update-migration)
 - [Limitations](#limitations)
-    - [Update migrations](#update-migrations)
     - [Unsupported column types](#unsupported-column-types)
 
 ## Using migrations
@@ -146,27 +146,97 @@ use App\Domain\Animal\Projections\Tiger;
 $tiger = Tiger::query()->where('name', 'tiger')->first();
 ```
 
+## Generate a domain using update migration
+
+[⬆️ Go to TOC](#table-of-contents)
+
+Command can generate a full domain directory structure starting from an update migration.
+
+E.g. create migration `2024_10_01_112344_create_tigers_table.php`
+
+```php
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('tigers', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name')->index();
+            $table->int('age');
+            $table->json('meta');
+            $table->timestamps();
+        });
+    }
+    
+    // etc.
+};
+```
+
+E.g. update migration `2024_10_07_031123_update_tigers_table.php`
+
+```php
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('tigers', function (Blueprint $table) {
+            $table->float('age');
+            $table->string('colour');
+        });
+    }
+    
+    // etc.
+};
+```
+
+In this example, `id` will be used as primary key. No aggregate will be available.
+
+**Important:** to parse both create and update migrations, pass the _table name_ in the `--migration` parameter. That will
+search for all migrations containing that name. Words `create` and `update` are reserved and cannot be passed.
+
+It is possible to specify the migration interactively or, more efficiently, passing it to command options. Please notice
+that the migration filename timestamp is not needed:
+
+```shell
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=tigers --notifications=slack --failed-events=1 --reactor=0 --unit-test
+```
+
+```
+Your choices:
+
+| Option                     | Choice                                     |
+|----------------------------|--------------------------------------------|
+| Model                      | Tiger                                      |
+| Domain                     | Animal                                     |
+| Namespace                  | Domain                                     |
+| Use migration              | 2024_10_01_112344_create_animals_table.php |
+|                            | 2024_10_07_031123_update_tigers_table.php  |
+| Primary key                | id                                         |
+| Create Aggregate class     | no                                         |
+| Create Reactor class       | no                                         |
+| Create PHPUnit tests       | yes                                        |
+| Create failed events       | yes                                        |
+| Model properties           | string name                                |
+|                            | int age                                    |
+|                            | array meta                                 |
+| Notifications              | yes                                        |
+
+Do you confirm the generation of the domain?
+> yes
+
+Domain [Animal] with model [Tiger] created successfully.
+```
+
+
 ## Limitations
 
 [⬆️ Go to TOC](#table-of-contents)
-
-### Update migrations
-
-[⬆️ Go to TOC](#table-of-contents)
-
-Update database migrations are not yet supported, but only create database migrations.
-
-E.g. migration `2024_10_01_112344_update_lions_table.php`
-
-```shell
-php artisan make:event-sourcing-domain Lion --domain=Animal --migration=update_lions_table
-```
-
-Output
-
-```
-ERROR  There was an error: Update migration file is not supported.
-```
 
 ### Unsupported column types
 

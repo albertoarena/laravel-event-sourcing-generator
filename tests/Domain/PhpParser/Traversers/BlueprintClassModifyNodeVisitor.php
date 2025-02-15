@@ -7,7 +7,6 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\Bluepr
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Concerns\HasSchemaUpNode;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\EnterNode;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\ParserFailedException;
-use Albertoarena\LaravelEventSourcingGenerator\Exceptions\UpdateMigrationIsNotSupportedException;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -228,7 +227,6 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @throws UpdateMigrationIsNotSupportedException
      * @throws ParserFailedException
      */
     public function enterNode(Node $node): ?Node
@@ -252,8 +250,6 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
                                         }
                                     }
                                 }
-                            } elseif ($expression->expr->name->name === 'table') {
-                                throw new UpdateMigrationIsNotSupportedException;
                             }
                         }
                     }

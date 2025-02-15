@@ -5,10 +5,10 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Exceptions;
 use Exception;
 use Throwable;
 
-class UpdateMigrationIsNotSupportedException extends Exception
+class MigrationInvalidException extends Exception
 {
     public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null)
     {
-        parent::__construct($message ?: 'Update migration file is not supported.', $code, $previous);
+        parent::__construct($message ?: 'Migration file is invalid (create and update words are reserved).', $code, $previous);
     }
 }

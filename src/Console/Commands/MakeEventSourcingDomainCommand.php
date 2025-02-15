@@ -30,6 +30,8 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
 
     protected StubReplacer $stubReplacer;
 
+    protected array $migrations;
+
     /**
      * @var string
      */
@@ -37,7 +39,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {model : The name of the model}
                             {--d|domain= : The name of the domain}
                             {--namespace=Domain : The namespace or root folder}
-                            {--m|migration= : Indicate any existing migration for the model, with or without timestamp prefix}
+                            {--m|migration= : Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient}
                             {--a|aggregate= : Indicate if aggregate must be created or not (accepts 0 or 1)}
                             {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
                             {--u|unit-test : Indicate if PHPUnit tests must be created}
@@ -146,18 +148,19 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         // Determine which is the model primary key and set properties
         if ($this->settings->migration) {
             try {
-                // Load migration
-                $migration = (new Migration($this->settings->migration));
-                foreach ($migration->properties() as $property) {
+                // Load migrations
+                $migrationModel = (new Migration($this->settings->migration));
+                $this->migrations = $migrationModel->migrations();
+                foreach ($migrationModel->properties() as $property) {
                     $this->settings->modelProperties->add($property);
                     if ($property->type->warning) {
                         $this->components->warn($property->type->warning);
                     }
                 }
                 $this->settings->inferUseCarbon();
-                $this->settings->useUuid = $migration->primary() === 'uuid';
+                $this->settings->useUuid = $migrationModel->primary() === 'uuid';
 
-                foreach ($migration->ignored() as $ignored) {
+                foreach ($migrationModel->ignored() as $ignored) {
                     $this->settings->ignoredProperties->add($ignored);
                     $this->components->warn('Type '.$ignored->type->type.' is not supported for column '.$ignored->name);
                 }
@@ -235,6 +238,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
      */
     protected function bootstrap(): bool
     {
+        $this->migrations = [];
         $primaryKey = ! is_null($this->option('primary-key')) ? $this->option('primary-key') : null;
         if ($primaryKey && ! in_array($primaryKey, ['uuid', 'id'])) {
             $this->components->error('The primary key "'.$primaryKey.'" is not valid (please specify uuid or id)');
@@ -348,7 +352,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             $this->settings->rootFolder !== DefaultSettingsInterface::APP ? ['Root folder', $this->settings->rootFolder] : false,
             ['Namespace', $this->settings->namespace],
             ['Path', $this->settings->namespace.'/'.$this->settings->domain.'/'.$this->settings->model],
-            ['Use migration', basename($this->settings->migration) ?: 'no'],
+            ['Use migration', $this->migrations ? implode("\n", $this->migrations) : 'no'],
             ['Primary key', $this->settings->primaryKey()],
             ['Create Aggregate class', $this->settings->createAggregate ? 'yes' : 'no'],
             ['Create Reactor class', $this->settings->createReactor ? 'yes' : 'no'],

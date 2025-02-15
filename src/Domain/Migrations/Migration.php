@@ -6,6 +6,7 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\MigrationParser;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperties;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationDoesNotExistException;
+use Albertoarena\LaravelEventSourcingGenerator\Exceptions\MigrationInvalidException;
 use Albertoarena\LaravelEventSourcingGenerator\Exceptions\ParserFailedException;
 use Exception;
 use Illuminate\Support\Facades\File;
@@ -19,6 +20,8 @@ class Migration
 
     protected MigrationCreateProperties $ignored;
 
+    protected array $migrations;
+
     /**
      * @throws Exception
      */
@@ -28,39 +31,57 @@ class Migration
         $this->primary = null;
         $this->properties = new MigrationCreateProperties;
         $this->ignored = new MigrationCreateProperties;
+        $this->migrations = [];
         $this->parse();
     }
 
     /**
      * @throws MigrationDoesNotExistException
+     * @throws MigrationInvalidException
      */
-    protected function getMigration(): ?string
+    protected function getMigrations(): array
     {
+        $this->migrations = [];
+        $found = [];
         if (File::exists($this->path)) {
-            return File::get($this->path);
+            $this->migrations = [basename($this->path)];
+            $found = [File::get($this->path)];
         } else {
+            if (in_array(strtolower($this->path), ['create', 'update'])) {
+                throw new MigrationInvalidException;
+            }
+
             $files = File::files(database_path('migrations'));
             foreach ($files as $file) {
                 $filename = $file->getFilename();
                 if (Str::contains($filename, $this->path)) {
-                    return $file->getContents();
+                    $this->migrations[] = basename($filename);
+                    $found[] = $file->getContents();
                 }
             }
         }
 
-        throw new MigrationDoesNotExistException;
+        if (! $found) {
+            throw new MigrationDoesNotExistException;
+        }
+
+        return $found;
     }
 
     /**
      * @throws MigrationDoesNotExistException
      * @throws ParserFailedException
+     * @throws MigrationInvalidException
      */
     protected function parse(): void
     {
-        $parser = (new MigrationParser($this->getMigration()))->parse();
-        $this->properties->import($parser->getProperties());
-        $this->ignored->import($parser->getIgnored());
-        $this->primary = $this->properties->primary()->name;
+        $found = $this->getMigrations();
+        foreach ($found as $migration) {
+            $parser = (new MigrationParser($migration))->parse();
+            $this->properties->import($parser->getProperties(), reset: false);
+            $this->ignored->import($parser->getIgnored(), reset: false);
+            $this->primary = $this->properties->primary()->name;
+        }
     }
 
     public function primary(): ?string
@@ -82,5 +103,10 @@ class Migration
     public function ignored(): array
     {
         return $this->ignored->withoutSkippedMethods()->toArray();
+    }
+
+    public function migrations(): array
+    {
+        return $this->migrations;
     }
 }

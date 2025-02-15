@@ -175,7 +175,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
 
         $expectedPrintedProperties = array_values(Arr::map($properties, fn ($type, $model) => $this->columnTypeToBuiltInType($type)." $model"));
 
-        $this->createMockCreateMigration('animal', $properties, $options);
+        $createMigration = basename($this->createMockCreateMigration('animal', $properties, $options));
         $model = 'Animal';
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--migration' => 'create_animals_table', '--reactor' => 0, '--unit-test' => true])
@@ -189,7 +189,7 @@ class MakeEventSourcingDomainCommandUnitTestsTest extends TestCase
                     ['Domain', $model],
                     ['Namespace', 'Domain'],
                     ['Path', 'Domain/'.$model.'/'.$model],
-                    ['Use migration', 'create_animals_table'],
+                    ['Use migration', $createMigration],
                     ['Primary key', 'id'],
                     ['Create Aggregate class', 'no'],
                     ['Model properties', implode("\n", $expectedPrintedProperties)],
