@@ -50,6 +50,9 @@ class {{ class }}Updated extends Notification
             {% if notifications.slack %}
             'slack',
             {% endif %}
+            {% if notifications.database %}
+            'database',
+            {% endif %}
         ];
     }
 
@@ -91,6 +94,18 @@ class {{ class }}Updated extends Notification
             ->text('A new {{ class }} has been updated')
             ->headerBlock('A new {{ class }} has been updated')
             ->sectionBlock($this->getSlackSectionBlock(primaryKey: true, fields: true));
+    }
+    {% endif %}
+
+    {% if notifications.database %}
+    public function toArray($notifiable): array
+    {
+        return array_merge(
+            [
+                'notification_message' => '{{ class }} updated successfully',
+            ],
+            $this->getDataAsArray()
+        );
     }
     {% endif %}
 }

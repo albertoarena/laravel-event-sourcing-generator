@@ -104,18 +104,25 @@ notification for each failed event will be automatically created.
 
 [⬆️ Go to TOC](#table-of-contents)
 
-The command supports 3 types of notifications:
+The command supports 4 types of notifications:
 
+- database
 - mail
 - Slack
 - Teams
 
-Use option `--notifications=[mail,slack,teams]`. Notifications must be separated by comma.
+Use option `--notifications=[database,mail,slack,teams]`. Notifications must be separated by comma.
 
 When notifications are created, one or more concerns (traits) will be created as well in `Notifications/Concerns`
 folder, for shared properties and formatting.
 
 ### Examples
+
+Generate automatically database notifications:
+
+```shell
+php artisan make:event-sourcing-domain Animal --notifications=database
+```
 
 Generate automatically Teams notifications:
 

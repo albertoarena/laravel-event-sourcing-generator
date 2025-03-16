@@ -70,17 +70,17 @@ composer require albertoarena/laravel-event-sourcing-generator
 
 ```text
 php artisan make:event-sourcing-domain <model>
-  [-d|--domain=<domain>]                         # The name of the domain
-  [--namespace=<namespace>]                      # The namespace or root folder (default: "Domain")
-  [-m|--migration=<existing_migration_filename>] # Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient
-  [-a|--aggregate=<0|1>]                         # Indicate if aggregate must be created or not (accepts 0 or 1)
-  [-r|--reactor=<0|1>]                           # Indicate if reactor must be created or not (accepts 0 or 1)
-  [-u|--unit-test]                               # Indicate if PHPUnit tests must be created
-  [-p|--primary-key=<uuid|id>]                   # Indicate which is the primary key (uuid, id)
-  [--indentation=<indent>]                       # Indentation spaces
-  [--failed-events=<0|1>]                        # Indicate if failed events must be created (accepts 0 or 1)
-  [--notifications=<mail,no,slack,teams>]        # Indicate if notifications must be created, comma separated (accepts mail,no,slack,teams)
-  [--root=<root>                                 # The name of the root folder (default: "app")
+  [-d|--domain=<domain>]                           # The name of the domain
+  [--namespace=<namespace>]                        # The namespace or root folder (default: "Domain")
+  [-m|--migration=<existing_migration_filename>]   # Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient
+  [-a|--aggregate=<0|1>]                           # Indicate if aggregate must be created or not (accepts 0 or 1)
+  [-r|--reactor=<0|1>]                             # Indicate if reactor must be created or not (accepts 0 or 1)
+  [-u|--unit-test]                                 # Indicate if PHPUnit tests must be created
+  [-p|--primary-key=<uuid|id>]                     # Indicate which is the primary key (uuid, id)
+  [--indentation=<indent>]                         # Indentation spaces
+  [--failed-events=<0|1>]                          # Indicate if failed events must be created (accepts 0 or 1)
+  [--notifications=<database,mail,no,slack,teams>] # Indicate if notifications must be created, comma separated (accepts database,mail,no,slack,teams)
+  [--root=<root>                                   # The name of the root folder (default: "app")
 ```
 
 ### Show help
@@ -139,13 +139,13 @@ php artisan make:event-sourcing-domain Animal \
   --unit-test
 ```
 
-#### Generate a model from existing migration with failed events and mail / Slack notifications
+#### Generate a model from existing migration with failed events and database / mail / Slack notifications
 
 ```shell
 php artisan make:event-sourcing-domain Animal \
   --migration=create_animal_table \
   --failed-events=1 \
-  --notifications=mail,slack
+  --notifications=database,mail,slack
 ```
 
 ### Domain and namespace

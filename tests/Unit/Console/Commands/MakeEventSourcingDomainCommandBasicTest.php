@@ -40,7 +40,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertMatchesRegularExpression('/\s*--indentation\[=INDENTATION]\s*Indentation spaces \[default: "4"]/', $output);
         $this->assertMatchesRegularExpression('/\s*--root\[=ROOT]\s*The name of the root folder \[default: "app"]/', $output);
         $this->assertMatchesRegularExpression('/\s*--failed-events\[=FAILED-EVENTS]\s*Indicate if failed events must be created \(accepts 0 or 1\) \[default: "0"]/', $output);
-        $this->assertMatchesRegularExpression('/\s*--notifications\[=NOTIFICATIONS]\s*Indicate if notifications must be created, comma separated \(accepts mail,no,slack,teams\) \[default: "no"]/', $output);
+        $this->assertMatchesRegularExpression('/\s*--notifications\[=NOTIFICATIONS]\s*Indicate if notifications must be created, comma separated \(accepts database,mail,no,slack,teams\) \[default: "no"]/', $output);
     }
 
     #[Test]

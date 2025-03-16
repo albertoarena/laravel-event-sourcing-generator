@@ -10,5 +10,7 @@ interface AcceptedNotificationInterface
 
     public const TEAMS = 'teams';
 
-    public const ACCEPTED = [self::MAIL, self::SLACK, self::TEAMS];
+    public const DATABASE = 'database';
+
+    public const ACCEPTED = [self::DATABASE, self::MAIL, self::SLACK, self::TEAMS];
 }

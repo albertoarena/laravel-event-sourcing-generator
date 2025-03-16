@@ -261,6 +261,7 @@ class StubReplacer
             '{% if notifications.mail %}' => ! in_array('mail', $this->settings->notifications),
             '{% if notifications.slack %}' => ! in_array('slack', $this->settings->notifications),
             '{% if notifications.teams %}' => ! in_array('teams', $this->settings->notifications),
+            '{% if notifications.database %}' => ! in_array('database', $this->settings->notifications),
             '{% endif %}' => false,
         ];
 

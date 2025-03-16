@@ -48,6 +48,9 @@ class {{ class }}DeletionFailed extends Notification
             {% if notifications.slack %}
             'slack',
             {% endif %}
+            {% if notifications.database %}
+            'database',
+            {% endif %}
         ];
     }
 
@@ -89,6 +92,18 @@ class {{ class }}DeletionFailed extends Notification
                 $block->text($this->failure);
             })
             ->sectionBlock($this->getSlackSectionBlock(primaryKey: true));
+    }
+    {% endif %}
+
+    {% if notifications.database %}
+    public function toArray($notifiable): array
+    {
+        return array_merge(
+            [
+                'notification_message' => '{{ class }} deletion failed',
+            ],
+            $this->getDataAsArray()
+        );
     }
     {% endif %}
 }

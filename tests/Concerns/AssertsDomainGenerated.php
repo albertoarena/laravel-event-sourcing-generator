@@ -263,6 +263,11 @@ trait AssertsDomainGenerated
             } else {
                 $this->assertStringNotContainsString("use $rootFolder\\{$settings->namespace}\\{$settings->domain}\\Notifications\\Concerns\\HasSlackNotification", $generated);
             }
+            if (in_array('database', $settings->notifications)) {
+                $this->assertStringContainsString('public function toArray($notifiable): array', $generated);
+            } else {
+                $this->assertStringNotContainsString('public function toArray($notifiable): array', $generated);
+            }
         }
     }
 

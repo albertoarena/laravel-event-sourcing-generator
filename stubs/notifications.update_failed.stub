@@ -51,6 +51,9 @@ class {{ class }}UpdateFailed extends Notification
             {% if notifications.slack %}
             'slack',
             {% endif %}
+            {% if notifications.database %}
+            'database',
+            {% endif %}
         ];
     }
 
@@ -93,6 +96,18 @@ class {{ class }}UpdateFailed extends Notification
                 $block->text($this->failure);
             })
             ->sectionBlock($this->getSlackSectionBlock(primaryKey: true, fields: true));
+    }
+    {% endif %}
+
+    {% if notifications.database %}
+    public function toArray($notifiable): array
+    {
+        return array_merge(
+            [
+                'notification_message' => '{{ class }} update failed',
+            ],
+            $this->getDataAsArray()
+        );
     }
     {% endif %}
 }

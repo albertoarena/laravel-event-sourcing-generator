@@ -2,6 +2,7 @@
 
 namespace Tests\Concerns;
 
+use Illuminate\Support\Facades\Artisan;
 use phpmock\mockery\PHPMockery;
 use PHPUnit\Framework\TestCase;
 use Spatie\EventSourcing\EventSourcingServiceProvider;
@@ -54,5 +55,11 @@ trait WithMockPackages
             ->andReturnUsing(function ($class) {
                 return ! ($class === TestCase::class) && class_exists($class);
             });
+    }
+
+    protected function withNotificationsTable(): void
+    {
+        Artisan::call('make:notifications-table');
+        Artisan::call('migrate');
     }
 }

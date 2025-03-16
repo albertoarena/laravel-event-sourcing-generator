@@ -344,6 +344,134 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
     }
 
     #[Test]
+    public function it_can_create_a_model_and_domain_with_database_notifications()
+    {
+        $this->withNotificationsTable();
+
+        $model = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+            'number_of_bones' => 'int',
+        ];
+
+        $notifications = ['database'];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--notifications' => implode(',', $notifications)])
+            ->expectsQuestion('Which is the name of the domain?', $model)
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create Aggregate class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create PHPUnit tests', 'no'],
+                    ['Create failed events', 'no'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                    ['Notifications', implode(',', $notifications)],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('WARN  Please create notifications table via artisan:')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            $model,
+            modelProperties: $properties,
+            notifications: $notifications
+        );
+    }
+
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_database_notifications_without_notifications_table()
+    {
+        $model = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+            'number_of_bones' => 'int',
+        ];
+
+        $notifications = ['database'];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--notifications' => implode(',', $notifications)])
+            ->expectsQuestion('Which is the name of the domain?', $model)
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', true)
+            ->expectsQuestion('Do you want to create an Aggregate class?', true)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'uuid'],
+                    ['Create Aggregate class', 'yes'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create PHPUnit tests', 'no'],
+                    ['Create failed events', 'no'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                    ['Notifications', implode(',', $notifications)],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->expectsOutputToContain('WARN  Please create notifications table via artisan:')
+            ->expectsOutputToContain('WARN  php artisan make:notifications-table')
+            ->expectsOutputToContain('WARN  php artisan migrate')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            $model,
+            modelProperties: $properties,
+            notifications: $notifications
+        );
+    }
+
+    #[Test]
     public function it_can_create_a_model_and_domain_with_all_notifications_and_unit_tests()
     {
         $model = 'Animal';
@@ -354,7 +482,7 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
             'number_of_bones' => 'int',
         ];
 
-        $notifications = ['mail', 'slack', 'teams'];
+        $notifications = ['database', 'mail', 'slack', 'teams'];
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--notifications' => implode(',', $notifications), '--unit-test' => true])
             ->expectsQuestion('Which is the name of the domain?', $model)
@@ -416,7 +544,7 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
             'number_of_bones' => 'int',
         ];
 
-        $notifications = ['mail', 'slack', 'teams'];
+        $notifications = ['database', 'mail', 'slack', 'teams'];
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--notifications' => implode(',', $notifications), '--unit-test' => true, '--failed-events' => true])
             ->expectsQuestion('Which is the name of the domain?', $model)
@@ -480,7 +608,7 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
             'number_of_bones' => 'int',
         ];
 
-        $notifications = ['mail', 'slack', 'teams'];
+        $notifications = ['database', 'mail', 'slack', 'teams'];
 
         $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $domain, '--notifications' => implode(',', $notifications), '--unit-test' => true])
             ->expectsQuestion('Do you want to import properties from existing database migration?', false)

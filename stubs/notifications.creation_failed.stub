@@ -50,6 +50,9 @@ class {{ class }}CreationFailed extends Notification
             {% if notifications.slack %}
             'slack',
             {% endif %}
+            {% if notifications.database %}
+            'database',
+            {% endif %}
         ];
     }
 
@@ -93,6 +96,18 @@ class {{ class }}CreationFailed extends Notification
                 $block->text($this->failure);
             })
             ->sectionBlock($this->getSlackSectionBlock(fields: true));
+    }
+    {% endif %}
+
+    {% if notifications.database %}
+    public function toArray($notifiable): array
+    {
+        return array_merge(
+            [
+                'notification_message' => '{{ class }} creation failed',
+            ],
+            $this->getDataAsArray()
+        );
     }
     {% endif %}
 }

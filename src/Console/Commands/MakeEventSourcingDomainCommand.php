@@ -18,6 +18,7 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -46,7 +47,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--p|primary-key= : Indicate which is the primary key (uuid, id)}
                             {--indentation=4 : Indentation spaces}
                             {--failed-events=0 : Indicate if failed events must be created (accepts 0 or 1)}
-                            {--notifications=no : Indicate if notifications must be created, comma separated (accepts mail,no,slack,teams)}
+                            {--notifications=no : Indicate if notifications must be created, comma separated (accepts database,mail,no,slack,teams)}
                             {--root=app : The name of the root folder}';
 
     /**
@@ -201,6 +202,11 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
     protected function checkNotificationSlackPackage(): bool
     {
         return class_exists('Illuminate\Notifications\Slack\SlackMessage');
+    }
+
+    protected function checkNotificationTable(): bool
+    {
+        return Schema::hasTable('notifications');
     }
 
     protected function checkPhpunit(): bool
@@ -434,6 +440,12 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             if (in_array('slack', $this->settings->notifications) && ! $this->checkNotificationSlackPackage()) {
                 $this->components->warn('Please install Slack notifications via composer:');
                 $this->components->warn('composer require laravel/slack-notification-channel');
+            }
+
+            if (in_array('database', $this->settings->notifications) && ! $this->checkNotificationTable()) {
+                $this->components->warn('Please create notifications table via artisan:');
+                $this->components->warn('php artisan make:notifications-table');
+                $this->components->warn('php artisan migrate');
             }
 
             return self::SUCCESS;
