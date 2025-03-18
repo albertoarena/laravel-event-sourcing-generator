@@ -86,7 +86,7 @@ class MigrationCreatePropertyTypeTest extends TestCase
     }
 
     #[Test]
-    public function can_create_property_type_from_nullableTimestamps()
+    public function can_create_property_type_from_nullable_timestamps()
     {
         $obj = new MigrationCreatePropertyType('nullableTimestamps');
         $this->assertEquals('nullableTimestamps', $obj->type);
