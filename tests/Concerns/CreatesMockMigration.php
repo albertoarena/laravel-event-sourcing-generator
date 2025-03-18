@@ -51,10 +51,14 @@ trait CreatesMockMigration
         array $updateProperties = [],
         array $dropProperties = [],
         array $renameProperties = [],
+        ?string $migrationName = null,
     ): ?string {
         $tableName = Str::plural($tableName);
+        if (! $migrationName) {
+            $migrationName = 'update_'.$tableName.'_table';
+        }
         $this->withoutMockingConsoleOutput()
-            ->artisan('make:migration', ['name' => 'update_'.$tableName.'_table']);
+            ->artisan('make:migration', ['name' => $migrationName]);
 
         $output = Artisan::output();
         $this->mockConsoleOutput = true;
@@ -65,16 +69,25 @@ trait CreatesMockMigration
             // Load file
             $migrationFile = File::get(base_path($migration));
 
+            // Check if migration contains Schema::table
+            $containsSchemaTable = str_contains($migrationFile, "Schema::table('$tableName', function (Blueprint \$table) {");
+
             $indent = Str::repeat(' ', 4);
+            $inject = [];
 
             // Inject update table and properties
-            $inject[] = "Schema::table('$tableName', function (Blueprint \$table) {";
+            if (! $containsSchemaTable) {
+                $inject[] = "Schema::table('$tableName', function (Blueprint \$table) {";
+            }
+
+            // Update
             foreach ($updateProperties as $name => $type) {
                 $nullable = Str::startsWith($type, '?') ? '->nullable()' : '';
                 $type = $nullable ? Str::after($type, '?') : $type;
                 $inject[] = "$indent\$table->".$this->builtInTypeToColumnType($type)."('$name')$nullable;";
             }
 
+            // Drop
             foreach ($dropProperties as $name) {
                 if (is_array($name)) {
                     $name = implode(', ', array_map(fn ($v) => "'$v'", $name));
@@ -84,15 +97,29 @@ trait CreatesMockMigration
                 }
             }
 
+            // Rename
             foreach ($renameProperties as $oldName => $newName) {
                 $inject[] = "$indent\$table->renameColumn('$oldName', '$newName');";
             }
 
-            $inject[] = "});\n";
+            if (! $containsSchemaTable) {
+                $inject[] = '});';
+                $inject[] = "\n";
+            }
+
             $inject = implode("\n", Arr::map($inject, fn ($line) => "$indent$indent$line"));
+
+            if ($containsSchemaTable) {
+                $pattern = "/public function up\(\): void\n\s*{\n\s*Schema::table\('.*',\s*function\s*\(Blueprint\s*\\\$table\)\s*{\n\s*\/\/\n/";
+                $replacement = "public function up(): void\n$indent{\n$indent{$indent}Schema::table('animals', function (Blueprint \$table) {\n$inject\n";
+            } else {
+                $pattern = "/public function up\(\): void\n\s*{\n\s*\/\/\n/";
+                $replacement = "public function up(): void\n$indent{\n$inject";
+            }
+
             $newCode = preg_replace(
-                "/public function up\(\): void\n\s*{\n\s*\/\/\n/",
-                "public function up(): void\n$indent{\n$inject",
+                $pattern,
+                $replacement,
                 $migrationFile
             );
 

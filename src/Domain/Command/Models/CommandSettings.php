@@ -33,6 +33,7 @@ class CommandSettings
         public bool $createFailedEvents = false,
         array $modelProperties = [],
         array $ignoredProperties = [],
+        public ?string $excludeMigration = null,
     ) {
         $this->indentSpace = Str::repeat(' ', $this->indentation);
         $this->modelProperties = new MigrationCreateProperties($modelProperties);

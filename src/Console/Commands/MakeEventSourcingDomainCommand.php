@@ -41,6 +41,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
                             {--d|domain= : The name of the domain}
                             {--namespace=Domain : The namespace or root folder}
                             {--m|migration= : Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient}
+                            {--migration-exclude= : Indicate any existing migration for the model, that must be excluded. It accepts regex. Table name is sufficient}
                             {--a|aggregate= : Indicate if aggregate must be created or not (accepts 0 or 1)}
                             {--r|reactor= : Indicate if reactor must be created or not (accepts 0 or 1)}
                             {--u|unit-test : Indicate if PHPUnit tests must be created}
@@ -150,9 +151,13 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
         if ($this->settings->migration) {
             try {
                 // Load migrations
-                $migrationModel = (new Migration($this->settings->migration));
+                $migrationModel = (new Migration($this->settings->migration, $this->settings->excludeMigration));
                 $this->migrations = $migrationModel->migrations();
                 foreach ($migrationModel->properties() as $property) {
+                    if ($property->type->isDropped) {
+                        continue;
+                    }
+
                     $this->settings->modelProperties->add($property);
                     if ($property->type->warning) {
                         $this->components->warn($property->type->warning);
@@ -266,6 +271,7 @@ class MakeEventSourcingDomainCommand extends GeneratorCommand
             useUuid: ! is_null($primaryKey) ? $primaryKey === 'uuid' : null,
             createUnitTest: (bool) $this->option('unit-test'),
             createFailedEvents: (bool) $this->option('failed-events'),
+            excludeMigration: $this->option('migration-exclude'),
         );
 
         // Set root folder

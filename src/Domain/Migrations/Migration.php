@@ -26,7 +26,8 @@ class Migration
      * @throws Exception
      */
     public function __construct(
-        protected string $path
+        protected string $path,
+        protected ?string $excludePath = null,
     ) {
         $this->primary = null;
         $this->properties = new MigrationCreateProperties;
@@ -54,6 +55,16 @@ class Migration
             $files = File::files(database_path('migrations'));
             foreach ($files as $file) {
                 $filename = $file->getFilename();
+
+                if ($this->excludePath) {
+                    // Check if regex
+                    if (@preg_match($this->excludePath, '') !== false && preg_match($this->excludePath, $filename)) {
+                        continue;
+                    } elseif (Str::contains($filename, $this->excludePath)) {
+                        continue;
+                    }
+                }
+
                 if (Str::contains($filename, $this->path)) {
                     $this->migrations[] = basename($filename);
                     $found[] = $file->getContents();

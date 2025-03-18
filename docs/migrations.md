@@ -152,6 +152,9 @@ $tiger = Tiger::query()->where('name', 'tiger')->first();
 
 Command can generate a full domain directory structure starting from an update migration.
 
+It is possible to exclude one or more specific update migrations, using a string or regular expression. [See next
+example](#generate-a-domain-using-update-migration-excluding-some-specific-migration).
+
 E.g. create migration `2024_10_01_112344_create_tigers_table.php`
 
 ```php
@@ -197,8 +200,8 @@ return new class extends Migration
 
 In this example, `id` will be used as primary key. No aggregate will be available.
 
-**Important:** to parse both create and update migrations, pass the _table name_ in the `--migration` parameter. That will
-search for all migrations containing that name. Words `create` and `update` are reserved and cannot be passed.
+**Important:** to parse both create and update migrations, pass the _table name_ in the `--migration` parameter. That
+will search for all migrations containing that name. Words `create` and `update` are reserved and cannot be passed.
 
 It is possible to specify the migration interactively or, more efficiently, passing it to command options. Please notice
 that the migration filename timestamp is not needed:
@@ -232,6 +235,129 @@ Do you confirm the generation of the domain?
 
 Domain [Animal] with model [Tiger] created successfully.
 ```
+
+## Generate a domain using update migration excluding some specific migration
+
+[⬆️ Go to TOC](#table-of-contents)
+
+Command can generate a full domain directory structure starting from an update migration, excluding specific
+migration(s) with the option `--migration-exclude`.
+
+E.g. create migration `2024_10_01_112344_create_tigers_table.php`
+
+```php
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('tigers', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name')->index();
+            $table->int('age');
+            $table->json('meta');
+            $table->timestamps();
+        });
+    }
+    
+    // etc.
+};
+```
+
+E.g. update migration #1 `2024_10_07_031123_update_tigers_table.php`
+
+```php
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('tigers', function (Blueprint $table) {
+            $table->float('age');
+        });
+    }
+    
+    // etc.
+};
+```
+
+E.g. update migration #2 `2024_10_07_031124_drop_age_column_from_tigers_table.php` (we do not want to include this)
+
+```php
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('tigers', function (Blueprint $table) {
+            $table->dropColumn('age');
+        });
+    }
+    
+    // etc.
+};
+```
+
+E.g. update migration #3 `2024_10_07_031125_drop_meta_column_from_tigers_table.php` (we do not want to include this)
+
+```php
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('tigers', function (Blueprint $table) {
+            $table->dropColumn('meta');
+        });
+    }
+    
+    // etc.
+};
+```
+
+The excluded migration can be passed in two ways:
+
+- filename
+- valid regular expression
+
+### Passing exluded migration as filename
+
+```shell
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=tigers --migration-exclude=drop_age_column_from_tigers --notifications=slack --failed-events=1 --reactor=0 --unit-test
+```
+
+Only migrations listed as `parsed` will be processed:
+
+| Migration                                                | Parsed | Excluded |
+|----------------------------------------------------------|--------|----------|
+| 2024_10_01_112344_create_tigers_table.php                | yes    |          |
+| 2024_10_07_031123_update_tigers_table.php                | yes    |          |
+| 2024_10_07_031124_drop_age_column_from_tigers_table.php  |        | yes      |
+| 2024_10_07_031125_drop_meta_column_from_tigers_table.php | yes    |          |
+
+
+### Passing exclude migration(s) as regex
+
+```shell
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=tigers --migration-exclude="/_drop/" --notifications=slack --failed-events=1 --reactor=0 --unit-test
+```
+
+Only migrations listed as `parsed` will be processed:
+
+| Migration                                                | Parsed | Excluded |
+|----------------------------------------------------------|--------|----------|
+| 2024_10_01_112344_create_tigers_table.php                | yes    |          |
+| 2024_10_07_031123_update_tigers_table.php                | yes    |          |
+| 2024_10_07_031124_drop_age_column_from_tigers_table.php  |        | yes      |
+| 2024_10_07_031125_drop_meta_column_from_tigers_table.php |        | yes      |
 
 
 ## Limitations

@@ -305,8 +305,13 @@ trait AssertsDomainGenerated
                     continue;
                 }
                 $type = $property->type->toProjection();
-                $this->assertMatchesRegularExpression("/\s*'$property->name',\n/", $generated);
-                $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
+                if ($property->type->isDropped) {
+                    $this->assertDoesNotMatchRegularExpression("/\s*'$property->name',\n/", $generated);
+                    $this->assertDoesNotMatchRegularExpression("/'$property->name' => '$type'/", $generated);
+                } else {
+                    $this->assertMatchesRegularExpression("/\s*'$property->name',\n/", $generated);
+                    $this->assertMatchesRegularExpression("/'$property->name' => '$type'/", $generated);
+                }
             }
         }
     }
@@ -357,7 +362,11 @@ trait AssertsDomainGenerated
                     continue;
                 }
                 $name = Str::camel($property->name);
-                $this->assertMatchesRegularExpression("/'$property->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
+                if ($property->type->isDropped) {
+                    $this->assertDoesNotMatchRegularExpression("/'$property->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
+                } else {
+                    $this->assertMatchesRegularExpression("/'$property->name'\s=>\s\\\$event->{$settings->nameAsPrefix}Data->$name/", $generated);
+                }
             }
         }
     }
@@ -438,6 +447,7 @@ trait AssertsDomainGenerated
         bool $createFailedEvents = false,
         array $notifications = [],
         string $rootFolder = DefaultSettingsInterface::APP,
+        ?string $excludeMigration = null,
     ): void {
         if (! $useUuid) {
             $createAggregate = false;
@@ -467,7 +477,7 @@ trait AssertsDomainGenerated
         $migrationModel = null;
         if ($migration) {
             try {
-                $migrationModel = new Migration($migration);
+                $migrationModel = new Migration($migration, $excludeMigration);
                 $useUuid = $migrationModel->primary() === 'uuid';
             } catch (Exception) {
                 $this->fail('Migration cannot be loaded: '.$migration);

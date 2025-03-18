@@ -72,7 +72,8 @@ composer require albertoarena/laravel-event-sourcing-generator
 php artisan make:event-sourcing-domain <model>
   [-d|--domain=<domain>]                           # The name of the domain
   [--namespace=<namespace>]                        # The namespace or root folder (default: "Domain")
-  [-m|--migration=<existing_migration_filename>]   # Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient
+  [-m|--migration=<existing_migration>]            # Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient
+  [--migration-exclude=<excluded_migration>]       # Indicate any existing migration for the model, that must be excluded. It accepts regex. Table name is sufficient
   [-a|--aggregate=<0|1>]                           # Indicate if aggregate must be created or not (accepts 0 or 1)
   [-r|--reactor=<0|1>]                             # Indicate if reactor must be created or not (accepts 0 or 1)
   [-u|--unit-test]                                 # Indicate if PHPUnit tests must be created
@@ -128,6 +129,28 @@ php artisan make:event-sourcing-domain Tiger \
 ```shell
 php artisan make:event-sourcing-domain Animal \
   --migration=create_animal_table \
+  --unit-test
+```
+
+#### Generate a model from existing migration using pattern and exclude specific one
+
+[Read documentation with examples](./docs/migrations.md#generate-a-domain-using-update-migration-excluding-some-specific-migration)
+
+```shell
+php artisan make:event-sourcing-domain Animal \
+  --migration=animal \
+  --migration-exclude=drop_last_column_from_animals \
+  --unit-test
+```
+
+#### Generate a model from existing migration using pattern and exclude using regex
+
+[Read documentation with examples](./docs/migrations.md#generate-a-domain-using-update-migration-excluding-some-specific-migration)
+
+```shell
+php artisan make:event-sourcing-domain Animal \
+  --migration=animal \
+  --migration-exclude="/drop_.*_from_animals/" \
   --unit-test
 ```
 

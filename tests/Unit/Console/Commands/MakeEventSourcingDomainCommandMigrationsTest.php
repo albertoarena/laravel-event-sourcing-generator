@@ -617,6 +617,199 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
      * @throws Exception
      */
     #[Test]
+    public function it_can_create_a_model_and_domain_with_update_migration_excluding_one_by_filename()
+    {
+        $createMigration = basename($this->createMockCreateMigration(
+            tableName: 'animal',
+            modelProperties: [
+                'name' => 'string',
+                'age' => 'int',
+                'number_of_bones' => '?int',
+                'colour' => 'string',
+            ]
+        ));
+
+        // Create processed migration
+        $updateMigration = basename($this->createMockUpdateMigration(
+            'animal',
+            updateProperties: [
+                'age' => 'float',
+                'new_field' => '?string',
+            ],
+            renameProperties: [
+                'colour' => 'color',
+            ],
+        ));
+
+        // Create ignored named migration
+        $ignoreMigration = 'drop_columns_from_animals_table';
+        $this->createMockUpdateMigration(
+            'animal',
+            dropProperties: [
+                'number_of_bones',
+                'new_field',
+            ],
+            renameProperties: [
+                'age' => 'animal_age',
+            ],
+            migrationName: $ignoreMigration
+        );
+
+        $model = 'Animal';
+
+        $expectedProperties = [
+            'name' => 'string',
+            'age' => 'float',
+            'number_of_bones' => '?int',
+            'new_field' => '?string',
+            'color' => 'string',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', [
+            'model' => $model,
+            '--domain' => $model,
+            '--migration' => 'animals',
+            '--migration-exclude' => $ignoreMigration,
+            '--aggregate' => 1,
+            '--reactor' => 0,
+        ])
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', $createMigration."\n".$updateMigration],
+                    ['Primary key', 'uuid'],
+                    ['Create Aggregate class', 'yes'],
+                    ['Create Reactor class', 'no'],
+                    ['Create PHPUnit tests', 'no'],
+                    ['Create failed events', 'no'],
+                    ['Model properties', implode("\n", Arr::map($expectedProperties, fn ($type, $model) => "$type $model"))],
+                    ['Notifications', 'no'],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            $model,
+            migration: 'animal',
+            createReactor: false,
+            modelProperties: $expectedProperties,
+            excludeMigration: $ignoreMigration,
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_update_migration_excluding_one_by_regex()
+    {
+        $createMigration = basename($this->createMockCreateMigration(
+            tableName: 'animal',
+            modelProperties: [
+                'name' => 'string',
+                'age' => 'int',
+                'number_of_bones' => '?int',
+                'colour' => 'string',
+            ]
+        ));
+
+        // Create processed migration
+        $updateMigration = basename($this->createMockUpdateMigration(
+            'animal',
+            updateProperties: [
+                'age' => 'float',
+                'new_field' => '?string',
+            ],
+            renameProperties: [
+                'colour' => 'color',
+            ],
+        ));
+
+        // Create 2 ignored named migrations
+        $this->createMockUpdateMigration(
+            'animal',
+            dropProperties: [
+                'number_of_bones',
+            ],
+            renameProperties: [
+                'age' => 'animal_age',
+            ],
+            migrationName: 'drop_columns_first_from_animals'
+        );
+        $this->createMockUpdateMigration(
+            'animal',
+            dropProperties: [
+                'new_field',
+            ],
+            migrationName: 'drop_columns_second_from_animals'
+        );
+
+        $model = 'Animal';
+
+        $expectedProperties = [
+            'name' => 'string',
+            'age' => 'float',
+            'number_of_bones' => '?int',
+            'new_field' => '?string',
+            'color' => 'string',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', [
+            'model' => $model,
+            '--domain' => $model,
+            '--migration' => 'animals',
+            '--migration-exclude' => '/drop_columns_.*_from_animals/',
+            '--aggregate' => 1,
+            '--reactor' => 0,
+        ])
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', $createMigration."\n".$updateMigration],
+                    ['Primary key', 'uuid'],
+                    ['Create Aggregate class', 'yes'],
+                    ['Create Reactor class', 'no'],
+                    ['Create PHPUnit tests', 'no'],
+                    ['Create failed events', 'no'],
+                    ['Model properties', implode("\n", Arr::map($expectedProperties, fn ($type, $model) => "$type $model"))],
+                    ['Notifications', 'no'],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            $model,
+            migration: 'animal',
+            createReactor: false,
+            modelProperties: $expectedProperties,
+            excludeMigration: '/drop_columns_.*_from_animals/',
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[Test]
     public function it_cannot_create_a_model_and_domain_with_damaged_migration()
     {
         $model = 'Animal';

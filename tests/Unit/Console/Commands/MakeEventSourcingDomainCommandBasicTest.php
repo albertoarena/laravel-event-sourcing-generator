@@ -33,6 +33,7 @@ class MakeEventSourcingDomainCommandBasicTest extends TestCase
         $this->assertMatchesRegularExpression('/\s*-d, --domain\[=DOMAIN]\s*The name of the domain/', $output);
         $this->assertMatchesRegularExpression('/\s*--namespace\[=NAMESPACE]\s*The namespace or root folder \[default: "Domain"]/', $output);
         $this->assertMatchesRegularExpression('/\s*-m, --migration\[=MIGRATION]\s*Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient/', $output);
+        $this->assertMatchesRegularExpression('/\s*--migration-exclude\[=MIGRATION-EXCLUDE]\s*Indicate any existing migration for the model, that must be excluded. It accepts regex. Table name is sufficient/', $output);
         $this->assertMatchesRegularExpression('/\s*-a, --aggregate\[=AGGREGATE]\s*Indicate if aggregate must be created or not \(accepts 0 or 1\)/', $output);
         $this->assertMatchesRegularExpression('/\s*-r, --reactor\[=REACTOR]\s*Indicate if reactor must be created or not \(accepts 0 or 1\)/', $output);
         $this->assertMatchesRegularExpression('/\s*-u, --unit-test\s*Indicate if PHPUnit tests must be created/', $output);
