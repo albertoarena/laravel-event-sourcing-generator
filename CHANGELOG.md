@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## 1.0.12 - 2025-03-18
+
+### What's Changed
+
+* Migrations, bug fix: exclude down() method from being parsed
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.11...v1.0.12
+
 ## 1.0.11 - 2025-03-18
 
 ### What's Changed
