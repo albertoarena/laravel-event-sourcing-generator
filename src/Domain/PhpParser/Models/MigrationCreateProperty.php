@@ -31,6 +31,18 @@ class MigrationCreateProperty
         }
     }
 
+    protected static function getArrayExprValues(Node\Expr\Array_ $value): array
+    {
+        $ret = [];
+        foreach ($value->items as $item) {
+            if ($item->value instanceof Node\Scalar\String_) {
+                $ret[] = $item->value->value;
+            }
+        }
+
+        return $ret;
+    }
+
     protected static function exprMethodCallToTypeArgs(Node\Expr\MethodCall $expr, bool $nullable = false): array
     {
         if ($expr->var instanceof Node\Expr\MethodCall) {
@@ -38,17 +50,32 @@ class MigrationCreateProperty
         }
 
         $type = $expr->name->name;
-        $args = array_filter(Arr::map($expr->args ?? [], fn (Node\Arg $arg) => $arg->value instanceof Node\Scalar\String_ ? $arg->value->value : null));
+        $args = array_filter(
+            Arr::map(
+                $expr->args ?? [],
+                fn (Node\Arg $arg) => $arg->value instanceof Node\Scalar\String_ ?
+                    $arg->value->value :
+                    (
+                        $arg->value instanceof Node\Expr\Array_ ?
+                        self::getArrayExprValues($arg->value) :
+                        null
+                    )
+            )
+        );
 
         return [$type, $args, $nullable];
     }
 
     /**
+     * @return MigrationCreateProperty[]
+     *
      * @throws MigrationInvalidPrimaryKeyException
      */
-    public static function createFromExprMethodCall(Node\Expr\MethodCall $expr): self
+    public static function createPropertiesFromExprMethodCall(Node\Expr\MethodCall $expr): array
     {
         $warning = null;
+        $droppedColumns = [];
+        $renameTo = null;
         [$type, $args, $nullable] = self::exprMethodCallToTypeArgs($expr);
 
         if (! $args) {
@@ -71,16 +98,38 @@ class MigrationCreateProperty
             } else {
                 $warning = 'Type not supported for primary key';
             }
+        } elseif ($type === 'dropColumn') {
+            $droppedColumns = is_array($args[0]) ? $args[0] : $args;
+        } elseif ($type === 'renameColumn') {
+            $renameTo = $args[1];
         }
 
-        return new self(
+        if ($droppedColumns) {
+            return Arr::map(
+                $droppedColumns,
+                fn ($dropColumn) => new self(
+                    $dropColumn,
+                    new MigrationCreatePropertyType(
+                        type: $type,
+                        nullable: $nullable,
+                        isIgnored: in_array($dropColumn, BlueprintUnsupportedInterface::IGNORED),
+                        warning: $warning,
+                        isDropped: true,
+                        renameTo: $renameTo
+                    ),
+                )
+            );
+        }
+
+        return [new self(
             $name,
             new MigrationCreatePropertyType(
                 type: $type,
                 nullable: $nullable,
                 isIgnored: in_array($name, BlueprintUnsupportedInterface::IGNORED),
                 warning: $warning,
+                renameTo: $renameTo
             ),
-        );
+        )];
     }
 }

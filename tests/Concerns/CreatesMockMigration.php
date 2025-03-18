@@ -48,7 +48,9 @@ trait CreatesMockMigration
 
     protected function createMockUpdateMigration(
         string $tableName,
-        array $modelProperties,
+        array $updateProperties = [],
+        array $dropProperties = [],
+        array $renameProperties = [],
     ): ?string {
         $tableName = Str::plural($tableName);
         $this->withoutMockingConsoleOutput()
@@ -67,11 +69,25 @@ trait CreatesMockMigration
 
             // Inject update table and properties
             $inject[] = "Schema::table('$tableName', function (Blueprint \$table) {";
-            foreach ($modelProperties as $name => $type) {
+            foreach ($updateProperties as $name => $type) {
                 $nullable = Str::startsWith($type, '?') ? '->nullable()' : '';
                 $type = $nullable ? Str::after($type, '?') : $type;
                 $inject[] = "$indent\$table->".$this->builtInTypeToColumnType($type)."('$name')$nullable;";
             }
+
+            foreach ($dropProperties as $name) {
+                if (is_array($name)) {
+                    $name = implode(', ', array_map(fn ($v) => "'$v'", $name));
+                    $inject[] = "$indent\$table->dropColumn([$name]);";
+                } else {
+                    $inject[] = "$indent\$table->dropColumn('$name');";
+                }
+            }
+
+            foreach ($renameProperties as $oldName => $newName) {
+                $inject[] = "$indent\$table->renameColumn('$oldName', '$newName');";
+            }
+
             $inject[] = "});\n";
             $inject = implode("\n", Arr::map($inject, fn ($line) => "$indent$indent$line"));
             $newCode = preg_replace(

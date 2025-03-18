@@ -33,11 +33,16 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
                     if ($node instanceof Node\Stmt\Expression) {
                         // Collect properties from Schema::up method
                         if ($node->expr instanceof Node\Expr\MethodCall) {
-                            $property = MigrationCreateProperty::createFromExprMethodCall($node->expr);
-                            if (! $property->type->isIgnored) {
-                                $this->properties[$property->name] = $property;
-                            } elseif (! $property->type->isSkipped) {
-                                $this->ignored[$property->name] = $property;
+                            foreach (MigrationCreateProperty::createPropertiesFromExprMethodCall($node->expr) as $property) {
+                                if ($property->type->isDropped) {
+                                    $this->properties[$property->name] = $property;
+                                } elseif ($property->type->renameTo) {
+                                    $this->properties[$property->name] = $property;
+                                } elseif (! $property->type->isIgnored) {
+                                    $this->properties[$property->name] = $property;
+                                } elseif (! $property->type->isSkipped) {
+                                    $this->ignored[$property->name] = $property;
+                                }
                             }
                         }
                     }

@@ -30,9 +30,29 @@ class MigrationCreateProperties
     {
         // Check if property type is correct and if it already exists
         if ($property instanceof MigrationCreateProperty) {
-            if ($this->collection->offsetExists($property->name) && ! $overwriteIfExists) {
+            $exists = $this->collection->offsetExists($property->name);
+            if ($exists && ! $overwriteIfExists) {
                 return $this;
             }
+
+            if ($exists) {
+                /** @var MigrationCreateProperty $existing */
+                $existing = $this->collection->offsetGet($property->name);
+                if ($property->type->isDropped) {
+                    // Remove item
+                    $this->collection->offsetUnset($property->name);
+
+                    return $this;
+                } elseif ($property->type->renameTo) {
+                    // Rename item
+                    $existing->name = $property->type->renameTo;
+                    $this->collection->offsetSet($existing->name, $existing);
+                    $this->collection->offsetUnset($property->name);
+
+                    return $this;
+                }
+            }
+
             $this->collection->offsetSet($property->name, $property);
         }
 

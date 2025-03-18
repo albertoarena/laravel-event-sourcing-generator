@@ -543,6 +543,80 @@ class MakeEventSourcingDomainCommandMigrationsTest extends TestCase
      * @throws Exception
      */
     #[Test]
+    public function it_can_create_a_model_and_domain_with_update_migration_modifying_columns()
+    {
+        $createMigration = basename($this->createMockCreateMigration(
+            tableName: 'animal',
+            modelProperties: [
+                'name' => 'string',
+                'age' => 'int',
+                'number_of_bones' => '?int',
+                'colour' => 'string',
+                'dummy' => 'string',
+            ]
+        ));
+
+        $updateMigration = basename($this->createMockUpdateMigration(
+            'animal',
+            updateProperties: [
+                'age' => 'float',
+                'new_field' => '?string',
+            ],
+            dropProperties: [
+                'number_of_bones',
+                ['new_field', 'dummy'],
+            ],
+            renameProperties: [
+                'colour' => 'color',
+            ],
+        ));
+
+        $model = 'Animal';
+
+        $expectedProperties = [
+            'name' => 'string',
+            'age' => 'float',
+            'color' => 'string',
+        ];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--domain' => $model, '--migration' => 'animals', '--aggregate' => 1, '--reactor' => 0])
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', $createMigration."\n".$updateMigration],
+                    ['Primary key', 'uuid'],
+                    ['Create Aggregate class', 'yes'],
+                    ['Create Reactor class', 'no'],
+                    ['Create PHPUnit tests', 'no'],
+                    ['Create failed events', 'no'],
+                    ['Model properties', implode("\n", Arr::map($expectedProperties, fn ($type, $model) => "$type $model"))],
+                    ['Notifications', 'no'],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            $model,
+            migration: 'animal',
+            createReactor: false,
+            modelProperties: $expectedProperties,
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[Test]
     public function it_cannot_create_a_model_and_domain_with_damaged_migration()
     {
         $model = 'Animal';

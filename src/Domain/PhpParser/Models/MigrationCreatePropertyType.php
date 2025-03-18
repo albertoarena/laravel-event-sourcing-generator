@@ -22,6 +22,8 @@ class MigrationCreatePropertyType
         bool $nullable = false,
         bool $isIgnored = false,
         public readonly ?string $warning = null,
+        public bool $isDropped = false,
+        public ?string $renameTo = null,
     ) {
         $this->nullable = false;
         if ($nullable) {
