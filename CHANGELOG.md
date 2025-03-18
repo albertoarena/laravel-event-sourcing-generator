@@ -2,12 +2,19 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## 1.0.10 - 2025-03-18
+
+### What's Changed
+
+* Composer update (Laravel 11.44.2)
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.9...v1.0.10
+
 ## 1.0.9 - 2025-03-16
 
 ### What's Changed
 
 * Add database notifications
-* Laravel 11.44.2
 
 **Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.8...v1.0.9
 
