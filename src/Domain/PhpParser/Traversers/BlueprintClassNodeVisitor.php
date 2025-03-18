@@ -16,6 +16,7 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
     public function __construct(
         protected array &$properties,
         protected array &$ignored,
+        protected ?string $currentMethod = null,
     ) {}
 
     /**
@@ -30,7 +31,11 @@ class BlueprintClassNodeVisitor extends NodeVisitorAbstract
                     // Nope
                 },
                 function (Node $node) {
-                    if ($node instanceof Node\Stmt\Expression) {
+                    if ($node instanceof Node\Stmt\ClassMethod) {
+                        $this->currentMethod = $node->name->name;
+                    }
+
+                    if ($node instanceof Node\Stmt\Expression && $this->currentMethod === 'up') {
                         // Collect properties from Schema::up method
                         if ($node->expr instanceof Node\Expr\MethodCall) {
                             foreach (MigrationCreateProperty::createPropertiesFromExprMethodCall($node->expr) as $property) {

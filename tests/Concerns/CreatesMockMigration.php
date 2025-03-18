@@ -73,54 +73,76 @@ trait CreatesMockMigration
             $containsSchemaTable = str_contains($migrationFile, "Schema::table('$tableName', function (Blueprint \$table) {");
 
             $indent = Str::repeat(' ', 4);
-            $inject = [];
+            $upInject = [];
+            $downInject = [];
 
             // Inject update table and properties
             if (! $containsSchemaTable) {
-                $inject[] = "Schema::table('$tableName', function (Blueprint \$table) {";
+                $upInject[] = "Schema::table('$tableName', function (Blueprint \$table) {";
+                $downInject[] = "Schema::table('$tableName', function (Blueprint \$table) {";
             }
 
             // Update
             foreach ($updateProperties as $name => $type) {
                 $nullable = Str::startsWith($type, '?') ? '->nullable()' : '';
                 $type = $nullable ? Str::after($type, '?') : $type;
-                $inject[] = "$indent\$table->".$this->builtInTypeToColumnType($type)."('$name')$nullable;";
+                $upInject[] = "$indent\$table->".$this->builtInTypeToColumnType($type)."('$name')$nullable;";
+                $downInject[] = "$indent\$table->dropColumn('$name');";
             }
 
             // Drop
             foreach ($dropProperties as $name) {
                 if (is_array($name)) {
                     $name = implode(', ', array_map(fn ($v) => "'$v'", $name));
-                    $inject[] = "$indent\$table->dropColumn([$name]);";
+                    $upInject[] = "$indent\$table->dropColumn([$name]);";
                 } else {
-                    $inject[] = "$indent\$table->dropColumn('$name');";
+                    $upInject[] = "$indent\$table->dropColumn('$name');";
                 }
             }
 
             // Rename
             foreach ($renameProperties as $oldName => $newName) {
-                $inject[] = "$indent\$table->renameColumn('$oldName', '$newName');";
+                $upInject[] = "$indent\$table->renameColumn('$oldName', '$newName');";
             }
 
             if (! $containsSchemaTable) {
-                $inject[] = '});';
-                $inject[] = "\n";
+                $upInject[] = '});';
+                $upInject[] = "\n";
             }
 
-            $inject = implode("\n", Arr::map($inject, fn ($line) => "$indent$indent$line"));
-
+            $upInject = implode("\n", Arr::map($upInject, fn ($line) => "$indent$indent$line"));
             if ($containsSchemaTable) {
                 $pattern = "/public function up\(\): void\n\s*{\n\s*Schema::table\('.*',\s*function\s*\(Blueprint\s*\\\$table\)\s*{\n\s*\/\/\n/";
-                $replacement = "public function up(): void\n$indent{\n$indent{$indent}Schema::table('animals', function (Blueprint \$table) {\n$inject\n";
+                $replacement = "public function up(): void\n$indent{\n$indent{$indent}Schema::table('animals', function (Blueprint \$table) {\n$upInject\n";
             } else {
                 $pattern = "/public function up\(\): void\n\s*{\n\s*\/\/\n/";
-                $replacement = "public function up(): void\n$indent{\n$inject";
+                $replacement = "public function up(): void\n$indent{\n$upInject";
             }
 
             $newCode = preg_replace(
                 $pattern,
                 $replacement,
                 $migrationFile
+            );
+
+            // Add drop columns to down section
+            if (! $containsSchemaTable) {
+                $downInject[] = '});';
+                $downInject[] = "\n";
+            }
+            $downInject = implode("\n", Arr::map($downInject, fn ($line) => "$indent$indent$line"));
+            if ($containsSchemaTable) {
+                $pattern = "/public function down\(\): void\n\s*{\n\s*Schema::table\('.*',\s*function\s*\(Blueprint\s*\\\$table\)\s*{\n\s*\/\/\n/";
+                $replacement = "public function down(): void\n$indent{\n$indent{$indent}Schema::table('animals', function (Blueprint \$table) {\n$downInject\n";
+            } else {
+                $pattern = "/public function down\(\): void\n\s*{\n\s*\/\/\n/";
+                $replacement = "public function down(): void\n$indent{\n$downInject";
+            }
+
+            $newCode = preg_replace(
+                $pattern,
+                $replacement,
+                $newCode
             );
 
             // Save file with new properties
