@@ -5,8 +5,9 @@
 ![Version](https://img.shields.io/github/v/tag/albertoarena/laravel-event-sourcing-generator?label=version)
 ![Code Size](https://img.shields.io/github/languages/code-size/albertoarena/laravel-event-sourcing-generator)
 
-Laravel event sourcing generator adds a new Artisan command that can generate a full domain directory structure
-for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
+Laravel event sourcing generator scaffolds complete domain structures for [Spatie's Laravel Event Sourcing](https://github.com/spatie/laravel-event-sourcing), providing a single Artisan command to generate events, projections, projectors, aggregates, reactors, actions, DTOs, notifications, and PHPUnit tests.
+
+**New to event sourcing?** Check out [Spatie's documentation](https://spatie.be/docs/laravel-event-sourcing) to understand projections, aggregates, and reactors.
 
 ## Table of Contents
 
@@ -15,6 +16,8 @@ for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
 - [Installation](#installation)
     - [Compatibility](#compatibility)
     - [Install](#install)
+- [Quick Start](#quick-start)
+- [What Gets Generated](#what-gets-generated)
 - [Usage](#usage)
     - [Show help](#show-help)
     - [Basic usage](#basic-usage)
@@ -32,13 +35,9 @@ for [Spatie event sourcing](https://github.com/spatie/laravel-event-sourcing).
 
 ## Changelog
 
-[⬆️ Go to TOC](#table-of-contents)
-
 Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
 
 ## Contributing
-
-[⬆️ Go to TOC](#table-of-contents)
 
 Feel free to fork, improve and create a pull request.
 
@@ -46,17 +45,13 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## Installation
 
-[⬆️ Go to TOC](#table-of-contents)
-
 ### Compatibility
 
-| What                                                                        | Version         |
-|-----------------------------------------------------------------------------|-----------------|
-| PHP                                                                         | 8.2 / 8.3       |
-| [Laravel](https://github.com/laravel/laravel)                               | 10.x / 11.x (*) |
-| [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x             |
-
-> (*) Package has been tested in Laravel 10, even it is not officially released for that version.
+| What                                                                        | Version     |
+|-----------------------------------------------------------------------------|-------------|
+| PHP                                                                         | 8.3 / 8.4   |
+| [Laravel](https://github.com/laravel/laravel)                               | 10.x / 11.x |
+| [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x         |
 
 ### Install
 
@@ -64,25 +59,65 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 composer require albertoarena/laravel-event-sourcing-generator
 ```
 
+## Quick Start
+
+Generate a basic domain structure:
+
+```shell
+php artisan make:event-sourcing-domain Animal --domain=Animal
+```
+
+This creates a complete event-sourced domain with events, projections, projectors, and actions in `app/Domain/Animal/Animal/`.
+
+For more advanced features, see the [Usage](#usage) section below.
+
+## What Gets Generated
+
+Running the command creates this structure in your `app/Domain/{DomainName}/{ModelName}/` directory:
+
+**Always Generated:**
+- `Actions/` - Create/Update/Delete action classes
+- `DataTransferObjects/` - DTOs for model data
+- `Events/` - Domain events (Created, Updated, Deleted)
+- `Projections/` - Read model (Eloquent model)
+- `Projectors/` - Event handlers that update projections
+
+**Optional (with flags):**
+- `Aggregates/` - Aggregate root (`--aggregate=1`, requires uuid primary key)
+- `Reactors/` - Side-effect handlers (`--reactor=1`)
+- `Notifications/` - Event notifications (`--notifications=database,mail,slack,teams`)
+  - `Notifications/Concerns/` - Shared notification traits
+- `tests/Domain/{DomainName}/{ModelName}/` - PHPUnit tests (`--unit-test`)
+
+**With Failed Events (`--failed-events=1`):**
+- Additional events: `{Model}CreationFailed`, `{Model}UpdateFailed`, `{Model}DeletionFailed`
+- Corresponding notifications if `--notifications` is also specified
+
 ## Usage
 
-[⬆️ Go to TOC](#table-of-contents)
-
 ```text
-php artisan make:event-sourcing-domain <model>
-  [-d|--domain=<domain>]                           # The name of the domain
-  [--namespace=<namespace>]                        # The namespace or root folder (default: "Domain")
-  [-m|--migration=<existing_migration>]            # Indicate any existing migration for the model, with or without timestamp prefix. Table name is sufficient
-  [--migration-exclude=<excluded_migration>]       # Indicate any existing migration for the model, that must be excluded. It accepts regex. Table name is sufficient
-  [-a|--aggregate=<0|1>]                           # Indicate if aggregate must be created or not (accepts 0 or 1)
-  [-r|--reactor=<0|1>]                             # Indicate if reactor must be created or not (accepts 0 or 1)
-  [-u|--unit-test]                                 # Indicate if PHPUnit tests must be created
-  [-p|--primary-key=<uuid|id>]                     # Indicate which is the primary key (uuid, id)
-  [--indentation=<indent>]                         # Indentation spaces
-  [--failed-events=<0|1>]                          # Indicate if failed events must be created (accepts 0 or 1)
-  [--notifications=<database,mail,no,slack,teams>] # Indicate if notifications must be created, comma separated (accepts database,mail,no,slack,teams)
-  [--root=<root>                                   # The name of the root folder (default: "app")
+php artisan make:event-sourcing-domain <model> [options]
 ```
+
+**Basic Options:**
+- `-d|--domain=<domain>` - The name of the domain
+- `--namespace=<namespace>` - The namespace or root folder (default: "Domain")
+- `--root=<root>` - The name of the root folder (default: "app")
+
+**Migration Options:**
+- `-m|--migration=<migration>` - Existing migration for the model (with or without timestamp prefix, or table name)
+- `--migration-exclude=<pattern>` - Migration pattern to exclude (supports regex)
+
+**Feature Flags:**
+- `-a|--aggregate=<0|1>` - Generate aggregate (requires uuid primary key)
+- `-r|--reactor=<0|1>` - Generate reactor
+- `-u|--unit-test` - Generate PHPUnit tests
+- `--failed-events=<0|1>` - Generate failed event classes
+- `--notifications=<types>` - Generate notifications (database,mail,slack,teams, or no)
+
+**Model Configuration:**
+- `-p|--primary-key=<uuid|id>` - Primary key type (default: uuid)
+- `--indentation=<spaces>` - Indentation spaces for generated code (default: 4)
 
 ### Show help
 
@@ -91,8 +126,6 @@ php artisan help make:event-sourcing-domain
 ```
 
 ### Basic usage
-
-[⬆️ Go to TOC](#table-of-contents)
 
 [Documentation about basic usage](./docs/basic-usage.md)
 
@@ -154,15 +187,7 @@ php artisan make:event-sourcing-domain Animal \
   --unit-test
 ```
 
-#### Generate a model from existing migration with PHPUnit tests
-
-```shell
-php artisan make:event-sourcing-domain Animal \
-  --migration=create_animal_table \
-  --unit-test
-```
-
-#### Generate a model from existing migration with failed events and database / mail / Slack notifications
+#### Generate a model from existing migration with failed events and notifications
 
 ```shell
 php artisan make:event-sourcing-domain Animal \
@@ -172,8 +197,6 @@ php artisan make:event-sourcing-domain Animal \
 ```
 
 ### Domain and namespace
-
-[⬆️ Go to TOC](#table-of-contents)
 
 [Read documentation about directory structure](./docs/domain-and-namespace.md#directory-structure)
 
@@ -195,8 +218,6 @@ php artisan make:event-sourcing-domain Tiger --namespace=MyDomain --domain=Anima
 ```
 
 ### Advanced usage
-
-[⬆️ Go to TOC](#table-of-contents)
 
 #### Set primary key
 
@@ -271,8 +292,6 @@ php artisan make:event-sourcing-domain Animal --root=src
 ```
 
 ## Limitations and future enhancements
-
-[⬆️ Go to TOC](#table-of-contents)
 
 ### Blueprint column types
 
