@@ -133,7 +133,10 @@ Namespace and root folder are customizable via `--namespace` and `--root` option
 ## Critical Boundaries - NEVER Cross These Lines
 
 ### DO NOT Read the following folders
-- `.docs`
+- `/.docs`
+- `/.idea`
+- `/.phpunit.cache`
+- `/reports`
 
 ### DO NOT Modify These Core Files
 - **`.gitignore`** - NEVER modify
@@ -143,4 +146,4 @@ Namespace and root folder are customizable via `--namespace` and `--root` option
 1. **NEVER modify `.gitignore`**
 2. **NEVER force commit** using `--no-verify`, `-f`, or similar flags
 3. **ALWAYS check `git check-ignore <path>`** before committing files to verify they should be tracked
-5. **Ask always before committing**
+4. **ALWAYS ask** before committing
