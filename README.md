@@ -1,8 +1,9 @@
 # Laravel event sourcing generator
 
 ![build-test](coverage.svg)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/albertoarena/laravel-event-sourcing-generator.svg?style=flat-square)](https://packagist.org/packages/albertoarena/laravel-event-sourcing-generator)
+[![Total Downloads](https://img.shields.io/packagist/dt/albertoarena/laravel-event-sourcing-generator.svg?style=flat-square)](https://packagist.org/packages/albertoarena/laravel-event-sourcing-generator)
 [![License](https://img.shields.io/badge/license-MIT-red.svg?style=flat-square)](LICENSE.md)
-![Version](https://img.shields.io/github/v/tag/albertoarena/laravel-event-sourcing-generator?label=version)
 ![Code Size](https://img.shields.io/github/languages/code-size/albertoarena/laravel-event-sourcing-generator)
 
 Laravel event sourcing generator scaffolds complete domain structures for [Spatie's Laravel Event Sourcing](https://github.com/spatie/laravel-event-sourcing), providing a single Artisan command to generate events, projections, projectors, aggregates, reactors, actions, DTOs, notifications, and PHPUnit tests.
@@ -138,7 +139,7 @@ php artisan make:event-sourcing-domain Animal \
 
 #### Generate a model with different domain
 
-[Read documentation with examples](./docs/domain-and-namespace.md#choosing-the-name-of-the-domain)
+[Read documentation with examples](./docs/domain-and-namespace.md#specify-the-name-of-the-domain)
 
 ```shell
 php artisan make:event-sourcing-domain Tiger \
@@ -147,7 +148,7 @@ php artisan make:event-sourcing-domain Tiger \
 
 #### Generate a model with different domain and namespace
 
-[Read documentation with examples](./docs/domain-and-namespace.md#choosing-the-namespace)
+[Read documentation with examples](./docs/domain-and-namespace.md#specify-the-namespace)
 
 ```shell
 php artisan make:event-sourcing-domain Tiger \
