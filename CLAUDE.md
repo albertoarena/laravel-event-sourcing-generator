@@ -134,8 +134,8 @@ Namespace and root folder are customizable via `--namespace` and `--root` option
 
 ### Storage
 - Store all Claude-related documentation in the `.claude` directory
-- Plans: `docs/plans/{developer}/` (e.g., `docs/plans/alberto/`)
-- Completed plans: `docs/plans/{developer}/completed/`
+- Plans: `.claude/plans/{developer}/` (e.g., `.claude/plans/alberto/`)
+- Completed plans: `.claude/plans/{developer}/completed/`
 
 ### Plan File Format
 - Format: `YYYY-MM-DD-<short-description>.md`
@@ -192,7 +192,7 @@ This summary is for non-technical stakeholders and should answer:
 
 ### Plan Completion
 **IMPORTANT:** When a plan's implementation is fully completed:
-1. Move the plan file from `docs/plans/{developer}/` to `docs/plans/{developer}/completed/`
+1. Move the plan file from `.claude/plans/{developer}/` to `.claude/plans/{developer}/completed/`
 2. Update the plan's changelog with the completion date
 3. If the system/feature warrants it, create a priming document in `.claude/priming/`
 
@@ -237,7 +237,8 @@ A plan is considered complete when all implementation tasks are done and tested,
 
 ### DO NOT Modify These Core Files
 - **`.gitignore`** - NEVER modify
-- **Git-tracked files** - Assume files tracked by git are core files unless explicitly told otherwise
+- **Source and test files** (`src/`, `tests/`, `config/`, `composer.json`) - Treat as core files; only modify when explicitly asked
+- Exceptions: `CLAUDE.md`, `.claude/`, `docs/`, and `README.md` may be updated as part of documentation tasks
 
 ### Git Safety Rules - Follow These Strictly
 1. **NEVER modify `.gitignore`**

@@ -31,6 +31,3 @@ Homestead.json
 # Coverage
 reports
 clover.xml
-
-# LLM
-.claude

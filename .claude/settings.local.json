@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(php artisan test:*)",
+      "Bash(git commit:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(php artisan:*)",
+      "Bash(ls:*)",
+      "Bash(git mv:*)"
+    ]
+  },
+  "model": "sonnet"
+}
