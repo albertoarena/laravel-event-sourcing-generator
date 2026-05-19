@@ -6,6 +6,25 @@ appreciated and help make this project better for everyone.
 The following guidelines are here to ensure the contribution
 process runs smoothly.
 
+## Prerequisites
+
+Before contributing, make sure your environment matches the versions this package supports:
+
+- PHP 8.3 or 8.4
+- Composer 2.x
+- Laravel 10.x or 11.x (pulled transitively via Orchestra Testbench)
+- Spatie Laravel Event Sourcing 7.x
+
+## Local setup
+
+Clone your fork and bootstrap the Testbench workbench:
+
+```bash
+composer install
+composer prepare   # package discovery
+composer build     # build the Testbench workbench
+```
+
 ## How Can I Contribute?
 
 ### 1. Reporting Bugs
@@ -54,15 +73,64 @@ Want to fix a bug or implement a feature? Great! Here’s how to contribute code
    ```bash
    composer test-coverage
    ```
-6. **Commit** your changes with a clear and concise commit message.
-7. **Push** your branch to your forked repository:
+6. **Update `CHANGELOG.md`** with a bullet under an `## Unreleased` heading (create it if missing), describing the user-visible change.
+7. **Commit** your changes following the conventions below.
+8. **Push** your branch to your forked repository:
    ```bash
    git push origin feature/your-feature-name
    ```
-8. Open a **pull request (PR)** to the main repository:
+9. Open a **pull request (PR)** to the main repository:
     - Provide a detailed description of your changes.
     - Reference any related issues.
+    - Include the PR checklist below.
     - Wait for feedback or approval from the maintainers.
+
+#### Commit message conventions
+
+- Prefix the subject with a type matching the existing history: `Feature:`, `Fix:`, `Docs:`, `Chore:`, `Refactor:`, `Test:`.
+- Keep the subject line under 50 characters.
+- Use the body to explain *what* and *why*, not *how*.
+- Do not include AI/Claude co-author attribution.
+- Use a heredoc for multi-line messages:
+  ```bash
+  git commit -m "$(cat <<'EOF'
+  Feature: short subject
+
+  Longer explanation of what changed and why.
+  EOF
+  )"
+  ```
+
+#### PR checklist
+
+Copy this into your pull request description:
+
+```markdown
+- [ ] `composer test` passes
+- [ ] `composer check` passes (Pint)
+- [ ] `composer static` passes (PHPStan/LaraStan)
+- [ ] `CHANGELOG.md` updated under "Unreleased"
+- [ ] Docs updated (`README.md`, `docs/`) if behaviour changed
+- [ ] New/changed stubs covered by tests
+```
+
+### Contributing patterns
+
+Two contribution shapes are common in this package. Each has a short recipe.
+
+#### Adding or modifying a stub
+
+- Stubs live under `stubs/`.
+- If you introduce a new stub *context* (aggregate, reactor, notification, etc.), update `src/Domain/Stubs/stub-mapping.json` so the generator picks it up.
+- Template variables use both `DummyName` and `{{ kebab-case }}` / `{{kebab-case}}` forms — match the surrounding stub.
+- Add coverage under `tests/Unit/` that exercises the change via `make:event-sourcing-domain`.
+
+#### Adding a Blueprint column type
+
+- Map the column type to a PHP type in `src/Domain/Blueprint/HasBlueprintColumnType.php`.
+- Add a Faker expression in `src/Domain/Blueprint/HasBlueprintFake.php`.
+- Document support (or any caveats) in `docs/migrations.md`.
+- Add a parser test under `tests/Unit/` that uses a migration with the new column type.
 
 ### Improving Documentation
 
@@ -88,6 +156,24 @@ To maintain a welcoming and collaborative environment:
   using [LaraStan](https://github.com/larastan/larastan).
 - Write clear, maintainable, and well-documented code.
 - Ensure your code passes all tests and adheres to the project’s formatting rules.
+
+Useful composer scripts:
+
+```bash
+composer fix      # auto-fix code style with Pint
+composer check    # verify code style without fixing (Pint --test)
+composer static   # PHPStan / LaraStan analysis
+composer test     # run the PHPUnit suite
+composer all      # test + fix + check + static
+```
+
+The GitHub Actions workflows under `.github/workflows/` run the same checks on every pull request.
+
+### Testing
+
+- Tests run under [Orchestra Testbench](https://github.com/orchestral/testbench) with PHPUnit 11/12.
+- Filesystem-touching tests should use `tests/Mocks/MockFilesystem.php` rather than the real disk.
+- Tests are organised by feature area under `tests/Unit/`.
 
 ## Getting Help
 
