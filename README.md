@@ -10,6 +10,8 @@ Laravel event sourcing generator scaffolds complete domain structures for [Spati
 
 **New to event sourcing?** Check out [Spatie's documentation](https://spatie.be/docs/laravel-event-sourcing) to understand projections, aggregates, and reactors.
 
+**Using Claude Code?** Install the companion [claude-laravel-event-sourcing](https://github.com/albertoarena/claude-laravel-event-sourcing) skill to scaffold domains conversationally.
+
 ## Table of Contents
 
 - [Changelog](#changelog)
