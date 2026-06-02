@@ -18,3 +18,4 @@ jobs:
           metric: views
           color: blue
           label: 'Repo views'
+          lowercase: true
