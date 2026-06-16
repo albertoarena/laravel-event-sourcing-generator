@@ -6,23 +6,23 @@
 ## Changelog
 
 - 2026-06-09: Initial investigation
-- 2026-06-16: Verified findings against codebase; addressed Bug #1 (Slack stub hard-coded `uuid`) via TDD; flagged Bug #2's proposed fix as incorrect (would break `--indentation` because stub files contain literal 4-space indents relied on by global `replaceIndentation()` pass); deleted unused `MockFilesystem.php` (#3) and removed `stopOnFailure` from `phpunit.xml` (#10)
+- 2026-06-16: Verified findings against codebase; addressed Bug #1 (Slack stub hard-coded `uuid`) via TDD; flagged Bug #2's proposed fix as incorrect (would break `--indentation` because stub files contain literal 4-space indents relied on by global `replaceIndentation()` pass); deleted unused `MockFilesystem.php` (#3) and removed `stopOnFailure` from `phpunit.xml` (#10); investigated #11 — non-bug (`array_filter` correctly drops empty string from `--notifications=`); investigated #8 — review claim was inaccurate, `isReservedName()` from `GeneratorCommand` is used at three call sites, change reverted; scoped #9 into a dedicated plan at `.claude/plans/alberto/2026-06-16-direct-unit-tests-for-core-classes.md`; postponed all remaining refactor/cleanup items (#2, #4, #5, #6, #7) — they will not be done in this round.
 
 ## Status
 
 | # | Item | Status |
 |---|------|--------|
 | 1 | Slack notification hard-coded `uuid` | **Done** (2026-06-16) |
-| 2 | `getIndentSpace()` ignores `--indentation` | **Deferred** — proposed fix would break `--indentation`; needs different design (e.g. tokenize indentation in stub files) |
+| 2 | `getIndentSpace()` ignores `--indentation` | **Postponed** — proposed fix would break `--indentation` (stub files contain literal 4-space indents relied on by the global `replaceIndentation()` pass); proper fix requires tokenising indentation in every stub file. Not in scope now. |
 | 3 | Delete unused `MockFilesystem.php` | **Done** (2026-06-16) |
-| 4 | Gitignore `coverage.svg`, `clover.xml` | Pending — ⚠️ touches `.gitignore` (see CLAUDE.md guard) |
-| 5 | `CommandSettings` builder pattern | Pending — refactor, judgment call |
-| 6 | Split `AssertsDomainGenerated` | Pending — refactor, judgment call |
-| 7 | `HasBlueprintColumnType` → service | Pending — refactor, judgment call |
-| 8 | Extend `Command` instead of `GeneratorCommand` | Pending |
-| 9 | Add unit tests for core classes | Pending — larger plan |
+| 4 | Gitignore `coverage.svg`, `clover.xml` | **Postponed** — touches `.gitignore`, which CLAUDE.md guards against. Revisit only with explicit override. |
+| 5 | `CommandSettings` builder pattern | **Postponed** — judgment-call refactor; no concrete pain point driving it. |
+| 6 | Split `AssertsDomainGenerated` | **Postponed** — judgment-call refactor; revisit if stub set grows. |
+| 7 | `HasBlueprintColumnType` → service | **Postponed** — style preference; no functional gain. |
+| 8 | Extend `Command` instead of `GeneratorCommand` | **Not viable** — review claim was inaccurate. `isReservedName()` from `GeneratorCommand` is used at three call sites (lines 287, 294, 301). Reverted after test failures. |
+| 9 | Add unit tests for core classes | **Scoped to own plan** — see `.claude/plans/alberto/2026-06-16-direct-unit-tests-for-core-classes.md` |
 | 10 | Remove `stopOnFailure` from `phpunit.xml` | **Done** (2026-06-16) |
-| 11 | `--notifications` empty string edge case | Pending |
+| 11 | `--notifications` empty string edge case | **Non-bug** — verified empirically: `array_filter` with the `in_array(..., ACCEPTED)` predicate correctly drops the empty string from `explode(',', '')`. Function returns `[]`, which all downstream consumers handle as "no notifications". |
 
 ---
 
