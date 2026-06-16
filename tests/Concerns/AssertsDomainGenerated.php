@@ -246,7 +246,7 @@ trait AssertsDomainGenerated
         if ($parameters[0] === 'concerns') {
             if ($parameters[1] === 'has_slack_notification') {
                 $primaryKey = Str::ucfirst($settings->primaryKey());
-                $this->assertStringContainsString("\$block->field(\"*uuid:* \$this->$settings->nameAsPrefix$primaryKey\")->markdown();", $generated);
+                $this->assertStringContainsString("\$block->field(\"*{$settings->primaryKey()}:* \$this->$settings->nameAsPrefix$primaryKey\")->markdown();", $generated);
             }
         } else {
             $this->assertStringContainsString("use $rootFolder\\{$settings->namespace}\\{$settings->domain}\\Notifications\\Concerns\\HasDataAsArray", $generated);

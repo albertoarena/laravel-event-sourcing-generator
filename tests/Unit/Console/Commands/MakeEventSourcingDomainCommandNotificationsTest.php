@@ -343,6 +343,70 @@ class MakeEventSourcingDomainCommandNotificationsTest extends TestCase
         );
     }
 
+    #[RunInSeparateProcess]
+    #[Test]
+    public function it_can_create_a_model_and_domain_with_slack_notifications_and_id_primary_key()
+    {
+        $this->mockSlackPackage();
+
+        $model = 'Animal';
+
+        $properties = [
+            'name' => 'string',
+            'age' => 'int',
+            'number_of_bones' => 'int',
+        ];
+
+        $notifications = ['slack'];
+
+        $this->artisan('make:event-sourcing-domain', ['model' => $model, '--notifications' => implode(',', $notifications)])
+            ->expectsQuestion('Which is the name of the domain?', $model)
+            ->expectsQuestion('Do you want to import properties from existing database migration?', false)
+            // Properties
+            ->expectsQuestion('Do you want to specify model properties?', true)
+            ->expectsQuestion('Property name? (exit to quit)', 'name')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'string')
+            ->expectsQuestion('Property name? (exit to quit)', 'age')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'number_of_bones')
+            ->expectsQuestion('Property type? (e.g. string, int, boolean. Nullable is accepted, e.g. ?string)', 'int')
+            ->expectsQuestion('Property name? (exit to quit)', 'exit')
+            // Options
+            ->expectsQuestion('Do you want to use uuid as model primary key?', false)
+            ->expectsQuestion('Do you want to create a Reactor class?', true)
+            // Confirmation
+            ->expectsOutput('Your choices:')
+            ->expectsTable(
+                ['Option', 'Choice'],
+                [
+                    ['Model', $model],
+                    ['Domain', $model],
+                    ['Namespace', 'Domain'],
+                    ['Path', 'Domain/'.$model.'/'.$model],
+                    ['Use migration', 'no'],
+                    ['Primary key', 'id'],
+                    ['Create Aggregate class', 'no'],
+                    ['Create Reactor class', 'yes'],
+                    ['Create PHPUnit tests', 'no'],
+                    ['Create failed events', 'no'],
+                    ['Model properties', implode("\n", Arr::map($properties, fn ($type, $model) => "$type $model"))],
+                    ['Notifications', implode(',', $notifications)],
+                ]
+            )
+            ->expectsConfirmation('Do you confirm the generation of the domain?', 'yes')
+            // Result
+            ->expectsOutputToContain('INFO  Domain ['.$model.'] with model ['.$model.'] created successfully.')
+            ->doesntExpectOutputToContain('A file already exists (it was not overwritten)')
+            ->assertSuccessful();
+
+        $this->assertDomainGenerated(
+            $model,
+            useUuid: false,
+            modelProperties: $properties,
+            notifications: $notifications
+        );
+    }
+
     #[Test]
     public function it_can_create_a_model_and_domain_with_database_notifications()
     {
