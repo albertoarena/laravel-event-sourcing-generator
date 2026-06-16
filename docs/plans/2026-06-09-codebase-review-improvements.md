@@ -20,7 +20,7 @@
 | 6 | Split `AssertsDomainGenerated` | **Postponed** — judgment-call refactor; revisit if stub set grows. |
 | 7 | `HasBlueprintColumnType` → service | **Postponed** — style preference; no functional gain. |
 | 8 | Extend `Command` instead of `GeneratorCommand` | **Not viable** — review claim was inaccurate. `isReservedName()` from `GeneratorCommand` is used at three call sites (lines 287, 294, 301). Reverted after test failures. |
-| 9 | Add unit tests for core classes | **Scoped to own plan** — see `.claude/plans/alberto/2026-06-16-direct-unit-tests-for-core-classes.md` |
+| 9 | Add unit tests for core classes | **Scoped to own plan** — see `docs/plans/2026-06-16-direct-unit-tests-for-core-classes.md` |
 | 10 | Remove `stopOnFailure` from `phpunit.xml` | **Done** (2026-06-16) |
 | 11 | `--notifications` empty string edge case | **Non-bug** — verified empirically: `array_filter` with the `in_array(..., ACCEPTED)` predicate correctly drops the empty string from `explode(',', '')`. Function returns `[]`, which all downstream consumers handle as "no notifications". |
 
