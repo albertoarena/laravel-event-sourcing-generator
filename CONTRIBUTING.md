@@ -174,6 +174,17 @@ The GitHub Actions workflows under `.github/workflows/` run the same checks on e
 - Tests run under [Orchestra Testbench](https://github.com/orchestral/testbench) with PHPUnit 11/12.
 - Tests are organised by feature area under `tests/Unit/`.
 
+### Security advisories (`composer audit`)
+
+`composer audit` may flag CVEs that originate in **transitive test dependencies** (for example, the Laravel framework version pulled in by `orchestra/testbench`). These do not affect consumers of this library:
+
+- The package itself requires only `illuminate/contracts` and `illuminate/support` with no version pin, so end users bring their own Laravel.
+- Laravel framework is pulled in only as a dev dependency, used to run the test suite.
+
+When triaging an audit warning, check whether the affected package appears under `require` in `composer.json`. If it only appears under `require-dev` (or as a transitive dev dependency), it is a test-environment concern, not a library-consumer concern. Decide whether to bump the dev dependency on its own merits, not solely to silence the audit.
+
+Dependabot PRs that bump `require` dependencies should be merged once tests pass. Dependabot PRs that bump `require-dev` dependencies — especially major bumps of `orchestra/testbench` or Laravel — should be evaluated against the supported Laravel matrix before merging.
+
 ## Getting Help
 
 If you need help, feel free to:
