@@ -2,6 +2,39 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## 1.0.15 - 2026-06-16
+
+### What's Changed
+
+* Fix: Slack notification label now honours the configured primary key (was hard-coded to `uuid`, so non-UUID models incorrectly displayed `uuid` in Slack messages)
+* Chore: remove unused `tests/Mocks/MockFilesystem.php`
+* Chore: remove `stopOnFailure="true"` from `phpunit.xml` so CI surfaces all regressions in a single run
+* Chore: bump `guzzlehttp/*` transitive dev dependencies (Dependabot #18)
+* Docs: add codebase review plan and unit-test scoping plan; document `composer audit` triage for transitive dev dependencies
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.14...v1.0.15
+
+## 1.0.14 - 2026-05-06
+
+### What's Changed
+
+* Chore: upgrade PHPUnit from v11 to v12 and migrate configuration
+* Chore: add Claude local settings to `.gitignore`
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.13...v1.0.14
+
+## 1.0.13 - 2026-04-07
+
+### What's Changed
+
+* CI: update PHP versions to 8.3 and 8.4 (drop PHP 8.2)
+* Security: upgrade PHPUnit to 11.5.50
+* Docs: add CLAUDE.md guidance file, improve README structure and clarity
+* Docs: add Packagist badges and fix broken anchors
+* Chore: update dependencies
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.12...v1.0.13
+
 ## 1.0.12 - 2025-03-18
 
 ### What's Changed
