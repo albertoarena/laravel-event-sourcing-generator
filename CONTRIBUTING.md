@@ -172,7 +172,6 @@ The GitHub Actions workflows under `.github/workflows/` run the same checks on e
 ### Testing
 
 - Tests run under [Orchestra Testbench](https://github.com/orchestral/testbench) with PHPUnit 11/12.
-- Filesystem-touching tests should use `tests/Mocks/MockFilesystem.php` rather than the real disk.
 - Tests are organised by feature area under `tests/Unit/`.
 
 ## Getting Help

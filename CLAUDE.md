@@ -101,7 +101,6 @@ Namespace and root folder are customizable via `--namespace` and `--root` option
 
 - Tests use Orchestra Testbench for Laravel package testing
 - PHPUnit 11.x with PHP 8.3/8.4
-- Mock filesystem is available in `tests/Mocks/MockFilesystem.php`
 - Tests are organized by feature area under `tests/Unit/`
 
 ## Dependencies

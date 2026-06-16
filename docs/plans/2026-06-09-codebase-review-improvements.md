@@ -6,7 +6,7 @@
 ## Changelog
 
 - 2026-06-09: Initial investigation
-- 2026-06-16: Verified findings against codebase; addressed Bug #1 (Slack stub hard-coded `uuid`) via TDD; flagged Bug #2's proposed fix as incorrect (would break `--indentation` because stub files contain literal 4-space indents relied on by global `replaceIndentation()` pass)
+- 2026-06-16: Verified findings against codebase; addressed Bug #1 (Slack stub hard-coded `uuid`) via TDD; flagged Bug #2's proposed fix as incorrect (would break `--indentation` because stub files contain literal 4-space indents relied on by global `replaceIndentation()` pass); deleted unused `MockFilesystem.php` (#3) and removed `stopOnFailure` from `phpunit.xml` (#10)
 
 ## Status
 
@@ -14,14 +14,14 @@
 |---|------|--------|
 | 1 | Slack notification hard-coded `uuid` | **Done** (2026-06-16) |
 | 2 | `getIndentSpace()` ignores `--indentation` | **Deferred** — proposed fix would break `--indentation`; needs different design (e.g. tokenize indentation in stub files) |
-| 3 | Delete unused `MockFilesystem.php` | Pending |
+| 3 | Delete unused `MockFilesystem.php` | **Done** (2026-06-16) |
 | 4 | Gitignore `coverage.svg`, `clover.xml` | Pending — ⚠️ touches `.gitignore` (see CLAUDE.md guard) |
 | 5 | `CommandSettings` builder pattern | Pending — refactor, judgment call |
 | 6 | Split `AssertsDomainGenerated` | Pending — refactor, judgment call |
 | 7 | `HasBlueprintColumnType` → service | Pending — refactor, judgment call |
 | 8 | Extend `Command` instead of `GeneratorCommand` | Pending |
 | 9 | Add unit tests for core classes | Pending — larger plan |
-| 10 | Remove `stopOnFailure` from `phpunit.xml` | Pending |
+| 10 | Remove `stopOnFailure` from `phpunit.xml` | **Done** (2026-06-16) |
 | 11 | `--notifications` empty string edge case | Pending |
 
 ---
