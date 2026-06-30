@@ -2,7 +2,7 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
-## Unreleased
+## 1.1.0 - 2026-06-30
 
 ### What's Changed
 
@@ -15,6 +15,8 @@ All notable changes to `laravel-event-sorucing-generator` will be documented in 
 * Fix: harden `preg_replace`/`Str::replaceMatches` return handling in `StubReplacer` flagged by PHPStan 2
 
 This clears the three `laravel/framework` security advisories surfaced by `composer audit`, which were unpatchable on the end-of-life Laravel 11 branch. The runtime `require` constraints are unchanged (`illuminate/contracts` / `illuminate/support`), so consumers on any supported Laravel are unaffected.
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.0.15...v1.1.0
 
 ## 1.0.15 - 2026-06-16
 
