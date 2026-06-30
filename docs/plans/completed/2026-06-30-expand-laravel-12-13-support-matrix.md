@@ -2,12 +2,13 @@
 
 **Date:** 2026-06-30
 **Author:** Alberto Arena (with Claude)
-**Status:** Implemented locally — pending CI matrix verification & release (Phase 5)
+**Status:** Completed (released as v1.1.0)
 
 ## Changelog
 
 - 2026-06-30: Initial plan. Triggered by `composer audit` flagging 3 advisories in `laravel/framework` v11.51.0 (pulled transitively via `orchestra/testbench ^9`), none of which are patched within the EOL Laravel 11 branch.
 - 2026-06-30: Approved with refinements — drop Laravel 10, keep Laravel 11 as deprecated floor, **add PHP 8.5** (moved in-scope). Implemented Phases 1–4: bumped larastan `^3`/phpstan `^2`, widened testbench to `^9 || ^10 || ^11`, added PHP 8.5 to `require`, fixed 10 PHPStan-2 findings, expanded CI matrix, updated docs. Verified locally on PHP 8.4: Laravel 11/12/13 each pass 79 tests + clean PHPStan + Pint; `composer audit` clean on Laravel 13. Remaining: Phase 5 (GitHub CI run incl. PHP 8.5, tag release).
+- 2026-06-30: **Completed.** Phase 5 done — all 16 CI matrix jobs green (PHP 8.3/8.4/8.5 × Laravel 11/12/13, incl. PHP 8.5). Released as **v1.1.0** (commits `b081c9a`, `7c8ec77`; tag `v1.1.0`). Plan moved to `docs/plans/completed/`.
 
 ## Management Summary
 
