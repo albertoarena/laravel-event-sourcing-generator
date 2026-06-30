@@ -241,7 +241,7 @@ class BlueprintClassModifyNodeVisitor extends NodeVisitorAbstract
                                 // Look for Blueprint table definition
                                 foreach ($expression->expr->args as $arg) {
                                     if ($arg->value instanceof Node\Expr\Closure) {
-                                        if ($arg->value->params && $arg->value->params[0] instanceof Node\Param) {
+                                        if ($arg->value->params) {
                                             if ($arg->value->params[0]->type->name === 'Blueprint') {
                                                 // Inject properties and handle replacements
                                                 $this->handleInjectProperties($arg->value)

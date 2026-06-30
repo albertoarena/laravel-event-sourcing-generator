@@ -12,10 +12,22 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
-        php: [ 8.3, 8.4 ]
+        php: [ 8.3, 8.4, 8.5 ]
+        laravel: [ 11.*, 12.*, 13.* ]
         dependency-version: [ prefer-lowest, prefer-stable ]
+        include:
+          - laravel: 11.*
+            testbench: 9.*
+          - laravel: 12.*
+            testbench: 10.*
+          - laravel: 13.*
+            testbench: 11.*
+        exclude:
+          # Laravel 11 supports PHP 8.2-8.4 only
+          - laravel: 11.*
+            php: 8.5
 
-    name: P${{ matrix.php }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -28,8 +40,16 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, http
           coverage: none
 
+      - name: Constrain Laravel and Testbench versions
+        run: >
+          composer require --dev --no-interaction --no-update
+          "laravel/framework:${{ matrix.laravel }}"
+          "orchestra/testbench:${{ matrix.testbench }}"
+
       - name: Install dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+        run: >
+          composer update --${{ matrix.dependency-version }}
+          --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Execute tests
         run: composer run test

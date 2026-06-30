@@ -16,7 +16,6 @@ trait HasMethodNode
                 return $node;
             }
 
-            /** @var Node\Stmt\Expression $expression */
             $expression = $currentMethod->getStmts()[0] ?? null;
             if (! $expression instanceof Node\Stmt\Expression) {
                 return $node;

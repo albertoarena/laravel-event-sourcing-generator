@@ -51,11 +51,11 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ### Compatibility
 
-| What                                                                        | Version     |
-|-----------------------------------------------------------------------------|-------------|
-| PHP                                                                         | 8.3 / 8.4   |
-| [Laravel](https://github.com/laravel/laravel)                               | 10.x / 11.x |
-| [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x         |
+| What                                                                        | Version                         |
+|-----------------------------------------------------------------------------|---------------------------------|
+| PHP                                                                         | 8.3 / 8.4 / 8.5                 |
+| [Laravel](https://github.com/laravel/laravel)                               | 11.x (deprecated) / 12.x / 13.x |
+| [Spatie's event sourcing](https://github.com/spatie/laravel-event-sourcing) | 7.x                             |
 
 ### Install
 

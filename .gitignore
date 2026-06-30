@@ -34,3 +34,4 @@ clover.xml
 
 # Claude
 .claude/settings.local.json
+.claude/done/

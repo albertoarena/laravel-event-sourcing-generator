@@ -10,9 +10,9 @@ process runs smoothly.
 
 Before contributing, make sure your environment matches the versions this package supports:
 
-- PHP 8.3 or 8.4
+- PHP 8.3, 8.4 or 8.5
 - Composer 2.x
-- Laravel 10.x or 11.x (pulled transitively via Orchestra Testbench)
+- Laravel 11.x (deprecated), 12.x or 13.x (pulled transitively via Orchestra Testbench `^9 || ^10 || ^11`)
 - Spatie Laravel Event Sourcing 7.x
 
 ## Local setup

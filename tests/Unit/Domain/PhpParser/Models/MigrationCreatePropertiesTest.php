@@ -148,7 +148,6 @@ class MigrationCreatePropertiesTest extends TestCase
 
         $array = $properties->toArray();
 
-        $this->assertIsArray($array);
         $this->assertArrayHasKey('name', $array);
         $this->assertInstanceOf(MigrationCreateProperty::class, $array['name']);
     }

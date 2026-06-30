@@ -2,6 +2,20 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## Unreleased
+
+### What's Changed
+
+* Feature: add support for Laravel 12 and Laravel 13
+* Feature: add support for PHP 8.5
+* Breaking (dev/CI only): drop Laravel 10 from the test matrix (end-of-life since February 2025)
+* Deprecation: Laravel 11 is retained as a supported floor for one release but is now deprecated (security support ended March 2026); a future release will remove it
+* Chore: widen `orchestra/testbench` dev constraint to `^9 || ^10 || ^11` and expand the CI matrix to PHP 8.3/8.4/8.5 × Laravel 11/12/13
+* Chore: bump `larastan/larastan` to `^3.0` and `phpstan/phpstan` to `^2.0` (required for Laravel 12/13 static analysis)
+* Fix: harden `preg_replace`/`Str::replaceMatches` return handling in `StubReplacer` flagged by PHPStan 2
+
+This clears the three `laravel/framework` security advisories surfaced by `composer audit`, which were unpatchable on the end-of-life Laravel 11 branch. The runtime `require` constraints are unchanged (`illuminate/contracts` / `illuminate/support`), so consumers on any supported Laravel are unaffected.
+
 ## 1.0.15 - 2026-06-16
 
 ### What's Changed

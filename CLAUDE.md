@@ -100,13 +100,13 @@ Namespace and root folder are customizable via `--namespace` and `--root` option
 ## Testing
 
 - Tests use Orchestra Testbench for Laravel package testing
-- PHPUnit 11.x with PHP 8.3/8.4
+- PHPUnit 11.x / 12.x with PHP 8.3/8.4/8.5
 - Tests are organized by feature area under `tests/Unit/`
 
 ## Dependencies
 
-- PHP 8.3 or 8.4
-- Laravel 10.x / 11.x
+- PHP 8.3, 8.4 or 8.5
+- Laravel 11.x (deprecated) / 12.x / 13.x (Testbench `^9 || ^10 || ^11`)
 - Spatie Laravel Event Sourcing 7.x
 - nikic/php-parser for migration parsing
 - aldemeery/onion for pipeline pattern in stub replacement

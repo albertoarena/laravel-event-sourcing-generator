@@ -22,7 +22,7 @@
         }
     ],
     "require": {
-        "php": "^8.3|^8.4",
+        "php": "^8.3|^8.4|^8.5",
         "aldemeery/onion": "^1.0",
         "illuminate/contracts": "*",
         "illuminate/support": "*",
@@ -41,11 +41,11 @@
     },
     "require-dev": {
         "jaschilz/php-coverage-badger": "^2.0",
-        "larastan/larastan": "^2.9",
+        "larastan/larastan": "^3.0",
         "laravel/pint": "^1.1",
-        "orchestra/testbench": "^9.0",
+        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
         "php-mock/php-mock-mockery": "^1.4",
-        "phpstan/phpstan": "^1.12",
+        "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^11.4 || ^12.0"
     },
     "scripts": {

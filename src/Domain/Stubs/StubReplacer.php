@@ -121,7 +121,7 @@ class StubReplacer
 
         // Normalise empty constructor if no properties
         if (! $preparedProperties) {
-            $stub = preg_replace(
+            $stub = (string) preg_replace(
                 '/public function __construct\(\n\s*\) {}/',
                 "public function __construct(\n$indentSpace2// Add here public properties, e.g.:\n$indentSpace2// public string \$name\n{$this->settings->indentSpace}) {}",
                 $stub);
@@ -283,7 +283,7 @@ class StubReplacer
         $stub = implode("\n", $stub2);
 
         // Fix any remaining block
-        $stub = Str::replaceMatches(
+        $stub = (string) Str::replaceMatches(
             ['/\s*{%\s*if\s*.*%}/', '/\s*{%\s*endif\s*%}/'],
             ["\n", ''],
             $stub
@@ -369,11 +369,11 @@ class StubReplacer
 
     protected function fixEmptyLines(string &$stub): self
     {
-        $stub = preg_replace('/\n{3,}/', "\n\n", $stub);
-        $stub = preg_replace('/\{\s*\n\s*\n/', "{\n", $stub);
-        $stub = preg_replace('/\(\s*\n\s*\n/', "(\n", $stub);
-        $stub = preg_replace('/\s*\n(\s*})/', "\n$1", $stub);
-        $stub = preg_replace('/(} catch \(Exception \$e\) {\n)\s*\n/', '$1', $stub);
+        $stub = (string) preg_replace('/\n{3,}/', "\n\n", $stub);
+        $stub = (string) preg_replace('/\{\s*\n\s*\n/', "{\n", $stub);
+        $stub = (string) preg_replace('/\(\s*\n\s*\n/', "(\n", $stub);
+        $stub = (string) preg_replace('/\s*\n(\s*})/', "\n$1", $stub);
+        $stub = (string) preg_replace('/(} catch \(Exception \$e\) {\n)\s*\n/', '$1', $stub);
 
         return $this;
     }
