@@ -1,0 +1,65 @@
+---
+title: Laravel Event Sourcing Generator
+description: Scaffold complete event-sourced domains for spatie/laravel-event-sourcing with a single Artisan command.
+template: splash
+hero:
+  tagline: One Artisan command scaffolds a complete event-sourced domain — events, projections, projectors, aggregates, reactors, actions, DTOs, notifications and PHPUnit tests — optionally straight from an existing migration.
+  actions:
+    - text: Get Started
+      link: /laravel-event-sourcing-generator/getting-started/installation/
+      icon: right-arrow
+      variant: primary
+    - text: Quick start
+      link: /laravel-event-sourcing-generator/getting-started/quick-start/
+      variant: secondary
+    - text: View on GitHub
+      link: https://github.com/albertoarena/laravel-event-sourcing-generator
+      icon: external
+      variant: minimal
+      attrs:
+        target: _blank
+        rel: noopener noreferrer
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Why this package
+
+[Spatie's Laravel Event Sourcing](https://spatie.be/docs/laravel-event-sourcing) is powerful, but wiring up every event, projection, projector, aggregate and reactor by hand is repetitive. This package generates the whole domain structure — consistently, and optionally from an existing database migration — so you can focus on behaviour instead of boilerplate.
+
+<CardGrid stagger>
+  <Card title="Complete domains" icon="seti:folder">
+    Events, projections, projectors, actions and DTOs every time; aggregates and reactors on demand.
+  </Card>
+  <Card title="From your migrations" icon="seti:db">
+    Parse an existing migration and map every column into the DTO, projection and projector automatically.
+  </Card>
+  <Card title="Tests included" icon="approve-check">
+    Generate working PHPUnit tests covering create / update / delete out of the box.
+  </Card>
+  <Card title="Notifications" icon="email">
+    Optional database, mail, Slack and Teams notifications, with failed-event variants.
+  </Card>
+</CardGrid>
+
+## Install
+
+```bash
+composer require albertoarena/laravel-event-sourcing-generator
+```
+
+Then generate your first domain:
+
+```bash
+php artisan make:event-sourcing-domain Animal --domain=Animal
+```
+
+See [Installation](/laravel-event-sourcing-generator/getting-started/installation/) for compatibility, and the [Quick start](/laravel-event-sourcing-generator/getting-started/quick-start/) for what gets generated.
+
+:::tip[Using Claude Code?]
+Install the companion [claude-laravel-event-sourcing](https://github.com/albertoarena/claude-laravel-event-sourcing) skill to scaffold domains conversationally.
+:::
+
+:::note[New to event sourcing?]
+Read [Spatie's documentation](https://spatie.be/docs/laravel-event-sourcing) to understand projections, aggregates and reactors first.
+:::

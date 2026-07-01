@@ -1,0 +1,36 @@
+name: Docs sync
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'composer.json'
+      - '.github/workflows/test.yml'
+      - '.github/workflows/docs.yml'
+      - 'src/Console/Commands/**'
+      - 'src/Domain/Blueprint/Contracts/**'
+      - 'bin/docs-sync.php'
+      - 'website/src/content/docs/_generated/**'
+      - 'README.md'
+  pull_request:
+
+jobs:
+  docs-sync:
+    runs-on: ubuntu-latest
+    name: Verify generated docs are in sync
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --no-ansi --no-interaction --no-progress --prefer-dist
+
+      - name: Check documentation is in sync with source
+        run: composer docs:check

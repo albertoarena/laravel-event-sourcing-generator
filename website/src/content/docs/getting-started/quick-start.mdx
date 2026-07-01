@@ -1,0 +1,59 @@
+---
+title: Quick start
+description: Generate your first event-sourced domain and see what gets created.
+---
+
+Generate a basic domain structure:
+
+```bash
+php artisan make:event-sourcing-domain Animal --domain=Animal
+```
+
+This creates a complete event-sourced domain in `app/Domain/Animal/Animal/`.
+
+## What gets generated
+
+**Always generated:**
+
+- `Actions/` — Create / Update / Delete action classes
+- `DataTransferObjects/` — DTOs for model data
+- `Events/` — domain events (Created, Updated, Deleted)
+- `Projections/` — the read model (Eloquent model)
+- `Projectors/` — event handlers that update projections
+
+**Optional (with flags):**
+
+- `Aggregates/` — aggregate root (`--aggregate=1`, requires a uuid primary key)
+- `Reactors/` — side-effect handlers (`--reactor=1`)
+- `Notifications/` — event notifications (`--notifications=database,mail,slack,teams`), plus `Notifications/Concerns/` shared traits
+- `tests/Domain/{Domain}/{Model}/` — PHPUnit tests (`--unit-test`)
+
+**With failed events (`--failed-events=1`):**
+
+- Additional events: `{Model}CreationFailed`, `{Model}UpdateFailed`, `{Model}DeletionFailed`
+- Corresponding notifications when `--notifications` is also set
+
+## Using the generated code
+
+If Spatie event sourcing is configured to auto-discover projectors, the result is immediately usable:
+
+```php
+use App\Domain\Animal\Actions\CreateAnimal;
+use App\Domain\Animal\DataTransferObjects\AnimalData;
+use App\Domain\Animal\Projections\Animal;
+
+// Creates a record in the 'animals' table via the AnimalProjector
+(new CreateAnimal)(new AnimalData(
+  name: 'tiger',
+  age: 7
+));
+
+// Retrieve it
+$animal = Animal::query()->where('name', 'tiger')->first();
+```
+
+## Where next
+
+- [Basic usage](/laravel-event-sourcing-generator/guide/basic-usage/) — the interactive walkthrough
+- [Migrations](/laravel-event-sourcing-generator/guide/migrations/) — generate a domain from an existing migration
+- [Command options](/laravel-event-sourcing-generator/reference/command-options/) — every flag, generated from the command
