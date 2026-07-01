@@ -2,13 +2,14 @@
 
 **Date:** 2026-07-01
 **Author:** Alberto Arena (AI-assisted)
-**Status:** Draft — awaiting approval
+**Status:** Design finalised — ready to implement on approval.
 
 _Maintenance / dependency task — no Management Summary (per the plan guidelines)._
 
 ## Changelog
 
 - **2026-07-01** — Initial draft.
+- **2026-07-01** — Design review: locked in `…\Domain\Support\Pipeline` with an **array constructor** and a single **`process()`** method (dropping the onion/`peel` metaphor); **no free helper**; `queue()` retyped to `array`. `add()`/`pipe()` deemed unnecessary.
 
 ## Purpose
 
@@ -41,30 +42,18 @@ That means the replacement is a **~15-line reduction**, and the existing 79-test
 
 ## Options considered
 
-### Option A — tiny in-package `Pipeline` class (recommended)
-Add `src/Domain/Support/Pipeline.php` that mirrors the minimal API actually used:
+### Option A — tiny in-package `Pipeline` class (recommended, design finalised)
+Add `src/Domain/Support/Pipeline.php` — minimal, array constructor + a single `process()` method (design decisions below):
 
 ```php
 namespace Albertoarena\LaravelEventSourcingGenerator\Domain\Support;
 
 final class Pipeline
 {
-    /** @var list<callable> */
-    private array $layers;
+    /** @param list<callable> $layers */
+    public function __construct(private array $layers = []) {}
 
-    public function __construct(callable ...$layers)
-    {
-        $this->layers = $layers;
-    }
-
-    public function pipe(callable ...$layers): self
-    {
-        $this->layers = [...$this->layers, ...$layers];
-
-        return $this;
-    }
-
-    public function peel(mixed $passable): mixed
+    public function process(mixed $passable): mixed
     {
         return array_reduce(
             $this->layers,
@@ -75,8 +64,16 @@ final class Pipeline
 }
 ```
 
-- **Pros:** zero dependencies; full control; identical semantics; call sites barely change; trivially unit-testable.
-- **Cons:** we own ~15 lines (a feature, not a cost, for something this small).
+**Finalised design decisions (review 2026-07-01):**
+1. **Method name `process()`** — the "onion/peel" metaphor is dropped for a clearer name.
+2. **Array constructor** `new Pipeline([$a, $b])` — mirrors the existing `new Onion([...])` sites and `StubReplacer`'s array-based `queue()` accumulation (smallest, clearest diff).
+3. **No free helper** — drop the `onion()` function; call sites use `new Pipeline([...])` directly. Nothing added to the global namespace.
+4. **Namespace `…\Domain\Support`** — a shared domain utility, used by both `PhpParser` and `Stubs`.
+
+No `add()`/`pipe()` method is needed: `StubReplacer` keeps its own `$queue` array and passes the assembled list to the constructor.
+
+- **Pros:** zero dependencies; full control; identical semantics; call sites barely change; trivially unit-testable (~10 lines).
+- **Cons:** we own ~10 lines (a feature, not a cost, for something this small).
 
 ### Option B — Laravel's `Illuminate\Pipeline\Pipeline`
 - **Cons:** different signature — layers must be middleware `($passable, $next)` and call `$next(...)`; needs a container instance; pulls in `illuminate/pipeline`. More churn and heavier for a pure value-pipe. Rejected.
@@ -91,13 +88,13 @@ Replace each `(new Onion([...]))->peel($x)` with `collect([...])->reduce(fn ($c,
 
 ## Steps
 
-1. **Add** `src/Domain/Support/Pipeline.php` (as above), matching the project's code style (final class, typed, PHP 8.3+).
-2. **Migrate `MigrationCreatePropertyType.php`** — replace `use Aldemeery\Onion\Onion;` with the new `Pipeline`; change the 3 `new Onion([...])->peel(...)` to `(new Pipeline(...))->peel(...)` (spread the closures as varargs, or keep an array-accepting constructor — decide during impl for the cleanest diff).
-3. **Migrate `StubReplacer.php`** — drop `use function Aldemeery\Onion\onion;` and `use Aldemeery\Onion\Interfaces\Invokable;`; change `run()` to use `Pipeline`; retype `queue(array|Closure|Invokable $layers)` → `queue(array $layers)` (or `array|callable`). Keep the `queue`/`$queue` accumulation behaviour.
+1. **Add** `src/Domain/Support/Pipeline.php` exactly as above (final class, array constructor, `process()`), matching the project's code style (typed, PHP 8.3+).
+2. **Migrate `MigrationCreatePropertyType.php`** — replace `use Aldemeery\Onion\Onion;` with `use …\Domain\Support\Pipeline;`; change the 3 `(new Onion([...]))->peel($x)` to `(new Pipeline([...]))->process($x)`.
+3. **Migrate `StubReplacer.php`** — drop `use function Aldemeery\Onion\onion;` and `use Aldemeery\Onion\Interfaces\Invokable;`; in `run()`, change `onion([...])->peel($stub)` to `(new Pipeline([...]))->process($stub)`; retype `queue(array|Closure|Invokable $layers): self` → `queue(array $layers): self`. Keep the `$queue` accumulation as-is.
 4. **`MakeEventSourcingDomainCommand.php`** — no change needed (it only passes a closure array to `queue()`); verify it still type-checks.
-5. **Remove** `"aldemeery/onion"` from `composer.json` `require`; `composer update` to drop it from the lock.
+5. **Remove** `"aldemeery/onion"` from `composer.json` `require`; `composer update aldemeery/onion` (or a full update) to drop it from the lock.
 6. **Add a focused unit test** `tests/Unit/Domain/Support/PipelineTest.php` (left-to-right order, empty-pipeline identity, single/multi layer, non-closure `callable`) — aligns with the existing "direct unit tests for core classes" effort.
-7. **Grep** to confirm no remaining `Onion`/`onion`/`aldemeery` references in `src/`, `tests/`, `composer.json`.
+7. **Grep** to confirm no remaining `Onion`/`onion`/`aldemeery`/`Invokable` references in `src/`, `tests/`, `composer.json`.
 
 ## Testing
 
