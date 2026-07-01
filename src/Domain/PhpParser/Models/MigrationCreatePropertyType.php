@@ -4,7 +4,7 @@ namespace Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models;
 
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintColumnType;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Contracts\BlueprintUnsupportedInterface;
-use Aldemeery\Onion\Onion;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Support\Pipeline;
 use Illuminate\Support\Str;
 
 class MigrationCreatePropertyType
@@ -46,27 +46,27 @@ class MigrationCreatePropertyType
 
     public function toBuiltInType(): string
     {
-        return (new Onion([
+        return (new Pipeline([
             fn ($type) => $this->columnTypeToBuiltInType($type),
             fn ($type) => Str::replaceFirst('?', '', $type),
-        ]))->peel($this->type);
+        ]))->process($this->type);
     }
 
     public function toNormalisedBuiltInType(): string
     {
-        return (new Onion([
+        return (new Pipeline([
             fn ($type) => $this->toBuiltInType(),
             fn ($type) => $this->normaliseCarbon($type),
-        ]))->peel($this->type);
+        ]))->process($this->type);
     }
 
     public function toProjection(): string
     {
-        return (new Onion([
+        return (new Pipeline([
             fn ($type) => $this->columnTypeToBuiltInType($type),
             fn ($type) => $this->carbonToBuiltInType($type),
             fn ($type) => Str::replaceFirst('?', '', $type),
-        ]))->peel($this->type);
+        ]))->process($this->type);
     }
 
     public function isCarbon(): bool
