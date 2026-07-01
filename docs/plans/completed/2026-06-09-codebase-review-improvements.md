@@ -2,6 +2,7 @@
 
 **Date:** 2026-06-09
 **Scope:** Full codebase audit — `src/`, `tests/`, `stubs/`, `config/`, `docs/`
+**Status:** ✅ Completed (round concluded 2026-06-16) — see the Status table below: actionable items done, the rest deliberately postponed/closed. Item #9 lives on in its own plan (`2026-06-16-direct-unit-tests-for-core-classes.md`).
 
 ## Changelog
 

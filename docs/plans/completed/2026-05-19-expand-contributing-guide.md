@@ -1,8 +1,11 @@
 # Expand CONTRIBUTING.md
 
+**Status:** ✅ Completed — the proposed sections (Prerequisites, Local setup, "Adding or modifying a stub", "Adding a Blueprint column type") are present in `CONTRIBUTING.md`. Note: the version numbers in the original steps (PHP 8.3/8.4, Laravel 10/11) are now superseded by the code-derived compatibility table on the docs site.
+
 ## Changelog
 
 - 2026-05-19: Initial plan.
+- 2026-07-01: Verified implemented in `CONTRIBUTING.md`; marked completed and moved to `completed/`.
 
 ## Purpose
 
