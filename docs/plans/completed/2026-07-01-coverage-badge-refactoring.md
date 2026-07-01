@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Author:** Alberto Arena (AI-assisted)
-**Status:** Approved — Option A; implementation deferred (do later)
+**Status:** ✅ Completed 2026-07-01 (PR #28) — badge generated in CI (pcov) and published to the `coverage-data` branch; README references it by raw URL (verified live).
 
 _Minor infrastructure task — no Management Summary (per the plan guidelines)._
 
