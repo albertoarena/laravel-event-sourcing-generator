@@ -73,6 +73,7 @@ Namespace and root folder are customizable via `--namespace` and `--root` option
 - Tests use Orchestra Testbench for Laravel package testing
 - PHPUnit 11.x / 12.x with PHP 8.3/8.4/8.5
 - Tests are organized by feature area under `tests/Unit/`
+- The coverage badge is generated in CI (`.github/workflows/coverage.yml`, using pcov) and published to the orphan `coverage-data` branch; the README references it by raw URL. `coverage.svg` is not tracked on `main`. Run `composer test-coverage` locally for the HTML report in `reports/`.
 
 ## Dependencies
 
@@ -80,4 +81,4 @@ Namespace and root folder are customizable via `--namespace` and `--root` option
 - Laravel 11.x (deprecated) / 12.x / 13.x (Testbench `^9 || ^10 || ^11`)
 - Spatie Laravel Event Sourcing 7.x
 - nikic/php-parser for migration parsing
-- aldemeery/onion for pipeline pattern in stub replacement
+- `Domain\Support\Pipeline` (in-package) for the left-to-right pipeline used in stub replacement and column-type mapping

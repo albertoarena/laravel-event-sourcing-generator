@@ -71,8 +71,7 @@
         ],
         "test-coverage": [
             "@putenv XDEBUG_MODE=coverage",
-            "@php ./vendor/bin/phpunit --coverage-html reports/ --coverage-clover clover.xml --process-isolation tests",
-            "@php ./vendor/bin/php-coverage-badger clover.xml coverage.svg"
+            "@php ./vendor/bin/phpunit --coverage-html reports/ --coverage-clover clover.xml tests"
         ],
         "docs:sync": "@php bin/docs-sync.php",
         "docs:check": "@php bin/docs-sync.php --check"

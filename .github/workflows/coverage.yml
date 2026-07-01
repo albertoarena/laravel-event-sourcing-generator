@@ -1,0 +1,57 @@
+name: Coverage badge
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'composer.json'
+      - 'phpunit.xml'
+      - '.github/workflows/coverage.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coverage-badge
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP (pcov)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip
+          coverage: pcov
+
+      - name: Install dependencies
+        run: composer update --prefer-stable --no-ansi --no-interaction --no-progress --prefer-dist
+
+      - name: Generate coverage
+        run: vendor/bin/phpunit --coverage-clover clover.xml tests
+
+      - name: Build badge
+        run: vendor/bin/php-coverage-badger clover.xml coverage.svg
+
+      - name: Publish badge to coverage-data branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tmp="$(mktemp -d)"
+          cp coverage.svg "$tmp/coverage.svg"
+          cd "$tmp"
+          git init -q
+          git checkout -q -b coverage-data
+          git add coverage.svg
+          git -c user.name='github-actions[bot]' \
+              -c user.email='github-actions[bot]@users.noreply.github.com' \
+              commit -qm "Update coverage badge"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" coverage-data
