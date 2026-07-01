@@ -7,6 +7,7 @@
 
 - 2026-05-14: Initial draft
 - 2026-05-14: Implemented — CI updated, ruleset applied, verified
+- 2026-07-01: Fixed stale required checks. When Laravel 12/13 support was added (commit `b081c9a`), the matrix job names gained an `L{laravel}` segment, so the four hard-coded required contexts (`P8.3 - prefer-lowest - ubuntu-latest`, …) no longer matched any job and blocked every PR. Replaced them with a single stable aggregate gate job **"All tests passed"** (`tests-passed` in `test.yml`, `needs: test`) plus the docs gate **"Verify generated docs are in sync"**. The ruleset now requires those two checks, which survive future matrix changes.
 
 ## Goal
 
