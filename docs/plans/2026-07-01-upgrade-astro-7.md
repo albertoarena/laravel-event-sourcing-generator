@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Author:** Alberto Arena (AI-assisted)
-**Status:** Draft — awaiting approval
+**Status:** ✅ Completed 2026-07-01 (PR #26) for this repo. Phase 7 (other repos) outstanding.
 
 ## Management Summary
 
@@ -23,6 +23,7 @@ The documentation site (built with Astro Starlight) currently runs on **Astro 5 
 ## Changelog
 
 - **2026-07-01** — Initial draft.
+- **2026-07-01** — ✅ Implemented for this repo (PR #26). Astro 5→7, Starlight 0.32→0.41, sharp 0.33→0.35, Node 20→22. Breaking changes confirmed & fixed exactly as predicted: Starlight `social` object→array, content collection `docsLoader()`, and generated partials moved out of the collection (`src/content/docs/_generated` → `src/generated`). Added the `Website builds` CI gate (Node 22) and made it a required check. Dependabot #23/#24 closed as superseded. **Phase 7 (roll out to filament-event-sourcing / envaudit / codemetry) remains.**
 
 ## Purpose
 
