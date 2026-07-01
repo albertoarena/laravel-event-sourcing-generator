@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Author:** Alberto Arena (AI-assisted)
-**Status:** Design finalised — ready to implement on approval.
+**Status:** ✅ Completed 2026-07-01 (PR #27) — `aldemeery/onion` removed; replaced by `Domain\Support\Pipeline`.
 
 _Maintenance / dependency task — no Management Summary (per the plan guidelines)._
 
@@ -10,6 +10,7 @@ _Maintenance / dependency task — no Management Summary (per the plan guideline
 
 - **2026-07-01** — Initial draft.
 - **2026-07-01** — Design review: locked in `…\Domain\Support\Pipeline` with an **array constructor** and a single **`process()`** method (dropping the onion/`peel` metaphor); **no free helper**; `queue()` retyped to `array`. `add()`/`pipe()` deemed unnecessary.
+- **2026-07-01** — ✅ Implemented via TDD (PR #27). Added `Pipeline` + `PipelineTest`, migrated the 4 call sites, removed `aldemeery/onion` from composer.json + lock. 83 tests / PHPStan / Pint green. Moved to `completed/`.
 
 ## Purpose
 
