@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Author:** Alberto Arena (AI-assisted)
-**Status:** Draft — awaiting approval
+**Status:** ✅ Completed 2026-07-01 (PR #21) — site live at https://albertoarena.github.io/laravel-event-sourcing-generator
 
 ## Management Summary
 
@@ -48,6 +48,7 @@ End users read the published site to learn the `make:event-sourcing-domain` comm
 
 - **2026-07-01** — Initial draft.
 - **2026-07-01** — Review round 1: generator language = PHP; extract command options via Symfony `InputDefinition` (not regex); generator honours `test.yml` matrix excludes (Laravel 11 ≠ PHP 8.5); README compatibility becomes generated too; guide consolidated to fewer pages (mirror the existing 5 docs); old `docs/*.md` deleted after one transition release; `docs/plans/` published in a separate "Project" sidebar group.
+- **2026-07-01** — ✅ Implemented and merged (PR #21). Starlight site under `website/` (11 pages), `bin/docs-sync.php` generator + `composer docs:sync/docs:check` + CI gate, `deploy-website.yml` publishing to GitHub Pages (live), README slimmed 302→62 lines with generated compatibility block, old `docs/*.md` stubbed, light/dark cover images in `art/`. Command options extracted via Laravel's `Console\Parser` (equivalent to the planned `InputDefinition`). Moved to `completed/`.
 
 ## Purpose
 
