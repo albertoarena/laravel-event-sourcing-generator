@@ -15,9 +15,9 @@ export default defineConfig({
         { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://albertoarena.github.io/laravel-event-sourcing-generator/cover.png' } },
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
       ],
-      social: {
-        github: 'https://github.com/albertoarena/laravel-event-sourcing-generator',
-      },
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/albertoarena/laravel-event-sourcing-generator' },
+      ],
       editLink: {
         baseUrl: 'https://github.com/albertoarena/laravel-event-sourcing-generator/edit/main/website/',
       },

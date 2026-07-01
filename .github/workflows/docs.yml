@@ -10,7 +10,7 @@ on:
       - 'src/Console/Commands/**'
       - 'src/Domain/Blueprint/Contracts/**'
       - 'bin/docs-sync.php'
-      - 'website/src/content/docs/_generated/**'
+      - 'website/src/generated/**'
       - 'README.md'
   pull_request:
 
