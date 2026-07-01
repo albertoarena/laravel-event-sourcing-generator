@@ -27,7 +27,7 @@ composer docs:check    # Fail if generated docs are out of sync (CI gate)
 - PHP 8.3 / 8.4 / 8.5
 - Laravel 11.x (deprecated) / 12.x / 13.x — Testbench `^9 || ^10 || ^11`
 - Spatie Laravel Event Sourcing 7.x
-- nikic/php-parser (migration parsing), aldemeery/onion (stub pipeline)
+- nikic/php-parser (migration parsing); `Domain\Support\Pipeline` (in-package) for the stub/column pipeline
 
 ## Conventions
 

@@ -11,6 +11,8 @@
 - [ ] **Done log updated** — `.claude/done/YYYY-MM-DD-done.md` reflects the work
 - [ ] **Explicit approval** — the user asked to commit (never commit unprompted)
 
+> The coverage badge is produced in CI (`coverage.yml` → `coverage-data` branch) — no manual regeneration or `coverage.svg` commit needed.
+
 ## Commit message format
 
 - Type + short subject line (**max 50 characters**), e.g. `Docs: slim CLAUDE.md`

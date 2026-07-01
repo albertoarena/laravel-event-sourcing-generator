@@ -5,7 +5,7 @@
   <img src="art/cover-light.png" alt="Laravel Event Sourcing Generator — scaffold complete event-sourced domains with one Artisan command">
 </picture>
 
-![build-test](coverage.svg)
+![coverage](https://raw.githubusercontent.com/albertoarena/laravel-event-sourcing-generator/coverage-data/coverage.svg)
 [![Documentation](https://img.shields.io/badge/docs-website-6366f1?style=flat-square)](https://albertoarena.github.io/laravel-event-sourcing-generator)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/albertoarena/laravel-event-sourcing-generator.svg?style=flat-square)](https://packagist.org/packages/albertoarena/laravel-event-sourcing-generator)
 [![Total Downloads](https://img.shields.io/packagist/dt/albertoarena/laravel-event-sourcing-generator.svg?style=flat-square)](https://packagist.org/packages/albertoarena/laravel-event-sourcing-generator)
