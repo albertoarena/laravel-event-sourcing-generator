@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Author:** Alberto Arena (AI-assisted)
-**Status:** Draft — awaiting approval
+**Status:** ✅ Completed 2026-07-01 (commit `6c01098`)
 
 ## Management Summary
 
@@ -27,6 +27,7 @@ Every line in `CLAUDE.md` is re-read on every turn of every session — it is wo
 - **2026-07-01** — Initial draft.
 - **2026-07-01** — Review round 1: retire `developers.json`; push Testing/Dependencies detail to `ARCHITECTURE.md`; nested `CLAUDE.md` confirmed out of scope; recommend renaming `INSTRUCTIONS.md` → `WORKFLOW.md`.
 - **2026-07-01** — Review round 2: file naming confirmed — `ARCHITECTURE.md` + `WORKFLOW.md` + `CHECKLIST.md`. All open decisions resolved; plan ready for approval.
+- **2026-07-01** — ✅ Implemented (commit `6c01098`): CLAUDE.md slimmed 246→57 lines; `docs/ARCHITECTURE.md`, `docs/WORKFLOW.md`, `docs/CHECKLIST.md` created; plans consolidated into `docs/plans/` (`developers.json` retired); `.gitignore` edits permitted. Moved to `completed/`.
 
 ## Purpose
 
