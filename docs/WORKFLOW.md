@@ -98,3 +98,8 @@ A plan is considered complete when all implementation tasks are done and tested,
 - Keep "Done Today" as a quick overview; details go in sections below
 - After adding a new item to "Done Today", rewrite the Summary section to reflect the updated work
 - A brief description (max 250 tokens total for the entire Summary section) covering any other work done that day. Written at the end of the day or when asked.
+
+## Committing changes
+
+- **Small documentation changes** — typos, wording, link fixes, `docs/` edits, README tweaks, stub cleanup, updating or moving completed plans — may be committed **directly to `main`**. No feature branch or pull request is needed.
+- **Everything else** — source/tests/config code, workflows/CI, or substantial documentation restructures — uses a **feature branch + pull request**. The `main` branch-protection ruleset requires this for non-admin contributors and runs the required checks (`All tests passed`, `Verify generated docs are in sync`) before merge.
