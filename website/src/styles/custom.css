@@ -1,0 +1,85 @@
+/*
+ * Brand identity for the Laravel Event Sourcing Generator docs.
+ * Distinct-but-consistent with the author's other Starlight sites: same
+ * structure, its own accent — an indigo/violet gradient that reads as
+ * developer tooling.
+ *
+ * In Starlight, :root holds the dark theme defaults; light overrides live
+ * under :root[data-theme='light'] (which outranks plain :root). The gradient
+ * is theme-aware so it stays readable on the light splash while popping on
+ * dark; body links keep an accessible accent in light mode and the bright
+ * gradient is reserved for large display text.
+ */
+:root {
+  /* Dark theme (Starlight default) */
+  --sl-color-accent-low: #1e1b4b;
+  --sl-color-accent: #6366f1;
+  --sl-color-accent-high: #c7d2fe;
+
+  /* Brand gradient — bright, for dark backgrounds */
+  --lesg-from: #a5b4fc;
+  --lesg-to: #6366f1;
+
+  --sl-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --sl-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  --sl-content-width: 50rem;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e0e7ff;
+  --sl-color-accent: #4f46e5;
+  --sl-color-accent-high: #312e81;
+
+  /* Deeper gradient keeps display text readable on white */
+  --lesg-from: #4f46e5;
+  --lesg-to: #7c3aed;
+}
+
+/* Signature gradient wordmark + hero title */
+.site-title span,
+.hero h1 {
+  background: linear-gradient(95deg, var(--lesg-from), var(--lesg-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero h1 {
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+/* Extra-bold, tight content headings to match the landing typography */
+.sl-markdown-content :is(h1, h2, h3) {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.hero .tagline {
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.sl-markdown-content {
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.sl-markdown-content pre {
+  border-radius: 0.5rem;
+  border: 1px solid var(--sl-color-gray-5);
+}
+
+.sl-markdown-content :not(pre) > code {
+  background: var(--sl-color-gray-6);
+  padding: 0.15em 0.35em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+.starlight-aside {
+  border-radius: 0.5rem;
+}

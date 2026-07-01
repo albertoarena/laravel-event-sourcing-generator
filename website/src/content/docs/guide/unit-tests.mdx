@@ -1,0 +1,143 @@
+---
+title: Unit tests
+description: Generate PHPUnit tests covering create / update / delete for the domain.
+---
+
+The command can automatically generate a PHPUnit test for the domain, covering create / update / delete events.
+
+## Basic example
+
+```bash
+php artisan make:event-sourcing-domain Animal --unit-test
+```
+
+This creates a PHPUnit test, already working for create / update / delete events:
+
+```
+tests
+├── Unit
+│   └── Domain
+│       └── Animal
+│           └── AnimalTest.php
+└── etc.
+```
+
+## Advanced example
+
+Generate a full domain from an existing migration, with failed events, notifications and PHPUnit tests.
+
+:::caution
+The command can process **only** "create" migrations. Other migrations that modify table structure are skipped.
+:::
+
+For example, migration `2024_10_01_112344_create_tigers_table.php`:
+
+```php
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tigers', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name')->index();
+            $table->int('age');
+            $table->json('meta');
+            $table->timestamps();
+        });
+    }
+
+    // etc.
+};
+```
+
+Here `id` is used as the primary key, so no aggregate is available. You can specify the migration interactively or, more efficiently, pass it as an option — the filename timestamp is not needed:
+
+```bash
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=create_tigers_table --notifications=slack --failed-events=1 --reactor=0 --unit-test
+```
+
+```
+Your choices:
+
+| Option                     | Choice                                     |
+|----------------------------|--------------------------------------------|
+| Model                      | Tiger                                      |
+| Domain                     | Animal                                     |
+| Namespace                  | Domain                                     |
+| Use migration              | 2024_10_01_112344_create_animals_table.php |
+| Primary key                | id                                         |
+| Create Aggregate class     | no                                         |
+| Create Reactor class       | no                                         |
+| Create PHPUnit tests       | yes                                        |
+| Create failed events       | yes                                        |
+| Model properties           | string name                                |
+|                            | int age                                    |
+|                            | array meta                                 |
+| Notifications              | yes                                        |
+
+Do you confirm the generation of the domain?
+> yes
+
+Domain [Animal] with model [Tiger] created successfully.
+```
+
+Directory structure generated (using `id` as primary key):
+
+```
+app/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
+│       │   ├── CreateTiger
+│       │   ├── DeleteTiger
+│       │   └── UpdateTiger
+│       ├── DataTransferObjects/
+│       │   └── TigerData
+│       ├── Events/
+│       │   ├── TigerCreated
+│       │   ├── TigerCreationFailed
+│       │   ├── TigerDeleted
+│       │   ├── TigerDeletionFailed
+│       │   ├── TigerUpdateFailed
+│       │   └── TigerUpdated
+│       ├── Notifications/
+│       │   ├── Concerns/
+│       │   │   ├── HasDataAsArray
+│       │   │   └── HasSlackNotification
+│       │   ├── TigerCreated
+│       │   ├── TigerCreationFailed
+│       │   ├── TigerDeleted
+│       │   ├── TigerDeletionFailed
+│       │   ├── TigerUpdateFailed
+│       │   └── TigerUpdated
+│       ├── Projections/
+│       │   └── Tiger
+│       └── Projectors/
+│           └── TigerProjector
+└── etc.
+
+tests/
+├── Unit/
+│   └── Domain/
+│       └── Animal/
+│           └── TigerTest.php
+└── etc.
+```
+
+If Spatie event sourcing is configured to auto-discover projectors, that is immediately usable:
+
+```php
+use App\Domain\Animal\Actions\CreateTiger;
+use App\Domain\Animal\DataTransferObjects\TigerData;
+use App\Domain\Animal\Projections\Tiger;
+
+// This will create a record in 'tigers' table, using projector TigerProjector
+(new CreateTiger())(new TigerData(
+  name: 'tiger',
+  age: 7,
+  meta: []
+));
+
+// Retrieve record
+$tiger = Tiger::query()->where('name', 'tiger')->first();
+```

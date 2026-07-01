@@ -1,0 +1,129 @@
+---
+title: Domain and namespace
+description: Control the domain name, share a domain across models, and customise the namespace.
+---
+
+## Directory structure
+
+A domain has the following structure:
+
+```
+app/
+├── <Namespace>/
+│   └── <Domain>/
+│       ├── Actions/
+│       │   ├── Create<Model>
+│       │   ├── Delete<Model>
+│       │   └── etc.
+│       └── etc.
+└── etc.
+```
+
+By default, the **namespace** (or root folder) is `Domain`. The name of the **domain** can be the same as the **model**, or different.
+
+For model `Animal`:
+
+```
+app/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
+│       │   ├── CreateAnimal
+│       │   ├── DeleteAnimal
+│       │   └── etc.
+│       └── etc.
+└── etc.
+```
+
+## Specify the name of the domain
+
+Specify a different domain name with the `--domain` option (or answer the interactive question). This lets several models share the same domain.
+
+### Answering the question
+
+```bash
+php artisan make:event-sourcing-domain Tiger
+```
+
+```
+Which is the name of the domain? [Tiger]
+> Animal
+```
+
+```bash
+php artisan make:event-sourcing-domain Lion
+```
+
+```
+Which is the name of the domain? [Lion]
+> Animal
+```
+
+### Using the command-line option
+
+```bash
+php artisan make:event-sourcing-domain Animal --domain=Tiger
+php artisan make:event-sourcing-domain Animal --domain=Lion
+```
+
+When specified as an option, the domain name is not asked.
+
+### Result
+
+Both approaches produce:
+
+```
+app/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
+│       │   ├── CreateLion
+│       │   ├── CreateTiger
+│       │   ├── DeleteLion
+│       │   ├── DeleteTiger
+│       │   └── etc.
+│       └── etc.
+└── etc.
+```
+
+## Specify the namespace
+
+Use the `--namespace` option to change the namespace:
+
+```bash
+php artisan make:event-sourcing-domain Tiger --namespace=MyDomain --domain=Animal
+```
+
+Result:
+
+```
+app/
+├── MyDomain/
+│   └── Animal/
+│       ├── Actions/
+│       │   ├── CreateTiger
+│       │   ├── DeleteTiger
+│       │   └── etc.
+│       └── etc.
+└── etc.
+```
+
+## Notes and limitations
+
+[Reserved PHP words](https://www.php.net/manual/en/reserved.keywords.php) cannot be used as a namespace or domain.
+
+```bash
+php artisan make:event-sourcing-domain Tiger --namespace=Array --domain=Animal
+```
+
+```
+ERROR  The namespace Array is reserved by PHP.
+```
+
+```bash
+php artisan make:event-sourcing-domain Tiger --domain=Echo
+```
+
+```
+ERROR  The domain Echo is reserved by PHP.
+```

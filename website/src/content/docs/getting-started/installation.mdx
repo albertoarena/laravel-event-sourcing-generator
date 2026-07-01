@@ -1,0 +1,24 @@
+---
+title: Installation
+description: Install the package and check version compatibility.
+---
+
+import { Content as Compatibility } from '../_generated/compatibility.md';
+
+## Requirements
+
+<Compatibility />
+
+## Install
+
+```bash
+composer require albertoarena/laravel-event-sourcing-generator
+```
+
+That's it — the package auto-registers its Artisan command. Verify it's available:
+
+```bash
+php artisan help make:event-sourcing-domain
+```
+
+Next, head to the [Quick start](/laravel-event-sourcing-generator/getting-started/quick-start/) to generate your first domain.

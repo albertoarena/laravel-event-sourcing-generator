@@ -1,0 +1,163 @@
+---
+title: Advanced usage
+description: Primary keys, aggregates, reactors, failed events, notifications, indentation and root folder.
+---
+
+Every flag on this page is also documented in the generated [Command options](/laravel-event-sourcing-generator/reference/command-options/) reference.
+
+## Specify the primary key
+
+The primary key can be `uuid` or `id`. Use `--primary-key=[uuid|id]`, or answer the interactive question.
+
+```bash
+php artisan make:event-sourcing-domain Animal --primary-key=id
+```
+
+:::note
+When using a [migration](/laravel-event-sourcing-generator/guide/migrations/), the primary key is inferred automatically.
+:::
+
+:::caution
+If the primary key is `id`, [aggregates](#generate-aggregates) are not available.
+:::
+
+## Generate aggregates
+
+Aggregates can be generated only when the primary key is `uuid`. Use `--aggregate=[0|1]`, or answer the interactive question.
+
+```bash
+php artisan make:event-sourcing-domain Animal --aggregate=1 --primary-key=uuid
+```
+
+When aggregates are generated, actions automatically use them.
+
+*Read more about aggregates in [Spatie's documentation](https://spatie.be/docs/laravel-event-sourcing/v7/using-aggregates/writing-your-first-aggregate).*
+
+## Generate reactors
+
+Use `--reactor=[0|1]`.
+
+```bash
+php artisan make:event-sourcing-domain Animal --reactor=1
+```
+
+Reactors are generated for all events, including [failed ones](#generate-failed-events) when enabled with `--failed-events=1`.
+
+*Read more about reactors in [Spatie's documentation](https://spatie.be/docs/laravel-event-sourcing/v7/using-reactors/writing-your-first-reactor).*
+
+## Generate failed events
+
+The command can generate create / update / delete failed events. Use `--failed-events=[0|1]`.
+
+```bash
+php artisan make:event-sourcing-domain Animal --failed-events=1
+```
+
+The following events are created:
+
+```
+AnimalCreationFailed
+AnimalDeletionFailed
+AnimalUpdateFailed
+```
+
+If [notifications](#generate-notifications) are also created with `--notifications`, a failed notification for each failed event is created automatically.
+
+## Generate notifications
+
+The command supports four types of notifications:
+
+- database
+- mail
+- Slack
+- Teams
+
+Use `--notifications=[database,mail,slack,teams]`, comma-separated. When notifications are created, one or more concerns (traits) are also created in the `Notifications/Concerns` folder for shared properties and formatting.
+
+```bash
+# database notifications
+php artisan make:event-sourcing-domain Animal --notifications=database
+
+# Teams notifications
+php artisan make:event-sourcing-domain Animal --notifications=teams
+
+# mail and Slack notifications
+php artisan make:event-sourcing-domain Animal --notifications=mail,slack
+```
+
+## Specify the indentation
+
+The default indentation of generated files is 4 spaces. Use `--indentation=NUMBER`.
+
+```bash
+php artisan make:event-sourcing-domain Animal --indentation=2
+```
+
+This uses 2 spaces as indentation.
+
+## Specify the root folder
+
+You can specify the app folder — for example when a domain must be created in a tests folder or in a package (root `src`). The default root folder is `app`. Use `--root=VALUE`.
+
+### Generate a domain in the `src` folder for a package
+
+```bash
+php artisan make:event-sourcing-domain Animal --root=src
+```
+
+```
+src/
+├── Domain/
+│   └── Animal/
+│       ├── Actions/
+│       │   ├── CreateAnimal
+│       │   ├── DeleteAnimal
+│       │   └── UpdateAnimal
+│       ├── Aggregates/
+│       │   └── AnimalAggregate
+│       ├── DataTransferObjects/
+│       │   └── AnimalData
+│       ├── Events/
+│       │   ├── AnimalCreated
+│       │   ├── AnimalDeleted
+│       │   └── AnimalUpdated
+│       ├── Projections/
+│       │   └── Animal
+│       ├── Projectors/
+│       │   └── AnimalProjector
+│       └── Reactors/
+│           └── AnimalReactor
+└── etc.
+```
+
+### Generate a domain in the `tests/Unit` folder
+
+```bash
+php artisan make:event-sourcing-domain Animal --root=tests/Unit
+```
+
+```
+tests/
+└── Unit/
+    ├── Domain/
+    │   └── Animal/
+    │       ├── Actions/
+    │       │   ├── CreateAnimal
+    │       │   ├── DeleteAnimal
+    │       │   └── UpdateAnimal
+    │       ├── Aggregates/
+    │       │   └── AnimalAggregate
+    │       ├── DataTransferObjects/
+    │       │   └── AnimalData
+    │       ├── Events/
+    │       │   ├── AnimalCreated
+    │       │   ├── AnimalDeleted
+    │       │   └── AnimalUpdated
+    │       ├── Projections/
+    │       │   └── Animal
+    │       ├── Projectors/
+    │       │   └── AnimalProjector
+    │       └── Reactors/
+    │           └── AnimalReactor
+    └── etc.
+```

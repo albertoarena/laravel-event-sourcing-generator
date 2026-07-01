@@ -1,0 +1,179 @@
+---
+title: Migrations
+description: Generate a full domain from an existing database migration, including update migrations and exclusions.
+---
+
+import { Content as UnsupportedColumns } from '../_generated/unsupported-columns.md';
+
+The command can generate a full domain directory structure from an existing [database migration](https://laravel.com/docs/migrations). It parses the migration and maps every field into the data transfer object, projection and projector.
+
+:::caution
+The command can process **only** "create" migrations. Other migrations that modify table structure are skipped.
+:::
+
+## Generate a domain from an existing migration
+
+For example, migration `2024_10_01_112344_create_tigers_table.php`:
+
+```php
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tigers', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('name')->index();
+            $table->int('age');
+            $table->json('meta');
+            $table->timestamps();
+        });
+    }
+
+    // etc.
+};
+```
+
+Here `id` is used as the primary key, so no aggregate is available. Specify the migration interactively or pass it as an option — the filename timestamp is not needed:
+
+```bash
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=create_tigers_table --notifications=slack --failed-events=1 --reactor=0 --unit-test
+```
+
+```
+Your choices:
+
+| Option                     | Choice                                     |
+|----------------------------|--------------------------------------------|
+| Model                      | Tiger                                      |
+| Domain                     | Animal                                     |
+| Namespace                  | Domain                                     |
+| Use migration              | 2024_10_01_112344_create_animals_table.php |
+| Primary key                | id                                         |
+| Create Aggregate class     | no                                         |
+| Create Reactor class       | no                                         |
+| Create PHPUnit tests       | yes                                        |
+| Create failed events       | yes                                        |
+| Model properties           | string name                                |
+|                            | int age                                    |
+|                            | array meta                                 |
+| Notifications              | yes                                        |
+
+Do you confirm the generation of the domain?
+> yes
+
+Domain [Animal] with model [Tiger] created successfully.
+```
+
+## Generate a domain from an update migration
+
+The command can also generate from an update migration. You can exclude specific update migrations using a string or regular expression (see [below](#exclude-specific-migrations)).
+
+Create migration `2024_10_01_112344_create_tigers_table.php`:
+
+```php
+Schema::create('tigers', function (Blueprint $table) {
+    $table->bigIncrements('id');
+    $table->string('name')->index();
+    $table->int('age');
+    $table->json('meta');
+    $table->timestamps();
+});
+```
+
+Update migration `2024_10_07_031123_update_tigers_table.php`:
+
+```php
+Schema::create('tigers', function (Blueprint $table) {
+    $table->float('age');
+    $table->string('colour');
+});
+```
+
+:::note
+To parse both create and update migrations, pass the **table name** in `--migration`. That searches for all migrations containing that name. The words `create` and `update` are reserved and cannot be passed.
+:::
+
+```bash
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=tigers --notifications=slack --failed-events=1 --reactor=0 --unit-test
+```
+
+## Exclude specific migrations
+
+Exclude one or more migrations with `--migration-exclude`, passed either as a filename or a valid regular expression.
+
+Given these migrations:
+
+- `2024_10_01_112344_create_tigers_table.php`
+- `2024_10_07_031123_update_tigers_table.php`
+- `2024_10_07_031124_drop_age_column_from_tigers_table.php`
+- `2024_10_07_031125_drop_meta_column_from_tigers_table.php`
+
+### Exclude by filename
+
+```bash
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=tigers --migration-exclude=drop_age_column_from_tigers --notifications=slack --failed-events=1 --reactor=0 --unit-test
+```
+
+| Migration                                                | Parsed | Excluded |
+|----------------------------------------------------------|--------|----------|
+| 2024_10_01_112344_create_tigers_table.php                | yes    |          |
+| 2024_10_07_031123_update_tigers_table.php                | yes    |          |
+| 2024_10_07_031124_drop_age_column_from_tigers_table.php  |        | yes      |
+| 2024_10_07_031125_drop_meta_column_from_tigers_table.php | yes    |          |
+
+### Exclude by regex
+
+```bash
+php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=tigers --migration-exclude="/_drop/" --notifications=slack --failed-events=1 --reactor=0 --unit-test
+```
+
+| Migration                                                | Parsed | Excluded |
+|----------------------------------------------------------|--------|----------|
+| 2024_10_01_112344_create_tigers_table.php                | yes    |          |
+| 2024_10_07_031123_update_tigers_table.php                | yes    |          |
+| 2024_10_07_031124_drop_age_column_from_tigers_table.php  |        | yes      |
+| 2024_10_07_031125_drop_meta_column_from_tigers_table.php |        | yes      |
+
+## Limitations: unsupported column types
+
+<UnsupportedColumns />
+
+When a migration contains any of these:
+
+- a warning is printed in the command output for each one
+- a `@todo` comment is added for each one in the data transfer object, projection and projector
+
+For example, migration `2024_10_01_112344_create_lions_table.php`:
+
+```bash
+php artisan make:event-sourcing-domain Lion --domain=Animal --migration=create_lions_table
+```
+
+```php
+Schema::create('lions', function (Blueprint $table) {
+    $table->bigIncrements('id');
+    $table->string('name')->index();
+    $table->int('age');
+    $table->ulidMorphs('taggable');
+    $table->timestamps();
+});
+```
+
+Data transfer object:
+
+```php
+namespace App\Domain\Animal\DataTransferObjects;
+
+class LionData
+{
+    public function __construct(
+        public string $name,
+        public int $age,
+        // @todo public ulidMorphs $taggable, column type is not yet supported,
+    ) {}
+
+    // etc.
+}
+```
+
+The projection and projector receive matching `@todo` markers for the unsupported column.
