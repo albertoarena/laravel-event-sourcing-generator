@@ -6,12 +6,10 @@ use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlue
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Blueprint\Concerns\HasBlueprintFake;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\Command\Models\CommandSettings;
 use Albertoarena\LaravelEventSourcingGenerator\Domain\PhpParser\Models\MigrationCreateProperty;
-use Aldemeery\Onion\Interfaces\Invokable;
+use Albertoarena\LaravelEventSourcingGenerator\Domain\Support\Pipeline;
 use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-
-use function Aldemeery\Onion\onion;
 
 class StubReplacer
 {
@@ -418,7 +416,7 @@ class StubReplacer
         return $this;
     }
 
-    public function queue(array|Closure|Invokable $layers): self
+    public function queue(array $layers): self
     {
         $this->queue = array_merge($this->queue, $layers);
 
@@ -427,10 +425,10 @@ class StubReplacer
 
     public function run(&$stub): void
     {
-        $stub = onion([
+        $stub = (new Pipeline([
             fn ($stub) => $this->replace($stub),
             ...$this->queue,
             fn ($stub) => $this->afterReplacements($stub),
-        ])->peel($stub);
+        ]))->process($stub);
     }
 }
