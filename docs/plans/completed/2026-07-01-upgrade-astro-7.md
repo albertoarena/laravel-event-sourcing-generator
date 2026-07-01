@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-01
 **Author:** Alberto Arena (AI-assisted)
-**Status:** ✅ Completed 2026-07-01 (PR #26) for this repo. Phase 7 (other repos) outstanding.
+**Status:** ✅ Completed 2026-07-01 (PR #26). Phase 7 (rollout to the other 5 Starlight repos) is delegated to **per-repo plans** — each repo gets its own plan based on this proven runbook, so history stays discoverable at repo level. Not tracked centrally here.
 
 ## Management Summary
 
