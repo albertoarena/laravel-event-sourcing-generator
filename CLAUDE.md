@@ -50,6 +50,9 @@ composer docs:check    # Fail if generated docs are out of sync (CI gate)
 - Ask before committing unless explicitly told to commit
 - `.gitignore` may be modified when needed (verify with `git check-ignore` afterwards)
 
+**Commit conventions:**
+- Never mention "Co-Authored-By: Claude" in git commit messages (no need to specify model or version)
+
 ## More Detail
 
 Load these on demand — they are not needed every session:
