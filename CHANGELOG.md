@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## 1.1.1 - 2026-07-23
+
+### What's Changed
+
+* Chore: add `.gitattributes` with `export-ignore` rules so development-only files (CI config, docs, tests, website, tooling) are excluded from the Composer `dist` archive, dramatically shrinking the distributed package
+* Chore: normalise line endings to LF via `* text=auto eol=lf`
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.1.0...v1.1.1
+
 ## 1.1.0 - 2026-06-30
 
 ### What's Changed
