@@ -2,6 +2,19 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## 1.1.2 - 2026-08-05
+
+### What's Changed
+
+* Security: pin all GitHub Actions to full commit SHAs (with trailing version comments) to mitigate the tag-hijack supply-chain class demonstrated by the `tj-actions/changed-files` incident
+* Security: add a Dependabot `cooldown` (7-day minimum age) for Composer, npm and GitHub Actions so a freshly published release cannot propagate instantly; group minor/patch bumps to reduce PR noise
+* Security: add `SECURITY.md` documenting a private vulnerability disclosure policy
+* Chore: add `scripts/plumb-scan.sh` to request a package quality re-scan (dev tooling, excluded from the Composer `dist`)
+
+No runtime code changed: `src/` and the `composer.json` constraints are identical to v1.1.1, so consumers are unaffected — this release exists to publish the supply-chain hardening.
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.1.1...v1.1.2
+
 ## 1.1.1 - 2026-07-23
 
 ### What's Changed

@@ -6,6 +6,7 @@
 /art                 export-ignore
 /bin                 export-ignore
 /docs                export-ignore
+/scripts             export-ignore
 /tests               export-ignore
 /website             export-ignore
 
