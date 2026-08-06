@@ -64,9 +64,9 @@ Feel free to fork, improve and create a pull request. Please see [CONTRIBUTING](
 
 ## 📬 Stay updated
 
-Occasional emails on Laravel, event sourcing, and AI-assisted development: new releases, packages, and write-ups. No spam, unsubscribe anytime.
+Subscribe and get my free Spatie Event Sourcing cheat sheet (printable PDF), plus practical notes on Laravel and AI-assisted development, roughly once a month. No spam.
 
-**[Subscribe to the newsletter →](https://albertoarena.it/subscribe/?utm_source=github&utm_medium=readme&utm_campaign=newsletter&utm_content=laravel-event-sourcing-generator)**
+**[Get the cheat sheet →](https://albertoarena.it/subscribe/?utm_source=github&utm_medium=readme&utm_campaign=newsletter&utm_content=laravel-event-sourcing-generator)**
 
 ## License
 
