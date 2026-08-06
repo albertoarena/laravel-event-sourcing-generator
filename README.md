@@ -62,6 +62,12 @@ Please see [CHANGELOG](CHANGELOG.md) for what has changed recently.
 
 Feel free to fork, improve and create a pull request. Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
+## 📬 Stay updated
+
+Occasional emails on Laravel, event sourcing, and AI-assisted development: new releases, packages, and write-ups. No spam, unsubscribe anytime.
+
+**[Subscribe to the newsletter →](https://albertoarena.it/subscribe/?utm_source=github&utm_medium=readme&utm_campaign=newsletter&utm_content=laravel-event-sourcing-generator)**
+
 ## License
 
 The MIT License (MIT). Please see [LICENSE](LICENSE.md) for more information.
