@@ -2,11 +2,12 @@
 
 **Date:** 2026-06-16
 **Author:** Alberto Arena (with Claude)
-**Status:** Proposed
+**Status:** Proposed — revised 2026-08-12 against current `src/`
 
 ## Changelog
 
 - 2026-06-16: Initial plan, scoped from item #9 of `docs/plans/2026-06-09-codebase-review-improvements.md`
+- 2026-08-12: Revised against the codebase. The original was written before the Pipeline refactor (`docs/plans/completed/2026-07-01-replace-onion-dependency.md`, 2026-07-01) and described APIs that have since changed. Corrections: `MigrationParser` takes migration **content**, not a path; the seven `StubReplacer` methods listed for Phase 2 are mostly `protected`; `Migration` and `Stubs` use the `File` facade and cannot run container-free. Phases are re-ordered by **testability** rather than by guessed risk, the `tests/Fixtures/migrations/` step is dropped, and the `getIndentSpace()` lock-in test is reconsidered against postponed review item #2.
 
 ## Purpose
 
@@ -18,13 +19,35 @@ The current test suite is **entirely integration-driven** — every behaviour is
 
 This plan adds **targeted, fast PHPUnit tests at the class level** for the high-risk core classes. Integration tests stay; unit tests sit alongside them.
 
+## Testability survey (2026-08-12)
+
+Phasing follows this, because it determines whether a test is fast and container-free or has to boot Testbench:
+
+| Class | Container needed? | Why |
+|---|---|---|
+| `MigrationParser` | **No** | Takes a content string; only `nikic/php-parser` |
+| `BlueprintClassNodeVisitor` | **No** | Pure AST visitor |
+| `CommandSettings` | **No** | `Str::repeat` is a plain static; no facade root required |
+| `StubReplacer` (+ `HasBlueprintColumnType`, `HasBlueprintFake`) | **No** | Verified: no `Facades`, `app()`, `resolve()`, `config()`, or `*_path()` usage in the class or either trait |
+| `Migration` | **Yes** | `Illuminate\Support\Facades\File` (3 call sites); constructor calls `parse()` at `Migration.php:36` |
+| `Stubs` | **Yes** | `File` facade + injected `Illuminate\Contracts\Foundation\Application` |
+| `StubResolver` | **Yes** | `resolvePath(Application $laravel)` |
+
+### Resolving the `StubReplacer` visibility problem
+
+Ten of the replacement methods are `protected` — `getIndentSpace()` (`StubReplacer.php:73`), `replaceDomain()` (`:79`), `replaceConstructorProperties()` (`:88`), `replaceProjectionFillableProperties()` (`:131`), `replaceIndentation()` (`:293`), and others. The public surface is `replace()` (`:379`), `afterReplacements()` (`:395`), `replaceWithClosureRegexp()` (`:403`), `replaceWithClosure()` (`:410`), `queue()` (`:419`), `run()` (`:426`).
+
+**Decision: test through the public surface. Do not use reflection and do not widen visibility.**
+
+`replace()` applies the protected replacers in a fixed order on a string passed by reference. Feeding it a **minimal stub containing only the token under test** isolates each replacer nearly as well as calling it directly, while keeping `src/` untouched (the plan's own out-of-scope rule, and CLAUDE.md guards `src/` as core). This also satisfies the original risk mitigation — assert observable outputs, never internal call sequences.
+
+Rejected alternatives: reflection (brittle, and PHPStan/Larastan will flag it), and promoting methods to `public` (an API change to a core class, made solely to serve tests).
+
 ## Scope (prioritised)
 
-### Phase 1 — AST / migration parsing (highest value, highest risk)
+### Phase 1 — Pure AST parsing (highest value, no container)
 
-These classes contain the most non-obvious logic and have the most ways to silently mis-parse.
-
-#### 1. `BlueprintClassNodeVisitor` (`src/Domain/PhpParser/`)
+#### 1. `BlueprintClassNodeVisitor` (`src/Domain/PhpParser/Traversers/`)
 
 Cover:
 - Detects properties from `Schema::create()` blueprint closures
@@ -36,98 +59,121 @@ Cover:
 - Skips `timestamps()` correctly
 - Handles aliases like `bigIncrements`, `foreignId`, `foreignUuid`
 
-Fixtures: small inline AST trees built with `nikic/php-parser`, OR small migration string blobs parsed in-test. Prefer string blobs — they read like real migrations.
-
 #### 2. `MigrationParser` (`src/Domain/PhpParser/`)
 
+Actual API — `__construct(?string $migrationContent)` (`:17`), `parse(): self` (`:50`), `getProperties(): array` (`:57`), `getIgnored(): array` (`:62`).
+
 Cover:
-- `parse(string $path)` returns a `MigrationCreateProperties` collection
-- Throws/returns sensibly on missing file
-- Throws/returns sensibly on file that has no `up()` method
-- Returns empty collection when `up()` is empty
+- `parse()` populates properties, `getProperties()` returns them re-indexed
+- Malformed PHP throws `ParserFailedException`
+- Content with no `up()` method yields an empty property set
+- Empty `up()` yields an empty property set
+- `null` content behaviour (pin whatever it currently does)
 - Composes correctly with `BlueprintClassNodeVisitor`
 
-Fixtures: a few `.php` migration files under `tests/Fixtures/migrations/` (create the folder).
+**Fixtures:** inline heredoc strings in the test, **not** files. `MigrationParser` consumes content, so a `tests/Fixtures/migrations/` folder would need a redundant read step. Step 1 of the original plan is dropped.
 
-#### 3. `Migration` (`src/Domain/Migrations/`)
+**Assertion rule (important):** assert only on `MigrationCreateProperty` fields (`name`, `type`, modifiers, `isDropped`). Never assert on `PhpParser\Node` objects. CI runs `prefer-lowest` (pinning `nikic/php-parser` at 5.1.0) alongside `prefer-stable` across 36 matrix jobs; node-shape assertions are the one thing that will diverge between them.
 
-Cover:
-- Loads exact migration by name
-- Loads by pattern (`animal` → `*animal*.php`)
-- Respects `--migration-exclude` exact match
-- Respects `--migration-exclude` regex
-- Detects primary key type from the loaded migrations
-- Aggregates properties across multiple matched migrations
-- Errors when no migration matches
+### Phase 2 — Settings and stub templating (no container)
 
-### Phase 2 — Stub templating
+#### 3. `CommandSettings` (`src/Domain/Command/Models/`)
 
-#### 4. `StubReplacer` (`src/Domain/Stubs/`)
-
-Cover, in isolation (no real stub files — pass small inline strings to `replace()`):
-- `replaceWithClosure()` replaces all three formats (`DummyName`, `{{ kebab-case }}`, `{{kebab-case}}`)
-- `replaceWithClosureRegexp()` handles the regex-with-arg patterns
-- `replaceDomain()` injects domain, namespace, id
-- `replaceConstructorProperties()` produces correct PHP signatures and ignored-property TODOs
-- `replaceProjectionFillableProperties()` injects primary key first
-- `replaceIndentation()` swaps 4-space → configured indentation only when different
-- `getIndentSpace()` (current behaviour — locks in the contract before any refactor — see item #2 in the parent review)
-- Carbon detection inferred from properties
-
-#### 5. `Stubs` (`src/Domain/Stubs/`)
+Do this first — it is cheap, and Phase 2's helper depends on understanding it.
 
 Cover:
-- Context filtering: `notifications` / `aggregate` / `reactor` / `failed_events` keys in `stub-mapping.json` resolve correctly
-- `getStubResolvers()` returns expected set per `CommandSettings` flag combination
+- `primaryKey()` (`:43`) returns `uuid`/`id` based on `useUuid`
+- `inferUseCarbon()` (`:48`) flips when any property is Carbon-typed, and **not** for the `timestamps` virtual property
+- `indentSpace` is derived from `indentation`
 
-### Phase 3 — Lower-priority (only if Phase 1+2 reveal coverage gaps)
+#### 4. Test helper: `CommandSettings` factory
 
-#### 6. `CommandSettings`
+`CommandSettings::__construct` takes 20 parameters, 9 of them required (`CommandSettings.php:17-36`), and `StubReplacer` holds it **by reference** (`public CommandSettings &$settings`), so tests must bind a variable before constructing the replacer.
 
-Cover:
-- `primaryKey()` returns `uuid`/`id` based on `useUuid`
-- `inferUseCarbon()` flips when any property is Carbon-typed (excluding the `timestamps` virtual property)
+Add one helper (`tests/Concerns/` or `tests/Support/`) exposing sensible defaults plus named overrides. Every StubReplacer test goes through it, so a future `CommandSettings` signature change — review item #5 (builder pattern) is postponed, not cancelled — touches one file instead of every test.
 
-#### 7. `HasBlueprintColumnType` + `HasBlueprintFake`
+#### 5. `StubReplacer` (`src/Domain/Stubs/`)
 
-Currently exercised implicitly via integration tests. Direct unit tests are mostly redundant; add only if Phase 1 surfaces a gap or if these are refactored into a service (parent review item #7).
+Via `replace()`, `afterReplacements()` and `run()`, each with a minimal inline stub:
+
+- Domain/namespace/id injection (`{{ domain }}` and friends)
+- Constructor properties: correct PHP signatures, ignored-property TODOs, and the empty-constructor placeholder path
+- Projection fillable properties: primary key injected first
+- Projection cast and PHPDoc properties
+- Primary key replacement for `uuid` vs `id`
+- `if` block handling
+- Indentation: swapped only when the configured value differs from 4
+- Unit-test stub replacement
+- `afterReplacements()`: `use`-namespace ordering, empty-line collapsing
+- `replaceWithClosure()` across all three token formats (`DummyName`, `{{ kebab-case }}`, `{{kebab-case}}`) and `replaceWithClosureRegexp()` for regex-with-arg patterns
+- `queue()` + `run()`: queued layers run between `replace()` and `afterReplacements()` (the `Pipeline` contract at `:426`)
+
+**On `getIndentSpace()`:** the original plan wanted a test to "lock in the contract before any refactor." Parent review item #2 records that this method ignores `--indentation` and is **Postponed** because a proper fix means tokenising indentation in every stub file. A plain lock-in test would assert defective behaviour and later read as a regression. Either skip it, or write it with a docblock naming item #2 and stating that the assertion must change when #2 is fixed. Do not leave it unmarked.
+
+### Phase 3 — Container-bound classes (decide before starting)
+
+These need Testbench, so they are **not** the fast unit tests this plan set out to add. They are worth writing, but as focused near-unit tests, and the cost should be acknowledged rather than discovered.
+
+#### 6. `Migration` (`src/Domain/Migrations/`)
+
+Cover: exact-name loading; pattern loading (`animal` → `*animal*.php`); `--migration-exclude` exact and regex; primary key detection; property aggregation across multiple matches; error when nothing matches.
+
+Reuse `tests/Concerns/CreatesMockMigration.php` — it already builds create/update migrations and all eight integration suites depend on it. A parallel fixture folder would drift from it.
+
+Note that the constructor parses eagerly (`Migration.php:36`), so error-path tests assert on construction, not on a later call. Glob ordering can differ between darwin (dev) and ubuntu (CI) — assert on sets, not on order.
+
+#### 7. `Stubs` / `StubResolver` (`src/Domain/Stubs/`)
+
+Cover: context filtering (`notifications` / `aggregate` / `reactor` / `failed_events` keys in `stub-mapping.json`); `getStubResolvers()` (`Stubs.php:41`) returns the expected set per `CommandSettings` flag combination.
+
+#### 8. `HasBlueprintColumnType` + `HasBlueprintFake`
+
+Exercised implicitly via Phase 2 (both traits are used by `StubReplacer`). Add direct tests only if a gap shows up.
 
 ## Out of scope
 
-- Refactoring the classes under test. The point of this work is to **pin current behaviour** so future refactors (parent review items #5, #6, #7) become safer. Treat anything that looks wrong as a finding for a separate fix, not a scope expansion.
+- Refactoring the classes under test. The point is to **pin current behaviour** so future refactors (parent review items #5, #6, #7) become safer. Anything that looks wrong is a finding for a separate fix, not a scope expansion. This explicitly includes changing method visibility on `StubReplacer`.
 - Replacing existing integration tests. They stay as black-box regression coverage.
 - Adding mutation testing / coverage targets — separate concern.
 
 ## Steps
 
-1. Create `tests/Fixtures/migrations/` with a handful of representative migration files (uuid PK, id PK, mixed types, with exclusions, with unsupported types).
-2. Mirror `src/` structure under `tests/Unit/Domain/` for the new unit tests (some already exist for `PhpParser/Models/`).
-3. Phase 1: write tests for `BlueprintClassNodeVisitor`, `MigrationParser`, `Migration`. Run after each class.
-4. Phase 2: write tests for `StubReplacer`, `Stubs`. Run after each class.
-5. Run full suite (`composer test`) and confirm no regressions.
-6. Phase 3 only if Phase 1/2 leave obvious gaps.
-7. Note in `docs/plans/2026-06-09-codebase-review-improvements.md` that item #9 has been addressed and link to this plan's completed location.
+1. Mirror `src/` structure under `tests/Unit/Domain/` (`PhpParser/Traversers/`, `Stubs/`, `Command/Models/`). Note `tests/Domain/` already exists and holds **helpers**, not tests — don't add tests there.
+2. Phase 1: `BlueprintClassNodeVisitor`, then `MigrationParser`. Inline heredoc migration blobs. Run `composer test` after each class.
+3. Phase 2: `CommandSettings`, then the settings factory helper, then `StubReplacer`. Run after each.
+4. Run `composer all` (test + fix + check + static) and confirm no regressions.
+5. Re-check coverage (`composer test-coverage`) — the badge will move; that is expected, not a failure.
+6. Phase 3 only after an explicit decision to accept Testbench-bound tests.
+7. Note in `docs/plans/completed/2026-06-09-codebase-review-improvements.md` that item #9 has been addressed, and move this plan to `docs/plans/completed/`.
+
+No `phpunit.xml` change is needed: the single test suite already globs `./tests` for `*Test.php`, so new files are auto-discovered.
 
 ## References
 
-- Parent review: `docs/plans/2026-06-09-codebase-review-improvements.md` item #9
-- Existing unit-test conventions: `tests/Unit/Domain/PhpParser/Models/MigrationCreatePropertyTypeTest.php` (good template — small, focused, no Testbench)
+- Parent review: `docs/plans/completed/2026-06-09-codebase-review-improvements.md` item #9 (and item #2 for the `getIndentSpace()` caveat, item #5 for `CommandSettings`)
+- Refactor that invalidated the original Phase 2: `docs/plans/completed/2026-07-01-replace-onion-dependency.md`
+- Existing unit-test conventions: `tests/Unit/Domain/PhpParser/Models/MigrationCreatePropertyTypeTest.php` and `tests/Unit/Domain/Support/PipelineTest.php` (small, focused, no Testbench)
 - Existing integration-test conventions: `tests/Unit/Console/Commands/MakeEventSourcingDomainCommandBasicTest.php`
+- Migration helper to reuse in Phase 3: `tests/Concerns/CreatesMockMigration.php`
 
 ## Effort estimate
 
 AI-assisted:
-- Phase 1: ~1 day (visitor + parser + migration; fixtures are the bulk of the work)
-- Phase 2: ~half day
-- Phase 3: ~couple of hours if needed
+- Phase 1: ~half day (down from ~1 day — dropping the fixture folder removes the bulk of the original estimate)
+- Phase 2: ~1 day (settings factory is the fiddly part, not the assertions)
+- Phase 3: ~half day, only if approved
 
 Traditional: roughly 2–3× the above.
 
 ## Risks & Mitigations
 
-- **Risk:** Unit tests freeze incidental behaviour that future refactors want to change. **Mitigation:** focus assertions on observable outputs (parsed properties, generated strings), not internal call sequences. Don't assert on private state.
-- **Risk:** Migration fixtures drift from real Laravel migration syntax. **Mitigation:** copy the templates from actual `database/migrations/` examples in the testbench skeleton.
-- **Risk:** Scope creep into refactoring. **Mitigation:** if a test is awkward to write because the class is awkward to use, log the friction in the parent review plan and keep the test ugly. Refactor is a separate plan.
+- **Risk:** Testing `StubReplacer` through `replace()` weakens failure localisation — a break in any of ten replacers surfaces as one string mismatch. **Mitigation:** one minimal stub per replacer, containing only that replacer's token, so the failing test name still identifies the culprit.
+- **Risk:** Unit tests freeze incidental behaviour that future refactors want to change. **Mitigation:** assert on observable outputs (parsed properties, generated strings), never on private state or call sequences. Where a pinned behaviour is a known defect, say so in the test docblock (see `getIndentSpace()`).
+- **Risk:** AST assertions break under `prefer-lowest` vs `prefer-stable`. **Mitigation:** assert on `MigrationCreateProperty`, never on `PhpParser\Node`.
+- **Risk:** The 20-parameter `CommandSettings` constructor couples every Phase 2 test to one signature. **Mitigation:** the factory helper in step 4 — one place to change.
+- **Risk:** Phase 3 fixtures drift from `CreatesMockMigration`. **Mitigation:** reuse that trait; do not create a second source of migration truth.
+- **Risk:** Scope creep into refactoring. **Mitigation:** if a test is awkward to write because the class is awkward to use, log the friction in the parent review and keep the test ugly. Refactor is a separate plan.
+- **Risk (met once already):** this plan drifts from `src/` again before it is executed. **Mitigation:** re-run the testability survey above before starting; it is cheap and it is what caught the 2026-07-01 drift.
 
 ## Feedback
 
