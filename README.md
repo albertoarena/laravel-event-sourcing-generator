@@ -11,6 +11,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/albertoarena/laravel-event-sourcing-generator.svg?style=flat-square)](https://packagist.org/packages/albertoarena/laravel-event-sourcing-generator)
 [![License](https://img.shields.io/badge/license-MIT-red.svg?style=flat-square)](LICENSE.md)
 ![Code Size](https://img.shields.io/github/languages/code-size/albertoarena/laravel-event-sourcing-generator)
+[![Why PHP](https://img.shields.io/badge/Why_PHP-in_2026-7A86E8?style=flat-square&labelColor=18181b)](https://whyphp.dev)
 
 Laravel event sourcing generator scaffolds complete domain structures for [Spatie's Laravel Event Sourcing](https://github.com/spatie/laravel-event-sourcing), providing a single Artisan command to generate events, projections, projectors, aggregates, reactors, actions, DTOs, notifications, and PHPUnit tests — optionally straight from an existing migration.
 
