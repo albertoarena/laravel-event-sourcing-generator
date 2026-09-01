@@ -2,6 +2,21 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## 1.1.3 - 2026-09-01
+
+### What's Changed
+
+* Docs: add a "Stay updated" section to the README offering the free Spatie Event Sourcing cheat sheet (printable PDF)
+* Docs: add the [Why PHP](https://whyphp.dev) community badge
+* Chore: retire the repo-views traffic badge, its daily workflow and the `TRAFFIC_TOKEN` secret; the accumulated counts were archived before the `traffic-data` branch was deleted
+* Chore(deps): bump `orchestra/testbench`, `phpstan/phpstan`, `phpunit/phpunit` and `league/commonmark` (dev-only; `composer.lock` is excluded from the Composer `dist`)
+* Chore(deps): regenerate `composer.lock` on PHP 8.4 to restore Symfony 8.1.x, which a grouped Dependabot update had resolved down to the 7.4 LTS line against the `^8.3` PHP floor
+* Security (docs site only): bump `nanoid` to 3.3.18 in the Astro website, resolving GHSA-2v37-7h3g-55p8; `website/` is excluded from the Composer `dist` and is never installed by consumers
+
+No runtime code changed: `src/`, `config/` and the `composer.json` constraints are identical to v1.1.2, so consumers are unaffected — this release exists to publish the README updates.
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.1.2...v1.1.3
+
 ## 1.1.2 - 2026-08-05
 
 ### What's Changed
