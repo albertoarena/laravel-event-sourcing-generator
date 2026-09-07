@@ -11,8 +11,8 @@
     "cover": "node scripts/make-cover.mjs"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.41.8",
-    "astro": "^7.2.6",
+    "@astrojs/starlight": "^0.41.10",
+    "astro": "^7.2.9",
     "sharp": "^0.35.3"
   }
 }
