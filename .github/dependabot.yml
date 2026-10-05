@@ -1,45 +1,87 @@
 version: 2
+
 updates:
-  # PHP / Composer dependencies (package root). Minor and patch bumps are grouped
-  # into a single PR to keep the noise down; majors open on their own.
+  # PHP / Composer dependencies (package root). The lock file is a development
+  # artifact only: CI resolves with `composer update`, and the package does not
+  # ship composer.lock to consumers. It is still worth keeping current, because
+  # it is what Dependabot scans to raise security alerts.
   - package-ecosystem: "composer"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Rome"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "php"
     cooldown:
       default-days: 7
     commit-message:
       prefix: "Chore(deps)"
     groups:
+      # One PR a week for routine bumps, so a quiet period does not accumulate
+      # a pile of individually stale PRs. Majors stay separate for review.
       composer-minor-patch:
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
+      # Security fixes are NOT covered by the group above. Dependabot treats
+      # version updates and security updates as separate flows, and only the
+      # former is grouped unless a group opts in with `applies-to`. Without
+      # this, one advisory per package opens its own PR, each rewriting the
+      # same lock file and forcing a rebase of all the others.
+      composer-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
-  # Documentation website (Astro / npm)
+  # Documentation website (Astro / npm), published to GitHub Pages. Not part of
+  # the distributed package: website/ is export-ignored, so advisories here
+  # never reach package consumers.
   - package-ecosystem: "npm"
     directory: "/website"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Rome"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "javascript"
     cooldown:
       default-days: 7
     commit-message:
       prefix: "Chore(deps)"
     groups:
       website-minor-patch:
+        patterns:
+          - "*"
         update-types:
           - "minor"
           - "patch"
+      website-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
 
-  # GitHub Actions used in workflows. Actions are SHA-pinned; Dependabot rewrites
-  # both the SHA and the trailing version comment when a new release lands.
+  # GitHub Actions used in workflows. Actions are SHA-pinned; Dependabot
+  # rewrites both the SHA and the trailing version comment when a new release
+  # lands. Monthly is enough: action releases are infrequent, and a stale pin
+  # is not a security exposure the way a stale dependency is.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+      timezone: "Europe/Rome"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github_actions"
     cooldown:
       default-days: 7
     commit-message:
