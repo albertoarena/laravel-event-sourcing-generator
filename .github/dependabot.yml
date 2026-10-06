@@ -90,3 +90,9 @@ updates:
       github-actions:
         patterns:
           - "*"
+      # Same reasoning as the other two ecosystems: security updates are a
+      # separate flow and are not covered by the group above.
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
