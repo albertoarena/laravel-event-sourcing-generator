@@ -2,6 +2,24 @@
 
 All notable changes to `laravel-event-sorucing-generator` will be documented in this file:
 
+## Unreleased
+
+### What's Changed
+
+* Security (docs site only): consolidate eight separate Dependabot pull requests into a single lockfile resolution, clearing all 20 open advisories against the Astro website — including a critical Astro RCE via AVIF image optimization (fixed in 7.2.8) and 13 `undici` alerts (fixed in 8.10.2). Two of those advisories had no working fix among the open pull requests: `devalue` 5.9.2 had been overtaken by a widened advisory range (`<= 5.9.2`), and `http-cache-semantics` had no pull request at all. `website/` is excluded from the Composer `dist` and is never installed by consumers
+* Chore: group Dependabot **security** updates per ecosystem with `applies-to: security-updates` — version updates and security updates are separate flows and only the former was grouped, which is why eight advisories opened eight pull requests against the same lock file, each forcing a rebase of the others
+* Chore: pin the Dependabot schedule to Monday 06:00 `Europe/Rome`, lower `open-pull-requests-limit` to 5 (3 for Actions), move Actions to a monthly interval, and label each ecosystem
+* Chore(deps): bump `@astrojs/starlight` to 0.42.4 and `astro` to 7.3.x; Starlight 0.42 rebuilds the mobile menu on the native Popover API, dropping support for Chromium < 116, Safari < 17 and Firefox < 125, and gaining a menu that works without JavaScript — the rendered documentation is otherwise unchanged
+* Chore(deps): bump `laravel/framework` to 13.34.0 and `league/commonmark` to 2.10.3, clearing the three remaining `composer.lock` advisories (dev-only; `composer.lock` is excluded from the Composer `dist`)
+* Chore(deps): bump `larastan/larastan`, `laravel/pint`, `phpstan/phpstan`, `orchestra/testbench` and `phpunit/phpunit` (dev-only)
+* CI: bump `actions/deploy-pages` to 5.0.1 (SHA-pinned; adds backoff and jitter to deployment status polling)
+
+Known: the grouped Composer update again resolved Symfony down to the 7.4 LTS line, as in v1.1.3. Symfony 8.x requires PHP `>=8.4.1` while Dependabot resolves against the `^8.3` floor, so this recurs on every grouped update; a `config.platform.php` pin would hold the lock at Symfony 8 but would break the PHP 8.3 leg of the test matrix, which runs `composer update` rather than `composer install`. One medium advisory (`postcss-selector-parser`, CVE-2026-104844) is knowingly left open: the fix is unreachable because `@expressive-code/core` pins `postcss-nested ^6.0.1`, and the parser only ever reads the project's own CSS at build time.
+
+No runtime code changed: `src/`, `config/` and the `composer.json` constraints are identical to v1.1.3 — the Composer `dist` archive is byte-for-byte identical across all 81 files, so there is nothing here for consumers to upgrade to.
+
+**Full Changelog**: https://github.com/albertoarena/laravel-event-sourcing-generator/compare/v1.1.3...main
+
 ## 1.1.3 - 2026-09-01
 
 ### What's Changed
