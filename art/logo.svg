@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500">
+  <!-- Laravel Event Sourcing Generator: an event stream (timeline of events, each appending a log entry). -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#11132b"/>
+      <stop offset="1" stop-color="#1a1440"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#c084fc"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#6366f1" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#6366f1" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M50 0H0V50" fill="none" stroke="#6366f1" stroke-opacity="0.12" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="500" height="500" fill="url(#bg)"/>
+  <rect width="500" height="500" fill="url(#grid)"/>
+  <circle cx="250" cy="250" r="230" fill="url(#glow)"/>
+
+  <g transform="translate(250 250) scale(1.15) translate(-265 -259)">
+  <!-- timeline -->
+  <rect x="159" y="150" width="12" height="200" rx="6" fill="url(#brand)" opacity="0.35"/>
+
+  <!-- past events -->
+  <g fill="#15153a" stroke="#a5b4fc" stroke-width="8">
+    <circle cx="165" cy="160" r="16"/>
+    <circle cx="165" cy="226" r="16"/>
+    <circle cx="165" cy="292" r="16"/>
+  </g>
+  <g fill="#a5b4fc" opacity="0.55">
+    <rect x="205" y="148" width="110" height="24" rx="12"/>
+    <rect x="205" y="214" width="150" height="24" rx="12"/>
+    <rect x="205" y="280" width="90" height="24" rx="12"/>
+  </g>
+
+  <!-- newest event, just generated -->
+  <circle cx="165" cy="358" r="22" fill="url(#brand)"/>
+  <rect x="205" y="344" width="140" height="28" rx="14" fill="url(#brand)"/>
+
+  <!-- generator spark -->
+  <path d="M368 312 l7 17 l17 7 l-17 7 l-7 17 l-7 -17 l-17 -7 l17 -7 z" fill="#e9d5ff"/>
+  </g>
+</svg>
