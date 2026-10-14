@@ -15,18 +15,18 @@ This creates a complete event-sourced domain in `app/Domain/Animal/Animal/`.
 
 **Always generated:**
 
-- `Actions/` — Create / Update / Delete action classes
-- `DataTransferObjects/` — DTOs for model data
-- `Events/` — domain events (Created, Updated, Deleted)
-- `Projections/` — the read model (Eloquent model)
-- `Projectors/` — event handlers that update projections
+- `Actions/`: Create / Update / Delete action classes
+- `DataTransferObjects/`: DTOs for model data
+- `Events/`: domain events (Created, Updated, Deleted)
+- `Projections/`: the read model (Eloquent model)
+- `Projectors/`: event handlers that update projections
 
 **Optional (with flags):**
 
-- `Aggregates/` — aggregate root (`--aggregate=1`, requires a uuid primary key)
-- `Reactors/` — side-effect handlers (`--reactor=1`)
-- `Notifications/` — event notifications (`--notifications=database,mail,slack,teams`), plus `Notifications/Concerns/` shared traits
-- `tests/Domain/{Domain}/{Model}/` — PHPUnit tests (`--unit-test`)
+- `Aggregates/`: aggregate root (`--aggregate=1`, requires a uuid primary key)
+- `Reactors/`: side-effect handlers (`--reactor=1`)
+- `Notifications/`: event notifications (`--notifications=database,mail,slack,teams`), plus `Notifications/Concerns/` shared traits
+- `tests/Domain/{Domain}/{Model}/`: PHPUnit tests (`--unit-test`)
 
 **With failed events (`--failed-events=1`):**
 
@@ -54,6 +54,6 @@ $animal = Animal::query()->where('name', 'tiger')->first();
 
 ## Where next
 
-- [Basic usage](/laravel-event-sourcing-generator/guide/basic-usage/) — the interactive walkthrough
-- [Migrations](/laravel-event-sourcing-generator/guide/migrations/) — generate a domain from an existing migration
-- [Command options](/laravel-event-sourcing-generator/reference/command-options/) — every flag, generated from the command
+- [Basic usage](/laravel-event-sourcing-generator/guide/basic-usage/): the interactive walkthrough
+- [Migrations](/laravel-event-sourcing-generator/guide/migrations/): generate a domain from an existing migration
+- [Command options](/laravel-event-sourcing-generator/reference/command-options/): every flag, generated from the command
