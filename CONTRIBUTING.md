@@ -122,7 +122,7 @@ Two contribution shapes are common in this package. Each has a short recipe.
 
 - Stubs live under `stubs/`.
 - If you introduce a new stub *context* (aggregate, reactor, notification, etc.), update `src/Domain/Stubs/stub-mapping.json` so the generator picks it up.
-- Template variables use both `DummyName` and `{{ kebab-case }}` / `{{kebab-case}}` forms — match the surrounding stub.
+- Template variables use both `DummyName` and `{{ kebab-case }}` / `{{kebab-case}}` forms. Match the surrounding stub.
 - Add coverage under `tests/Unit/` that exercises the change via `make:event-sourcing-domain`.
 
 #### Adding a Blueprint column type
@@ -183,7 +183,7 @@ The GitHub Actions workflows under `.github/workflows/` run the same checks on e
 
 When triaging an audit warning, check whether the affected package appears under `require` in `composer.json`. If it only appears under `require-dev` (or as a transitive dev dependency), it is a test-environment concern, not a library-consumer concern. Decide whether to bump the dev dependency on its own merits, not solely to silence the audit.
 
-Dependabot PRs that bump `require` dependencies should be merged once tests pass. Dependabot PRs that bump `require-dev` dependencies — especially major bumps of `orchestra/testbench` or Laravel — should be evaluated against the supported Laravel matrix before merging.
+Dependabot PRs that bump `require` dependencies should be merged once tests pass. Dependabot PRs that bump `require-dev` dependencies (especially major bumps of `orchestra/testbench` or Laravel) should be evaluated against the supported Laravel matrix before merging.
 
 ## Getting Help
 

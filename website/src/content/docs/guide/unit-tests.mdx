@@ -50,7 +50,7 @@ return new class extends Migration
 };
 ```
 
-Here `id` is used as the primary key, so no aggregate is available. You can specify the migration interactively or, more efficiently, pass it as an option — the filename timestamp is not needed:
+Here `id` is used as the primary key, so no aggregate is available. You can specify the migration interactively or, more efficiently, pass it as an option. The filename timestamp is not needed:
 
 ```bash
 php artisan make:event-sourcing-domain Tiger --domain=Animal --migration=create_tigers_table --notifications=slack --failed-events=1 --reactor=0 --unit-test

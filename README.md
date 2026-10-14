@@ -2,7 +2,7 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="art/cover-dark.png">
-  <img src="art/cover-light.png" alt="Laravel Event Sourcing Generator — scaffold complete event-sourced domains with one Artisan command">
+  <img src="art/cover-light.png" alt="Laravel Event Sourcing Generator: scaffold complete event-sourced domains with one Artisan command">
 </picture>
 
 ![coverage](https://raw.githubusercontent.com/albertoarena/laravel-event-sourcing-generator/coverage-data/coverage.svg)
@@ -13,7 +13,7 @@
 ![Code Size](https://img.shields.io/github/languages/code-size/albertoarena/laravel-event-sourcing-generator)
 [![Why PHP](https://img.shields.io/badge/Why_PHP-in_2026-7A86E8?style=flat-square&labelColor=18181b)](https://whyphp.dev)
 
-Laravel event sourcing generator scaffolds complete domain structures for [Spatie's Laravel Event Sourcing](https://github.com/spatie/laravel-event-sourcing), providing a single Artisan command to generate events, projections, projectors, aggregates, reactors, actions, DTOs, notifications, and PHPUnit tests — optionally straight from an existing migration.
+Laravel event sourcing generator scaffolds complete domain structures for [Spatie's Laravel Event Sourcing](https://github.com/spatie/laravel-event-sourcing), providing a single Artisan command to generate events, projections, projectors, aggregates, reactors, actions, DTOs, notifications, and PHPUnit tests, optionally straight from an existing migration.
 
 ## 📖 Documentation
 
@@ -21,7 +21,7 @@ Laravel event sourcing generator scaffolds complete domain structures for [Spati
 
 - [Installation](https://albertoarena.github.io/laravel-event-sourcing-generator/getting-started/installation/)
 - [Quick start](https://albertoarena.github.io/laravel-event-sourcing-generator/getting-started/quick-start/)
-- [Guide](https://albertoarena.github.io/laravel-event-sourcing-generator/guide/basic-usage/) — basic & advanced usage, domains, migrations, unit tests
+- [Guide](https://albertoarena.github.io/laravel-event-sourcing-generator/guide/basic-usage/): basic & advanced usage, domains, migrations, unit tests
 - [Command options reference](https://albertoarena.github.io/laravel-event-sourcing-generator/reference/command-options/)
 
 ## Installation
@@ -50,7 +50,7 @@ composer require albertoarena/laravel-event-sourcing-generator
 php artisan make:event-sourcing-domain Animal --domain=Animal
 ```
 
-This creates a complete event-sourced domain (events, projections, projectors, actions and DTOs) in `app/Domain/Animal/Animal/`. Add `--aggregate=1`, `--reactor=1`, `--unit-test`, `--notifications=…` and more — see the [documentation](https://albertoarena.github.io/laravel-event-sourcing-generator) for every option and worked examples.
+This creates a complete event-sourced domain (events, projections, projectors, actions and DTOs) in `app/Domain/Animal/Animal/`. Add `--aggregate=1`, `--reactor=1`, `--unit-test`, `--notifications=…` and more. See the [documentation](https://albertoarena.github.io/laravel-event-sourcing-generator) for every option and worked examples.
 
 **Using Claude Code?** Install the companion [claude-laravel-event-sourcing](https://github.com/albertoarena/claude-laravel-event-sourcing) skill to scaffold domains conversationally.
 
