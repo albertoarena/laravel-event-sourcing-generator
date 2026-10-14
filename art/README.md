@@ -24,10 +24,10 @@ This rewrites `art/cover-light.png`, `art/cover-dark.png` and `website/public/co
 
 Open `website/scripts/make-cover.mjs`:
 
-- **Colours** — the `LIGHT` and `DARK` palette objects at the top.
-- **Text** — the title, eyebrow, tagline and pill labels in `buildSvg()`.
-- **Terminal sample** — the `tree` and `bodyLines` arrays.
+- **Colours**: the `LIGHT` and `DARK` palette objects at the top.
+- **Text**: the title, eyebrow, tagline and pill labels in `buildSvg()`.
+- **Terminal sample**: the `tree` and `bodyLines` arrays.
 
 The SVG is rendered at 2× (2400×1260) via `sharp` for a crisp result. After editing, re-run `npm run cover` and commit the updated PNGs.
 
-> The OG image is never shown on the site itself — it only appears as the preview card when the docs URL is shared (Twitter, Slack, GitHub, LinkedIn).
+> The OG image is never shown on the site itself. It only appears as the preview card when the docs URL is shared (Twitter, Slack, GitHub, LinkedIn).

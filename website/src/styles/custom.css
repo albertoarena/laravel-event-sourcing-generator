@@ -1,7 +1,7 @@
 /*
  * Brand identity for the Laravel Event Sourcing Generator docs.
  * Distinct-but-consistent with the author's other Starlight sites: same
- * structure, its own accent — an indigo/violet gradient that reads as
+ * structure, its own accent: an indigo/violet gradient that reads as
  * developer tooling.
  *
  * In Starlight, :root holds the dark theme defaults; light overrides live
@@ -16,7 +16,7 @@
   --sl-color-accent: #6366f1;
   --sl-color-accent-high: #c7d2fe;
 
-  /* Brand gradient — bright, for dark backgrounds */
+  /* Brand gradient: bright, for dark backgrounds */
   --lesg-from: #a5b4fc;
   --lesg-to: #6366f1;
 
