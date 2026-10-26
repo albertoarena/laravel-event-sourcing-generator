@@ -15,10 +15,14 @@ All notable changes to `laravel-event-sorucing-generator` will be documented in 
 * CI: bump `actions/deploy-pages` to 5.0.1 (SHA-pinned; adds backoff and jitter to deployment status polling)
 * Chore(deps): bump `laravel/framework` to 13.35.0, `laravel/prompts` to 0.3.25, `phpstan/phpstan` to 2.3.1 and `larastan/larastan` to 3.12.3 (dev-only). CI does not run PHPStan, so the 2.3 bump was verified locally: no errors, all 83 tests pass
 * Chore(deps): bump `@astrojs/starlight` to 0.42.5 (docs site only)
+* Security (docs site only): bump `postcss-selector-parser` to 7.1.7, closing CVE-2026-104844. The fix became reachable once `@expressive-code/core` 0.44.3 moved to `postcss-nested ^7.0.2`
+* Security (docs site only): bump `undici` to 8.12.3 and `zod` to 4.6.7, clearing four advisories (two high), with `vite` 8.3.5 and `rolldown` 1.2.15 alongside. `website/` is excluded from the Composer `dist` and is never installed by consumers
+* Chore(deps): bump `@astrojs/starlight` to 0.42.6 and `astro` to 7.3.8 (docs site only); `astro` no longer depends on `esbuild`, which drops it from the lock file
+* Chore(deps): bump `larastan/larastan` to 3.13.1 and `phpstan/phpstan` to 2.3.2, which also moved `laravel/framework` to 13.38 in the lock file (dev-only). Verified locally because CI does not run PHPStan: no errors, all 83 tests pass
 * Docs: ban em-dashes across the README, docs site and contributor guides, fixing the generated reference pages at their source in `bin/docs-sync.php`
 * Docs: add a square project logo (`art/logo.svg`, `art/logo.png`) for project listings
 
-Known: the grouped Composer update again resolved Symfony down to the 7.4 LTS line, as in v1.1.3. Symfony 8.x requires PHP `>=8.4.1` while Dependabot resolves against the `^8.3` floor, so this recurs on every grouped update; a `config.platform.php` pin would hold the lock at Symfony 8 but would break the PHP 8.3 leg of the test matrix, which runs `composer update` rather than `composer install`. One medium advisory (`postcss-selector-parser`, CVE-2026-104844) is knowingly left open: the fix is unreachable because `@expressive-code/core` pins `postcss-nested ^6.0.1`, and the parser only ever reads the project's own CSS at build time.
+Known: the grouped Composer update again resolved Symfony down to the 7.4 LTS line, as in v1.1.3. Symfony 8.x requires PHP `>=8.4.1` while Dependabot resolves against the `^8.3` floor, so this recurs on every grouped update; a `config.platform.php` pin would hold the lock at Symfony 8 but would break the PHP 8.3 leg of the test matrix, which runs `composer update` rather than `composer install`.
 
 No runtime code changed: `src/`, `config/` and the `composer.json` constraints are identical to v1.1.3. The only change to the Composer `dist` archive is punctuation in `README.md`, so there is nothing here for consumers to upgrade to.
 
